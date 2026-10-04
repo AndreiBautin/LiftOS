@@ -1284,6 +1284,25 @@ html {
   animation: 600ms cubic-bezier(0.33, 0, 0.2, 1) var(--plate-delay, 0ms) both;
 }
 
+/* A pair of dumbbells is set down once: a short drop and a settle. */
+@keyframes dumbbell-set {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(1.5px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.dumbbell-set {
+  animation: dumbbell-set 520ms cubic-bezier(0.33, 0, 0.2, 1) both;
+}
+
 /* A set logged: a band of the good colour sweeps across its row, once. */
 @keyframes set-sweep {
   from {

@@ -1,4 +1,5 @@
 import { Check } from 'lucide-react'
+import { BeltLoad, DumbbellPair } from './Dumbbells'
 import { useState } from 'react'
 
 import { useSettings } from '@/app/context'
@@ -39,6 +40,11 @@ export function BarSection({
 
   const kind: BarKind | undefined =
     equipment === 'barbell' ? 'barbell' : equipment === 'ez-bar' ? 'ez-bar' : undefined
+  // A dumbbell or a loaded bodyweight movement gets its own picture.
+  if (kind === undefined && load !== undefined && load > 0) {
+    if (equipment === 'dumbbell') return <DumbbellPair load={load} unit={units} />
+    if (equipment === 'bodyweight') return <BeltLoad load={load} unit={units} />
+  }
   if (kind === undefined || load === undefined) return null
 
   const plates = platesToHand(settings.plates, units)

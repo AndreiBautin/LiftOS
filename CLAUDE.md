@@ -57,6 +57,15 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **Dumbbells are drawn too** (`DumbbellPair`, `BeltLoad` in
+  `features/train/Dumbbells.tsx`, chosen in `BarSection`): a dumbbell
+  exercise shows the pair side by side — hex heads sized by the weight, a
+  short knurled handle, set down once — and the load **per hand**, which
+  is how a dumbbell set is logged here; a bodyweight movement with weight
+  added shows a dip belt and "BW + 25 lb". The first pair had long
+  handles and small heads and read as two barbells. **The belt picture
+  was not seen**: nothing in the demo plans an added load on a bodyweight
+  movement.
 - **A card names what the next session is ripe for** (`RipeCard`, home
   card `ripe`; `ripeLifts` in `domain/logging/ripe.ts`, tested): each lift
   whose planned bar is heavier than its last top set, drawn as the old bar
