@@ -1,4 +1,6 @@
 import { ChevronDown, ChevronRight } from 'lucide-react'
+import { glyphFor } from '@/features/glyphs/glyph-for'
+import { MoveGlyph } from '@/features/glyphs/MoveGlyph'
 import { MorphText } from '@/components/shared/MorphText'
 import { morphName } from '@/components/shared/morph'
 import { useState } from 'react'
@@ -168,24 +170,27 @@ export function SessionOutline({
                 {section.slots.map((slot) => (
                   <li
                     key={slot.id}
-                    className="text-ink-100 flex items-baseline justify-between gap-3 py-1.5 text-sm"
+                    className="text-ink-100 flex items-center justify-between gap-3 py-1.5 text-sm"
                   >
-                    {slot.exercise.kind === 'specific' ? (
-                      <Link
-                        viewTransition
-                        to={`/exercise/${slot.exercise.exerciseId}`}
-                        className="hover:text-accent-400 truncate transition-colors"
-                      >
-                        <MorphText
+                    <span className="flex min-w-0 items-center gap-2">
+                      <SlotGlyph slot={slot} library={library} />
+                      {slot.exercise.kind === 'specific' ? (
+                        <Link
+                          viewTransition
                           to={`/exercise/${slot.exercise.exerciseId}`}
-                          name={morphName('exercise', slot.exercise.exerciseId)}
+                          className="hover:text-accent-400 truncate transition-colors"
                         >
-                          {nameOf(slot)}
-                        </MorphText>
-                      </Link>
-                    ) : (
-                      <span className="truncate">{nameOf(slot)}</span>
-                    )}
+                          <MorphText
+                            to={`/exercise/${slot.exercise.exerciseId}`}
+                            name={morphName('exercise', slot.exercise.exerciseId)}
+                          >
+                            {nameOf(slot)}
+                          </MorphText>
+                        </Link>
+                      ) : (
+                        <span className="truncate">{nameOf(slot)}</span>
+                      )}
+                    </span>
                     <PlannedFigure slot={slot} planned={planned} library={library} units={units} />
                   </li>
                 ))}
@@ -244,5 +249,26 @@ function PlannedFigure({
         {String(working.length)} × {String(reps)}
       </span>
     </span>
+  )
+}
+
+/** The movement glyph for a planned slot, when the slot names an exercise. */
+function SlotGlyph({
+  slot,
+  library,
+}: {
+  readonly slot: ProgramDay['slots'][number]
+  readonly library: readonly Exercise[]
+}) {
+  if (slot.exercise.kind !== 'specific') return null
+  const id = slot.exercise.exerciseId
+  const exercise = library.find((one) => one.id === id)
+  if (exercise === undefined) return null
+  return (
+    <MoveGlyph
+      glyph={glyphFor({ ...exercise, warmup: slot.role === 'warmup' })}
+      size={18}
+      className="text-ink-500 shrink-0"
+    />
   )
 }

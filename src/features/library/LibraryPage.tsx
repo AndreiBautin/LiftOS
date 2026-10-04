@@ -1,4 +1,6 @@
 import { Search } from 'lucide-react'
+import { glyphFor } from '@/features/glyphs/glyph-for'
+import { MoveGlyph } from '@/features/glyphs/MoveGlyph'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -151,6 +153,7 @@ function ShelfRow({ row, today }: { readonly row: LibraryRow; readonly today: st
         to={to}
         className="hover:bg-ink-850 -mx-1.5 flex min-h-11 items-center gap-3 rounded-md px-1.5 py-1.5"
       >
+        <MoveGlyph glyph={glyphFor(row.exercise)} className="text-ink-500 shrink-0" />
         <span className="min-w-0 flex-1">
           <MorphText
             to={to}

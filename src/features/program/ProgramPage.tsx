@@ -1,4 +1,6 @@
 import { scrollMotion } from '@/lib/motion'
+import { glyphFor } from '@/features/glyphs/glyph-for'
+import { MoveGlyph } from '@/features/glyphs/MoveGlyph'
 import { BarChart3, Check, ChevronDown, ChevronRight } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -473,8 +475,11 @@ function SlotRow({
           .join('  ·  ')
 
   return (
-    <li className="flex items-baseline justify-between gap-3 py-1.5">
-      <span className="text-ink-100 min-w-0 text-sm">
+    <li className="flex items-center justify-between gap-3 py-1.5">
+      <span className="text-ink-100 flex min-w-0 items-center gap-2 text-sm">
+        {exercise !== undefined && (
+          <MoveGlyph glyph={glyphFor(exercise)} size={18} className="text-ink-500 shrink-0" />
+        )}
         {exercise?.name ??
           (slot.exercise.kind === 'query' ? slot.exercise.label : 'Unknown exercise')}
       </span>

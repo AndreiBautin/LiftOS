@@ -57,6 +57,18 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **An exercise wears a glyph of its movement** (`features/glyphs`:
+  `glyphFor`, tested; `GLYPH_PATHS`; `MoveGlyph`): eighteen figures
+  hand-drawn on a 24 grid — squat, hinge, bench, press, row, pull-up,
+  lunge, carry, curl, extension, raise, calf, fly, shrug, core, run,
+  warm-up and a plain dumbbell — in the plan, the Program page, the
+  library and the player's pills. **By movement, refined by muscle for
+  isolation**, which is half the catalogue under one pattern; a warm-up
+  is drawn as one whatever it moves, by slug or by role. A test holds
+  every glyph drawn and the plain dumbbell rare. **No icon set draws a
+  hinge apart from a row**, which is why they are drawn here; they were
+  checked at 96 px and 22 px, and the curl and the row were redrawn after
+  the first look. Decorative (`aria-hidden`) — the name is always beside.
 - **The backdrop follows the time of day** (`skyAt` and `skyPhase` in
   `domain/time/sky.ts`, tested; `.ambient-sky` in `AmbientBackdrop`): a
   glow low on the left at dawn, high and pale by day, low and amber on

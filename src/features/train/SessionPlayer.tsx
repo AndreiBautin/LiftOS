@@ -19,6 +19,9 @@ import {
 } from 'lucide-react'
 import { SwipePager } from './SwipePager'
 import { SessionTools, type SessionTool } from './SessionTools'
+import { glyphFor } from '@/features/glyphs/glyph-for'
+import { MoveGlyph } from '@/features/glyphs/MoveGlyph'
+import type { Exercise } from '@/domain/exercises/exercise'
 import { useHaptics } from '@/features/feel/haptics'
 import { RollingNumber } from '@/components/shared/RollingNumber'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -26,7 +29,6 @@ import { Link } from 'react-router-dom'
 
 import { useServices, useSettings } from '@/app/context'
 
-import type { Exercise } from '@/domain/exercises/exercise'
 import type { ExerciseId } from '@/domain/ids/ids'
 import type { LogEntry, WorkoutLog } from '@/domain/logging/workout-log'
 import { remainingSeconds } from '@/domain/logging/remaining'
@@ -429,7 +431,14 @@ export function SessionPlayer({
                       : 'border-ink-800 text-ink-500 hover:text-ink-300',
                 )}
               >
-                {complete && !current && <Check size={12} aria-hidden />}
+                {complete && !current ? (
+                  <Check size={12} aria-hidden />
+                ) : (
+                  <PillGlyph
+                    exercise={exercises.find((one) => one.id === candidate.exerciseId)}
+                    warmup={run !== undefined}
+                  />
+                )}
                 {run === undefined ? nameOf(candidate.exerciseId) : 'Warm-up'}
               </button>
             )
@@ -1245,4 +1254,17 @@ function SupersetLine({
       </button>
     </p>
   )
+}
+
+/** A pill's movement glyph; a finished pill shows its tick instead. */
+function PillGlyph({
+  exercise,
+  warmup,
+}: {
+  readonly exercise: Exercise | undefined
+  readonly warmup: boolean
+}) {
+  if (exercise === undefined && !warmup) return null
+  const glyph = warmup || exercise === undefined ? 'warmup' : glyphFor(exercise)
+  return <MoveGlyph glyph={glyph} size={14} className="shrink-0 opacity-80" />
 }
