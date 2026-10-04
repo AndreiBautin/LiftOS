@@ -172,6 +172,18 @@ describe('accepted resets', () => {
     expect(readSettings(storage).settings.trueBlack).toBeUndefined()
   })
 
+  it('keeps a chosen load step only when it is a positive number', () => {
+    const storage = memoryStorage()
+    storage.setItem(
+      STORAGE_KEYS.settings,
+      JSON.stringify({
+        ...DEFAULT_SETTINGS,
+        loadSteps: { 'db-lateral-raise': 2.5, 'bench-press': 0, curl: 'two' },
+      }),
+    )
+    expect(readSettings(storage).settings.loadSteps).toEqual({ 'db-lateral-raise': 2.5 })
+  })
+
   it('keeps each template that holds its shape and drops one that does not', () => {
     const storage = memoryStorage()
     const good = {

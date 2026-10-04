@@ -51,6 +51,13 @@ export interface Exercise {
   readonly systemicCost?: SystemicCost
   /** Overrides the rep range implied by `isCompound`. See the catalogue. */
   readonly repRange?: { readonly low: number; readonly high: number }
+  /**
+   * The load added when every set tops its range, where it differs from
+   * the upper/lower rule in `stepFor`. Not set in the catalogue; a lifter's
+   * own smaller step (`settings.loadSteps`) arrives here through
+   * `withLoadSteps`, so every reader of `stepFor` sees it.
+   */
+  readonly loadStep?: number
   readonly defaultRestSeconds?: number
   readonly notes?: string
   /** Built-in exercises ship with the app and cannot be deleted, only hidden. */

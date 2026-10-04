@@ -241,6 +241,7 @@ function mergeWithDefaults(parsed: unknown): AppSettings {
     ...(stored.setupDone === true ? { setupDone: true } : {}),
     ...(stored.swipeLearned === true ? { swipeLearned: true } : {}),
     ...loadResetsOf(stored.loadResets),
+    ...loadStepsOf(stored.loadSteps),
     ...liftGoalsOf(stored.liftGoals),
     ...exerciseCuesOf(stored.exerciseCues),
     ...sessionDraftOf(stored.sessionDraft),
@@ -357,6 +358,16 @@ function liftGoalsOf(value: unknown): Pick<AppSettings, 'liftGoals'> {
       : []
   })
   return kept.length === 0 ? {} : { liftGoals: Object.fromEntries(kept) }
+}
+
+/** Chosen load steps, each a positive number; anything else falls out. */
+function loadStepsOf(value: unknown): Pick<AppSettings, 'loadSteps'> {
+  if (typeof value !== 'object' || value === null) return {}
+  const kept = Object.entries(value).filter(
+    (entry): entry is [string, number] =>
+      typeof entry[1] === 'number' && Number.isFinite(entry[1]) && entry[1] > 0,
+  )
+  return kept.length === 0 ? {} : { loadSteps: Object.fromEntries(kept) }
 }
 
 /** Templates that hold their shape; any that do not fall out alone. */

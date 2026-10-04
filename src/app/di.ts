@@ -21,6 +21,7 @@ import {
 import { createSettingsStore } from '@/infrastructure/storage/settings-store'
 import { requestPersistence } from '@/infrastructure/storage/durability'
 import { logger } from '@/shared/logging/logger'
+import { withLoadSteps } from '@/domain/programs/load-steps'
 
 /**
  * The composition root.
@@ -78,15 +79,16 @@ export async function bootstrap(): Promise<BootstrapResult> {
    * moves between devices.
    */
   const db = await openDatabase(DATABASE_NAME)
+  const settings = createSettingsStore()
 
   const services: AppServices = {
     db,
-    exercises: createExerciseRepository(db, systemClock),
+    exercises: withChosenSteps(createExerciseRepository(db, systemClock), settings),
     position: createPositionRepository(db, systemClock),
     workouts: createWorkoutRepository(db, systemClock),
     checkIns: createCheckInRepository(db, systemClock),
     tombstones: createTombstoneRepository(db),
-    settings: createSettingsStore(),
+    settings,
     ids: cryptoIds,
     clock: systemClock,
   }
@@ -138,4 +140,31 @@ export async function bootstrap(): Promise<BootstrapResult> {
   })
 
   return { services, exerciseCount }
+}
+
+/**
+ * The exercise library with the lifter's own load steps applied
+ * (`withLoadSteps`), so a smaller step chosen on an exercise page reaches
+ * every plan — Start, the preview, Repeat, a template, an added or swapped
+ * exercise — and the player's ladder, through the one repository they all
+ * read, rather than through each of them.
+ */
+function withChosenSteps(
+  repository: ExerciseRepository,
+  settings: SettingsRepository,
+): ExerciseRepository {
+  return {
+    all: async () => withLoadSteps(await repository.all(), (await settings.get()).loadSteps),
+    byId: async (id) => {
+      const found = await repository.byId(id)
+      return found === undefined
+        ? undefined
+        : withLoadSteps([found], (await settings.get()).loadSteps)[0]
+    },
+    save: (exercise) => repository.save(exercise),
+    restoreMany: (exercises) => repository.restoreMany(exercises),
+    remove: (id) => repository.remove(id),
+    purge: (id) => repository.purge(id),
+    count: () => repository.count(),
+  }
 }

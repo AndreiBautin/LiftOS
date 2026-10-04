@@ -132,6 +132,8 @@ export interface AppSettings {
   readonly sessionDraft?: SessionDraft | undefined
   /** Sessions kept by name to be run again; see `logging/template`. */
   readonly templates?: readonly SessionTemplate[] | undefined
+  /** A lifter's own load step per exercise; see `programs/load-steps`. */
+  readonly loadSteps?: Readonly<Record<string, number>> | undefined
   /** The newest release note dismissed; see `WhatsNew`. */
   readonly seenNotes?: string
   /** The home page's card order and hidden cards; see `home-cards.ts`. */

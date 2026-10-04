@@ -57,6 +57,21 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **A step too big for the bar offers a smaller one** ("The next step"
+  on the exercise page, `StepCard`; `stepJump`, `smallerStep`,
+  `defaultStepFor` and `withLoadSteps` in `domain/programs/load-steps.ts`,
+  tested; `settings.loadSteps`, in the parse with a test). Past
+  `BIG_JUMP` (10%) — five pounds on a 20 lb lateral raise is 25% — a
+  ruler draws today's load, the half step and the usual step, and offers
+  the half. **Offered, never applied**: only the lifter knows whether the
+  gym has the plates or the dumbbells. **The step reaches every plan
+  through the exercise library**: `withChosenSteps` in `di.ts` wraps the
+  exercise repository and sets `Exercise.loadStep`, which `stepFor`
+  already honoured — so Start, the preview, Repeat, templates, an added or
+  swapped exercise, the ladder and the debrief all read it without each
+  being taught. The card stays while the smaller step is in use, to put
+  it back. Checked by pressing it: the card read the 2.5 back through the
+  library, and reverting cleared the setting.
 - **Every muscle across a year** (`/muscles`, `/muscles/:year`,
   `MuscleYearPage`; `muscleYear` in `domain/volume/muscle-year.ts`,
   tested; "Muscles by week" in `SCREENS`): a row a muscle, a cell a

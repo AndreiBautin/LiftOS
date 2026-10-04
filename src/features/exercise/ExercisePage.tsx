@@ -18,6 +18,7 @@ import { Button, Card, CardHeading } from '@/components/shared/primitives'
 import { useExerciseHistory, useExercises } from '@/features/train/hooks'
 
 import { StallCard } from './StallCard'
+import { StepCard } from './StepCard'
 import { RepMaxCard } from './RepMaxCard'
 import { WeeklySetsCard } from './WeeklySetsCard'
 import { splitDayLabel } from '@/features/train/useNextSession'
@@ -137,6 +138,9 @@ export function ExercisePage() {
       )}
 
       <StallCard exerciseId={exerciseId} series={shown} bodyweight={bodyweight} />
+      {exercise !== undefined && (
+        <StepCard exercise={exercise} load={shown.sessions.at(-1)?.top.load} />
+      )}
       {/* From `lg`, two columns: the cue beside the notes, the charts beside each other. */}
       <div className="space-y-4 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
         <CueCard key={exerciseId} exerciseId={exerciseId} />
