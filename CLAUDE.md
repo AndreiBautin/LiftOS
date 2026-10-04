@@ -57,6 +57,20 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **The competition lifts forecast twelve weeks out** ("Twelve weeks
+  out", `ForecastCard`; `forecastLift` and `forecastTotal` in
+  `domain/strength/forecast.ts`, tested): each lift's last twelve weeks as
+  a line up to today, then a cone — the line carried forward inside a
+  band that widens with distance — and the total read against the
+  published total standards. **The fit is `fitTrend`'s**, the line the
+  Strength card's "at this rate" date reads, so the two cannot disagree.
+  The band is about two standard errors of prediction **with a floor that
+  grows a quarter of a percent a week**: the demo's sessions sit exactly
+  on a line and the residuals alone drew the forecast as a thread. A
+  falling lift forecasts falling rather than going quiet; thin evidence
+  (fewer than four sessions over four weeks) silences it. The total's
+  band combines the three as independent errors, and is absent unless all
+  three lifts have a forecast.
 - **A card says how the block has followed the plan** ("Showing up",
   `AdherenceCard`; `adherence` in `domain/programs/adherence.ts`, tested):
   a punch card, a row a week and a hole a scheduled day — punched where
