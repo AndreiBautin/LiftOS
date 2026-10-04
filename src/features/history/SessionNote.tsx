@@ -1,4 +1,6 @@
 import { NotebookPen } from 'lucide-react'
+import { appendDictation } from '@/features/dictation/dictation'
+import { DictateButton } from '@/features/dictation/DictateButton'
 import { useId, useState } from 'react'
 
 import type { WorkoutId } from '@/domain/ids/ids'
@@ -39,28 +41,46 @@ export function SessionNote({
           {note.isPending ? 'Saving…' : text.trim() === saved.trim() && saved !== '' ? 'Saved' : ''}
         </span>
       </label>
-      <textarea
-        id={id}
-        rows={2}
-        maxLength={NOTE_LIMIT}
-        value={text}
-        placeholder="Slept badly, new gym, felt strong…"
-        onChange={(event) => {
-          setText(event.target.value)
-        }}
-        onBlur={() => {
-          if (text.trim() === saved.trim()) return
-          note.mutate(
-            { id: workoutId, notes: text },
-            {
-              onSuccess: (updated) => {
-                setSaved(updated.notes ?? '')
+      <div className="flex items-start gap-2">
+        <textarea
+          id={id}
+          rows={2}
+          maxLength={NOTE_LIMIT}
+          value={text}
+          placeholder="Slept badly, new gym, felt strong…"
+          onChange={(event) => {
+            setText(event.target.value)
+          }}
+          onBlur={() => {
+            if (text.trim() === saved.trim()) return
+            note.mutate(
+              { id: workoutId, notes: text },
+              {
+                onSuccess: (updated) => {
+                  setSaved(updated.notes ?? '')
+                },
               },
-            },
-          )
-        }}
-        className="bg-ink-900 border-ink-800 text-ink-100 placeholder:text-ink-500 w-full resize-none rounded-lg border px-3 py-2 text-sm"
-      />
+            )
+          }}
+          className="bg-ink-900 border-ink-800 text-ink-100 placeholder:text-ink-500 min-w-0 flex-1 resize-none rounded-lg border px-3 py-2 text-sm"
+        />
+        {/* Dictation has no blur to save on, so what was heard is saved as it lands. */}
+        <DictateButton
+          label="Dictate the session note"
+          onHeard={(heard) => {
+            const next = appendDictation(text, heard, NOTE_LIMIT)
+            setText(next)
+            note.mutate(
+              { id: workoutId, notes: next },
+              {
+                onSuccess: (updated) => {
+                  setSaved(updated.notes ?? '')
+                },
+              },
+            )
+          }}
+        />
+      </div>
     </Card>
   )
 }

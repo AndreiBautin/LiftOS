@@ -116,6 +116,17 @@ SessionPage.tsx`, from `sessionDetail`). History rows could be deleted
   finished the minute it started reads as of unknown length rather
   than "0 min"; the demo seed stamped every session that way until this
   page showed it, and now gives each 45–75 minutes.
+- **Notes can be dictated** (`DictateButton` and `appendDictation` in
+  `features/dictation`, tested): a microphone beside the set note and the
+  session note, present only where the browser has a speech recogniser —
+  absent rather than dead elsewhere. What is heard is added with a space,
+  a new note capitalised, and cut at the field's limit on a word boundary.
+  The session note saves what was heard as it lands, because dictation
+  has no blur to save on. The recognition is the browser's (most send
+  audio to the platform's speech service); nothing is recorded here.
+  **Checked with a stand-in recogniser** — the agent's pane blocks the
+  microphone, so real speech was not heard; the button reads the
+  recogniser at render, so the stand-in had to be in place before it.
 - **History imports from Strong or Hevy** (Settings → Backup,
   `ImportOther`; `readTrainingExport`, `parseCsv` and `matchExercise` in
   `domain/logging/import-csv.ts`, `importTraining` in `application/

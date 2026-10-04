@@ -1,4 +1,6 @@
 import { Check, Minus, SkipForward } from 'lucide-react'
+import { appendDictation } from '@/features/dictation/dictation'
+import { DictateButton } from '@/features/dictation/DictateButton'
 import { useState } from 'react'
 
 import type { ExerciseId, WorkoutId } from '@/domain/ids/ids'
@@ -351,17 +353,25 @@ function SetEditorPanel({
       <label htmlFor={`note-${String(entryIndex)}-${String(index)}`} className="sr-only">
         Note on this set
       </label>
-      <input
-        id={`note-${String(entryIndex)}-${String(index)}`}
-        type="text"
-        maxLength={80}
-        value={note}
-        placeholder="Note — belt, grip, how it felt"
-        onChange={(event) => {
-          setNote(event.target.value)
-        }}
-        className="bg-ink-900 border-ink-800 text-ink-100 placeholder:text-ink-500 mt-2 w-full rounded-lg border px-3 py-2 text-sm"
-      />
+      <div className="mt-2 flex gap-2">
+        <input
+          id={`note-${String(entryIndex)}-${String(index)}`}
+          type="text"
+          maxLength={80}
+          value={note}
+          placeholder="Note — belt, grip, how it felt"
+          onChange={(event) => {
+            setNote(event.target.value)
+          }}
+          className="bg-ink-900 border-ink-800 text-ink-100 placeholder:text-ink-500 min-w-0 flex-1 rounded-lg border px-3 py-2 text-sm"
+        />
+        <DictateButton
+          label="Dictate a note on this set"
+          onHeard={(heard) => {
+            setNote((current) => appendDictation(current, heard, 80))
+          }}
+        />
+      </div>
 
       <div className="mt-3 flex gap-2">
         <Button
