@@ -245,6 +245,13 @@ export function SettingsPage() {
                 }}
               />
               <Toggle
+                label="Gym mode — bigger, brighter type in the session"
+                checked={settings.gymMode === true}
+                onChange={(gymMode) => {
+                  update({ gymMode })
+                }}
+              />
+              <Toggle
                 label="Keep the screen awake"
                 checked={settings.keepScreenAwake}
                 onChange={(keepScreenAwake) => {

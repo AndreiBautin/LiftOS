@@ -56,6 +56,14 @@ export function AppShell() {
    * follows it**, so the status bar on an installed app is not a grey
    * stripe above a black page.
    */
+  /* Gym mode scales the player's type through the root, like pure black. */
+  const gym = settings.gymMode === true
+  useEffect(() => {
+    const root = document.documentElement
+    if (gym) root.dataset.gym = ''
+    else delete root.dataset.gym
+  }, [gym])
+
   const black = settings.trueBlack === true
   useEffect(() => {
     const root = document.documentElement

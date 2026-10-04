@@ -1,6 +1,16 @@
 /** Release notes, newest first; `WhatsNew` shows the first once. */
 export const RELEASES: readonly { readonly id: string; readonly items: readonly string[] }[] = [
   {
+    id: '2026-10-09',
+    items: [
+      'Your history as a wall of session crests — Crests on the history card.',
+      'Rest days say how rested tomorrow’s muscles are; a card names the bars going up.',
+      'Dumbbells drawn per hand, and a warm-up ramp for every barbell compound.',
+      'Play last week back as a story, from the Last week card.',
+      'See when this device last synced, and Gym mode for bigger type mid-session.',
+    ],
+  },
+  {
     id: '2026-10-08',
     items: [
       'A new look: bundled type, grained surfaces, and a backdrop that follows the time of day.',

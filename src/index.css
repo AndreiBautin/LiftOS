@@ -1284,6 +1284,25 @@ html {
   animation: 600ms cubic-bezier(0.33, 0, 0.2, 1) var(--plate-delay, 0ms) both;
 }
 
+/*
+ * Gym mode: the session player read at arm's length, under bad light.
+ * Tailwind's utilities read these theme variables, so redefining them
+ * inside the player scales every size and lifts every grey there — the
+ * same layout, larger, with the dim inks a step brighter — and touches
+ * nothing outside it. No `zoom`, which would widen the page past a phone.
+ */
+:root[data-gym] .session-player {
+  --text-xs: 0.875rem;
+  --text-sm: 1rem;
+  --text-base: 1.25rem;
+  --text-lg: 1.375rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 1.875rem;
+  --text-3xl: 2.25rem;
+  --color-ink-500: oklch(0.72 0.012 265);
+  --color-ink-300: oklch(0.86 0.01 265);
+}
+
 /* A pair of dumbbells is set down once: a short drop and a settle. */
 @keyframes dumbbell-set {
   0% {

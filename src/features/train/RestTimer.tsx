@@ -126,7 +126,7 @@ export function RestTimer({
 
   return (
     <div
-      className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-2xl px-3"
+      className="session-player fixed inset-x-0 bottom-0 z-30 mx-auto max-w-2xl px-3"
       /*
        * Pinned to the bottom edge and padded past the home indicator. A
        * style rather than an arbitrary Tailwind value, because `env()`

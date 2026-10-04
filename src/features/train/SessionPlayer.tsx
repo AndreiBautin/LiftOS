@@ -355,7 +355,7 @@ export function SessionPlayer({
   }
 
   return (
-    <div className="mx-auto max-w-2xl pb-28 lg:max-w-5xl">
+    <div className="session-player mx-auto max-w-2xl pb-28 lg:max-w-5xl">
       {/*
         **The session's own bar, pinned while the sets scroll.** The page
         used to open on the exercise name with "Exercise 6 of 8" in grey

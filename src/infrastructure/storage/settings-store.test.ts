@@ -172,6 +172,14 @@ describe('accepted resets', () => {
     expect(readSettings(storage).settings.trueBlack).toBeUndefined()
   })
 
+  it('keeps gym mode only when it is on', () => {
+    const storage = memoryStorage()
+    storage.setItem(STORAGE_KEYS.settings, JSON.stringify({ ...DEFAULT_SETTINGS, gymMode: true }))
+    expect(readSettings(storage).settings.gymMode).toBe(true)
+    storage.setItem(STORAGE_KEYS.settings, JSON.stringify({ ...DEFAULT_SETTINGS, gymMode: 1 }))
+    expect(readSettings(storage).settings.gymMode).toBeUndefined()
+  })
+
   it('keeps each exercise cue as a trimmed line and drops blanks', () => {
     const storage = memoryStorage()
     storage.setItem(

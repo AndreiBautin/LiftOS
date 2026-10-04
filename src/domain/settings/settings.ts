@@ -119,6 +119,8 @@ export interface AppSettings {
   readonly accentHue?: number
   /** A pure-black page for OLED screens; absent is the dark grey. */
   readonly trueBlack?: boolean
+  /** Bigger, brighter type in the session player, read from a bench; absent is off. */
+  readonly gymMode?: boolean
   /**
    * The lifter's own cues per exercise — "elbows under the bar", "push the
    * floor away" — shown in the player under the exercise's name.

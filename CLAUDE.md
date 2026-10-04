@@ -57,6 +57,15 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **Gym mode** (`settings.gymMode`, in the parse with a test; Settings →
+  During a session): the session player and the rest timer (both
+  `.session-player`) read at arm's length — `--text-*` and the two dim
+  inks redefined inside that scope, since Tailwind's utilities read the
+  theme variables, so every size grows and every grey brightens with the
+  layout untouched (a set row's headline 16 → 20 px, no overflow at 375).
+  **Not `zoom`**, which widens the page past a phone. At the larger size
+  the session bar's title truncates and the tempo chips stack; both still
+  work.
 - **Sync says how it is doing** (`SyncBadge` under the hero's header,
   `agoLabel` in `domain/time/ago.ts`, both tested — the badge through a
   pure `SyncBadgeView`): a green cloud and "4m" since the last round, an
