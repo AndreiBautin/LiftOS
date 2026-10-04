@@ -68,6 +68,8 @@ export function ImportOther() {
         type="file"
         accept=".csv,text/csv"
         className="sr-only"
+        tabIndex={-1}
+        aria-label="Choose a CSV file"
         onChange={(event) => {
           const file = event.target.files?.[0]
           if (file !== undefined) choose(file)

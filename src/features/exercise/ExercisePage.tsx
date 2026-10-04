@@ -13,6 +13,7 @@ import type { ExerciseSeries, ExerciseSession } from '@/domain/logging/exercise-
 import type { Performance } from '@/domain/logging/versus-last'
 import { formatLoad, type WeightUnit } from '@/domain/units/weight'
 import { PageHeader } from '@/components/shared/PageHeader'
+import { PageSkeleton } from '@/components/shared/PageSkeleton'
 import { Button, Card, CardHeading } from '@/components/shared/primitives'
 import { useExerciseHistory, useExercises } from '@/features/train/hooks'
 
@@ -49,7 +50,7 @@ export function ExercisePage() {
   const bodyweight = exercise?.loadBasis === 'bodyweight'
   const title = exercise?.name ?? 'Exercise'
 
-  if (history.data === undefined) return <PageHeader title={title} subtitle="Loading…" />
+  if (history.data === undefined) return <PageSkeleton title={title} />
 
   if (shown === undefined) {
     return (

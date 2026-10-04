@@ -17,6 +17,7 @@ import type { LoggedSet } from '@/domain/logging/workout-log'
 import { describePrescription } from '@/domain/programs/prescription'
 import { formatLoad, type WeightUnit } from '@/domain/units/weight'
 import { PageHeader } from '@/components/shared/PageHeader'
+import { PageSkeleton } from '@/components/shared/PageSkeleton'
 import { Badge, Button, Card } from '@/components/shared/primitives'
 import { cn } from '@/lib/cn'
 import { useExercises, useRepeatSession } from '@/features/train/hooks'
@@ -45,7 +46,7 @@ export function SessionPage() {
   const { settings } = useSettings()
 
   if (detail.data === undefined) {
-    return <PageHeader title="Session" subtitle="Loading…" />
+    return <PageSkeleton title="Session" />
   }
   if (detail.data === null) {
     return (

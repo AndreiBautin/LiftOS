@@ -1,3 +1,4 @@
+import { scrollMotion } from '@/lib/motion'
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 
 import { cn } from '@/lib/cn'
@@ -72,10 +73,9 @@ export function SectionChips({ sections }: { readonly sections: readonly Setting
               aria-current={current === section.id ? 'location' : undefined}
               onClick={(event) => {
                 event.preventDefault()
-                const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
                 document
                   .getElementById(section.id)
-                  ?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
+                  ?.scrollIntoView({ behavior: scrollMotion(), block: 'start' })
                 setCurrent(section.id)
               }}
               className={cn(

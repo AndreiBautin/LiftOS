@@ -81,7 +81,7 @@ export function CompareLiftsPage() {
         {lines.every((line) => line.points.length < 2) ? (
           <p className="text-ink-500 text-sm">Two sessions of each are needed to draw a line.</p>
         ) : (
-          <TwoLines lines={lines} />
+          <TwoLines lines={lines} nameOf={nameOf} />
         )}
         <dl className="mt-4 grid grid-cols-2 gap-3">
           {lines.map((line, at) => {
@@ -131,7 +131,9 @@ function readingsOf(series: readonly ExerciseSeries[] | undefined): readonly Rel
 
 function TwoLines({
   lines,
+  nameOf,
 }: {
+  readonly nameOf: (id: string) => string
   readonly lines: readonly {
     readonly id: ExerciseId | string
     readonly points: readonly RelativePoint[]
@@ -152,10 +154,11 @@ function TwoLines({
   return (
     <svg viewBox={`0 0 ${String(width)} ${String(height)}`} className="w-full" role="img">
       <title>
+        {/* A sentence per line, not every point: the figures under the chart carry the rest. */}
         {lines
           .map(
             (line) =>
-              `${String(line.id)}: ${line.points.map((point) => `${point.date} ${String(point.percent)}%`).join(', ')}`,
+              `${nameOf(String(line.id))}: ${String(line.points.at(-1)?.percent ?? 100)}% of where it started, over ${String(line.points.length)} sessions`,
           )
           .join('; ')}
       </title>

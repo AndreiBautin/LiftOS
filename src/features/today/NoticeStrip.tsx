@@ -1,3 +1,4 @@
+import { scrollMotion } from '@/lib/motion'
 import { Children, useEffect, useRef, useState, type ReactNode } from 'react'
 
 import { cn } from '@/lib/cn'
@@ -63,7 +64,7 @@ export function NoticeStrip({ children }: { readonly children: ReactNode }) {
     const strip = track.current
     const slide = strip === null ? undefined : visible(strip)[index]
     if (strip === null || slide === undefined) return
-    strip.scrollTo({ left: slide.offsetLeft - strip.offsetLeft, behavior: 'smooth' })
+    strip.scrollTo({ left: slide.offsetLeft - strip.offsetLeft, behavior: scrollMotion() })
   }
 
   return (

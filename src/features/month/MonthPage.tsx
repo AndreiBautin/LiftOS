@@ -8,6 +8,7 @@ import { toDayKey } from '@/domain/time/day'
 import { describeHeft, heftOf } from '@/domain/units/heft'
 import { formatLoad, type WeightUnit } from '@/domain/units/weight'
 import { PageHeader } from '@/components/shared/PageHeader'
+import { PageSkeleton } from '@/components/shared/PageSkeleton'
 import { Card, CardHeading } from '@/components/shared/primitives'
 import { ShareSession } from '@/features/share/ShareSession'
 import { useExercises, useRecentWorkouts } from '@/features/train/hooks'
@@ -38,7 +39,7 @@ export function MonthPage() {
   const workouts = useRecentWorkouts(1000)
   const exercises = useExercises()
 
-  if (workouts.data === undefined) return <PageHeader title="Month" subtitle="Loading…" />
+  if (workouts.data === undefined) return <PageSkeleton title="Month" />
   const months = monthsTrained(workouts.data)
   if (month === undefined) {
     const latest = months[0]

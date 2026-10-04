@@ -5,6 +5,7 @@ import { useServices } from '@/app/context'
 import { yearInSquares } from '@/domain/logging/year'
 import { shiftDay, toDayKey } from '@/domain/time/day'
 import { PageHeader } from '@/components/shared/PageHeader'
+import { PageSkeleton } from '@/components/shared/PageSkeleton'
 import { Card } from '@/components/shared/primitives'
 import { useRecentWorkouts } from '@/features/train/hooks'
 import { cn } from '@/lib/cn'
@@ -28,7 +29,7 @@ export function YearPage() {
   const { year = today.slice(0, 4) } = useParams()
   const workouts = useRecentWorkouts(2000)
 
-  if (workouts.data === undefined) return <PageHeader title={year} subtitle="Loading…" />
+  if (workouts.data === undefined) return <PageSkeleton title={year} />
   const squares = yearInSquares(workouts.data, year, today)
   const previous = String(Number(year) - 1)
   const next = String(Number(year) + 1)
@@ -119,7 +120,12 @@ function MonthSquares({
   for (let day = first; day.startsWith(month); day = shiftDay(day, 1)) cells.push(day)
 
   return (
-    <ol className="grid grid-cols-7 gap-[3px]" aria-label={`${monthName(month)} by day`}>
+    /*
+     * Hidden from screen readers: a square per day was 365 lines of "0 sets"
+     * to listen through. The card's month link and its count say the month,
+     * and the month page lists the days.
+     */
+    <ol className="grid grid-cols-7 gap-[3px]" aria-hidden>
       {cells.map((day, at) =>
         day === undefined ? (
           <li key={`lead-${String(at)}`} aria-hidden />
@@ -133,11 +139,7 @@ function MonthSquares({
               day === today && 'ring-ink-50 ring-1',
             )}
             style={{ background: shade(days[day] ?? 0) }}
-          >
-            <span className="sr-only">
-              {day}: {days[day] ?? 0} sets
-            </span>
-          </li>
+          ></li>
         ),
       )}
     </ol>

@@ -9,6 +9,7 @@ import { formatLoad } from '@/domain/units/weight'
 import { MorphText } from '@/components/shared/MorphText'
 import { morphName } from '@/components/shared/morph'
 import { PageHeader } from '@/components/shared/PageHeader'
+import { PageSkeleton } from '@/components/shared/PageSkeleton'
 import { Card } from '@/components/shared/primitives'
 import { useExercises, useRecentWorkouts } from '@/features/train/hooks'
 import { cn } from '@/lib/cn'
@@ -41,7 +42,7 @@ export function RecordsPage() {
   const view = params.get('view') === 'timeline' ? 'timeline' : 'wall'
 
   if (workouts.data === undefined || exercises.data === undefined) {
-    return <PageHeader title="Records" subtitle="Loading…" />
+    return <PageSkeleton title="Records" />
   }
 
   const library = exercises.data

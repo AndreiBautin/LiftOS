@@ -6,6 +6,7 @@ import type { ExerciseId } from '@/domain/ids/ids'
 import { mondayOf, shiftDay, toDayKey } from '@/domain/time/day'
 import { MUSCLE_WEEKS, muscleHistory } from '@/domain/volume/muscle-history'
 import { PageHeader } from '@/components/shared/PageHeader'
+import { PageSkeleton } from '@/components/shared/PageSkeleton'
 import { Card, CardHeading } from '@/components/shared/primitives'
 import { useExercises, useRecentWorkouts } from '@/features/train/hooks'
 
@@ -31,7 +32,7 @@ export function MusclePage() {
   const label = MUSCLE_GROUP_LABELS[muscle]
 
   if (workouts.data === undefined || exercises.data === undefined) {
-    return <PageHeader title={label} subtitle="Loading…" />
+    return <PageSkeleton title={label} />
   }
 
   const library = exercises.data

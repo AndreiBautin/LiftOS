@@ -10,6 +10,7 @@ import { toDayKey } from '@/domain/time/day'
 import { MorphText } from '@/components/shared/MorphText'
 import { morphName } from '@/components/shared/morph'
 import { PageHeader } from '@/components/shared/PageHeader'
+import { PageSkeleton } from '@/components/shared/PageSkeleton'
 import { Card } from '@/components/shared/primitives'
 import { useExercises, useProgram, useRecentWorkouts } from '@/features/train/hooks'
 import { cn } from '@/lib/cn'
@@ -45,7 +46,7 @@ export function LibraryPage() {
   const [show, setShow] = useState<Show>('all')
 
   if (exercises.data === undefined || workouts.data === undefined) {
-    return <PageHeader title="Exercises" subtitle="Loading…" />
+    return <PageSkeleton title="Exercises" />
   }
 
   const scheduled = new Set<ExerciseId>(

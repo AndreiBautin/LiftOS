@@ -1,3 +1,4 @@
+import { scrollMotion } from '@/lib/motion'
 import { BarChart3, Check, ChevronDown, ChevronRight } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -222,7 +223,7 @@ export function ProgramPage() {
                     event.preventDefault()
                     document
                       .getElementById(`day-${String(day.index)}`)
-                      ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                      ?.scrollIntoView({ behavior: scrollMotion(), block: 'start' })
                   }}
                 >
                   {isDone && (

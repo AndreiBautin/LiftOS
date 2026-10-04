@@ -6,6 +6,7 @@ import { blockReport, blockWindow, type BlockLift } from '@/domain/logging/block
 import { shiftDay, toDayKey } from '@/domain/time/day'
 import { formatLoad, type WeightUnit } from '@/domain/units/weight'
 import { PageHeader } from '@/components/shared/PageHeader'
+import { PageSkeleton } from '@/components/shared/PageSkeleton'
 import { Card, CardHeading } from '@/components/shared/primitives'
 import { useExercises, useProgram, useRecentWorkouts, useSchedule } from '@/features/train/hooks'
 import { cn } from '@/lib/cn'
@@ -36,7 +37,7 @@ export function BlockPage() {
   const exercises = useExercises()
 
   if (program.data === undefined || schedule.data === undefined || workouts.data === undefined) {
-    return <PageHeader title="Block" subtitle="Loading…" />
+    return <PageSkeleton title="Block" />
   }
 
   const weeks = program.data.blocks.flatMap((block) => block.weeks)

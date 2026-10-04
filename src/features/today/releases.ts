@@ -1,6 +1,16 @@
 /** Release notes, newest first; `WhatsNew` shows the first once. */
 export const RELEASES: readonly { readonly id: string; readonly items: readonly string[] }[] = [
   {
+    id: '2026-10-07',
+    items: [
+      'Every screen in one place — the grid button beside Settings on the home page.',
+      'The session player’s extra tools now sit behind one ⋯ button on the exercise card.',
+      'A buzz when a set is logged or skipped, a record lands, or rest ends (Settings → Session).',
+      'Settings jumps between its sections from a row of chips, and wider pages fit a desktop.',
+      'Notices fold into one strip that swipes, and pages hold their shape while they load.',
+    ],
+  },
+  {
     id: '2026-10-06',
     items: [
       'Repeat any past session at today’s loads, or build an open one from the library.',

@@ -1,3 +1,4 @@
+import { scrollMotion } from '@/lib/motion'
 import {
   ArrowLeftRight,
   ArrowUpDown,
@@ -167,7 +168,7 @@ export function SessionPlayer({
     if (nav == null || pill == null) return
     nav.scrollTo({
       left: pill.offsetLeft - nav.clientWidth / 2 + pill.clientWidth / 2,
-      behavior: 'smooth',
+      behavior: scrollMotion(),
     })
   }, [index])
   const clearSet = useClearSet(workout.id)
@@ -232,7 +233,7 @@ export function SessionPlayer({
   const go = (to: number) => {
     setIndex(runStart(workout, Math.max(0, Math.min(workout.entries.length - 1, to))))
     setOpenSet(undefined)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    window.scrollTo({ top: 0, behavior: scrollMotion() })
   }
 
   const bodyweightHere =
@@ -758,7 +759,7 @@ export function SessionPlayer({
                     // Straight to it; `go` would clamp against the session before the add.
                     onSuccess: () => {
                       showEntry(stepEnd + 1)
-                      window.scrollTo({ top: 0, behavior: 'smooth' })
+                      window.scrollTo({ top: 0, behavior: scrollMotion() })
                     },
                   },
                 )

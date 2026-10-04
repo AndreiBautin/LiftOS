@@ -57,6 +57,17 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **A page loads as its shape, not as "Loading…"** (`PageSkeleton`,
+  tested): the real header, a hero block and two cards, with one polite
+  status. Eight pages drew a header over the word and then snapped a
+  screen of content in under the thumb. **Scripted scrolls ask
+  `scrollMotion()`** (`lib/motion.ts`): `behavior: 'smooth'` in a script
+  overrides the stylesheet's reduced-motion `scroll-behavior: auto`, and
+  five did. The year's day squares are `aria-hidden` — 365 lines of "0
+  sets" — since the month link and count say the month. An audit script
+  (one `h1`, no skipped heading levels, every control and field named,
+  every `role="img"` labelled or titled) passed on the thirteen
+  screens; an SVG's `<title>` names it, so those are not failures.
 - **The newer pages have a desktop shape, from `lg` only.** Measured at
   1400: Settings ran the full 1356 px with toggles at the far edge, and
   the exercise page, the calculator and the month were one 714 px column
