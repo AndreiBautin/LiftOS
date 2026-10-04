@@ -57,6 +57,17 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **A failed read says what failed** (`ReadFailure` in the shell,
+  `failureSubjects` in `features/errors/subjects.ts`, tested): "Couldn't
+  load your sessions and the programme" rather than "2 things could not
+  be loaded", named from the head of each failed query key (an unknown
+  key reads as "some of your data", never its internal name), with Try
+  again refetching only what failed. Every failed read also logs
+  `read.failed` with the subject and the error's name — never its
+  message — through a `QueryCache` `onError` in `providers.tsx`. Checked
+  by making IndexedDB `get` throw in the preview: the banner named your
+  sessions, the log line landed, and Try again recovered the page once it
+  was restored. **Add a subject when a new query-key head appears.**
 - **A load the plates cannot make offers the nearest they can**
   (`nearestLoadable` in `domain/units/plates.ts`, tested): under the
   weight in the set editor for a barbell or EZ-bar exercise, and under

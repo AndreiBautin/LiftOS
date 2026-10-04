@@ -1,9 +1,11 @@
 import { useIsFetching, useQueryClient } from '@tanstack/react-query'
 import { AlertTriangle } from 'lucide-react'
-import { useSyncExternalStore } from 'react'
+import { useMemo, useSyncExternalStore } from 'react'
 
 import { Button } from '@/components/shared/primitives'
 import { logger } from '@/shared/logging/logger'
+
+import { failureSubjects, joinSubjects } from './subjects'
 
 /**
  * A read that failed, said out loud.
@@ -32,30 +34,40 @@ import { logger } from '@/shared/logging/logger'
  * happening.
  */
 
-/** How many queries are currently in error, watched without polling. */
-function useFailedReads(): number {
+/**
+ * The keys of the queries currently in error, watched without polling.
+ * The snapshot is the keys as a string: `useSyncExternalStore` compares
+ * snapshots by identity, and a fresh array on every read would re-render
+ * forever.
+ */
+function useFailedReads(): readonly (readonly unknown[])[] {
   const client = useQueryClient()
   const cache = client.getQueryCache()
 
   /*
    * `useSyncExternalStore` rather than an effect and a piece of state.
    * The cache is an external store with a subscribe method, which is
-   * precisely what this hook is for — and it means the count cannot be
+   * precisely what this hook is for — and it means the list cannot be
    * read in a render that has already been superseded.
    */
-  return useSyncExternalStore(
+  const snapshot = useSyncExternalStore(
     (notify) => cache.subscribe(notify),
-    () => cache.findAll({ type: 'all' }).filter((query) => query.state.status === 'error').length,
+    () =>
+      JSON.stringify(
+        cache
+          .findAll({ type: 'all' })
+          .filter((query) => query.state.status === 'error')
+          .map((query) => query.queryKey),
+      ),
   )
-}
-
-function summarise(failed: number): string {
-  return `${String(failed)} things could not be loaded.`
+  return useMemo(() => JSON.parse(snapshot) as (readonly unknown[])[], [snapshot])
 }
 
 export function ReadFailure() {
   const client = useQueryClient()
-  const failed = useFailedReads()
+  const keys = useFailedReads()
+  const failed = keys.length
+  const subjects = failureSubjects(keys)
 
   /*
    * A retry already in flight is not another failure to report. Without
@@ -75,11 +87,11 @@ export function ReadFailure() {
       <AlertTriangle size={18} className="text-bad-500 shrink-0" aria-hidden />
       <p className="text-ink-100 flex-1 text-sm">
         {/*
-          The count, because "something went wrong" is the sentence that
-          made this invisible in the first place. One failed read is a
-          screen; twenty is the connection or the account.
+          What did not load, by name: "your sessions and the programme"
+          says whether it is one screen or the whole store, where a count
+          only said how many.
         */}
-        {failed === 1 ? 'Something could not be loaded.' : summarise(failed)}{' '}
+        Couldn’t load {joinSubjects(subjects)}.{' '}
         <span className="text-ink-500">Anything still loading below may not arrive.</span>
       </p>
       <Button

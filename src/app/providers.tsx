@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import { useMemo, useState, type ReactNode } from 'react'
 
@@ -26,6 +26,21 @@ import type { AppServices } from './di'
  * is actively unhelpful.
  */
 const queryClient = new QueryClient({
+  /*
+   * A failed read leaves a line in the log naming what it was about and
+   * how it failed — the head of its key and the error's name, never the
+   * message, which can carry user content. The banner says it on screen;
+   * this is what makes the next one diagnosable.
+   */
+  queryCache: new QueryCache({
+    onError: (error, query) => {
+      const head = query.queryKey[0]
+      logger.warn('read.failed', {
+        subject: typeof head === 'string' ? head : 'unknown',
+        error: error.name,
+      })
+    },
+  }),
   defaultOptions: {
     queries: {
       staleTime: Number.POSITIVE_INFINITY,
