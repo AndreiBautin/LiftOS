@@ -57,6 +57,19 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **Every muscle across a year** (`/muscles`, `/muscles/:year`,
+  `MuscleYearPage`; `muscleYear` in `domain/volume/muscle-year.ts`,
+  tested; "Muscles by week" in `SCREENS`): a row a muscle, a cell a
+  calendar week, lit in four steps of the accent against the year's
+  busiest muscle-week, with the muscles never trained named under it.
+  Counted by `loggedVolume`, so a cell agrees with that muscle's page.
+  Weeks run from the week holding January 1st (which may start in
+  December) to the week holding today or December 31st. **Deload weeks
+  are ringed in violet, found from each session's own `position`** rather
+  than from today's block, so a past deload stays marked after the block
+  moves. **The demo's sessions carry no position**, so the demo shows no
+  rings; checked by planting a deload position on one session, then
+  removing it. Rings sit over the cells: drawn under them they vanished.
 - **A session can be kept by name and started again** ("Keep this
   session" at the foot of a past session's page, `KeepSession`; the
   "Saved sessions" home card, `SavedSessionsCard`; `templateFrom`,

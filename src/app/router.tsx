@@ -6,6 +6,7 @@ import { CalculatorPage } from '@/features/calculator/CalculatorPage'
 import { CompareLiftsPage } from '@/features/compare/CompareLiftsPage'
 import { LibraryPage } from '@/features/library/LibraryPage'
 import { YearPage } from '@/features/year/YearPage'
+import { MuscleYearPage } from '@/features/muscle/MuscleYearPage'
 import { MusclePage } from '@/features/muscle/MusclePage'
 import { WrappedPage } from '@/features/wrapped/WrappedPage'
 import { RecordsPage } from '@/features/records/RecordsPage'
@@ -90,6 +91,8 @@ export const router = createBrowserRouter(
         { path: 'compare', element: <CompareLiftsPage /> },
         { path: 'calculator', element: <CalculatorPage /> },
         { path: 'muscle/:id', element: <MusclePage /> },
+        { path: 'muscles', element: <MuscleYearPage /> },
+        { path: 'muscles/:year', element: <MuscleYearPage /> },
         { path: 'wrapped/:period', element: <WrappedPage /> },
         { path: 'month', element: <MonthPage /> },
         { path: 'month/:month', element: <MonthPage /> },

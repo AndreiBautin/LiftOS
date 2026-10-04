@@ -6,6 +6,7 @@ import {
   Dumbbell,
   GitCompareArrows,
   Gift,
+  Grid3x3,
   Home,
   Layers,
   Settings,
@@ -118,6 +119,15 @@ export const SCREENS: readonly Screen[] = [
     icon: BarChart3,
     keywords: 'year calendar streak',
     to: '/year',
+  },
+  {
+    id: 'muscles',
+    label: 'Muscles by week',
+    blurb: 'Every muscle across the year',
+    group: 'Look back',
+    icon: Grid3x3,
+    keywords: 'muscle heat map year volume landscape',
+    to: '/muscles',
   },
   {
     id: 'wrapped',
