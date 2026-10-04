@@ -116,6 +116,17 @@ SessionPage.tsx`, from `sessionDetail`). History rows could be deleted
   finished the minute it started reads as of unknown length rather
   than "0 min"; the demo seed stamped every session that way until this
   page showed it, and now gives each 45–75 minutes.
+- **The coming sessions export to a calendar** (Calendar on the Program
+  page's "Next four weeks", `CalendarExport`; `calendarFile` in
+  `domain/programs/calendar.ts`, tested): a start time and a length, then
+  a `.ics` of the runway's own days from today on. **Floating local
+  times** (a session is at six wherever the lifter is that week), **a UID
+  per day** so a second import updates rather than doubles, text escaped
+  and lines folded at 75. Folding counts characters, not octets, so a
+  line heavy with em dashes can run a few bytes long — lenient calendars
+  take it, a pedantic one might not. Checked by catching the file at the
+  link rather than downloading it: 15 events from a Saturday, the first on
+  Monday at 18:00.
 - **A deleted session can be taken back for five seconds** (the player's
   `UndoToast` on the history list; `restoreWorkout` beside
   `deleteWorkout`, tested). The delete returns the record it removed, and

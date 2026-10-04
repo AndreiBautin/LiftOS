@@ -7,6 +7,8 @@ import { cn } from '@/lib/cn'
 
 import { splitDayLabel } from '@/features/train/useNextSession'
 
+import { CalendarExport } from './CalendarExport'
+
 const WEEKS = 4
 const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
@@ -38,8 +40,12 @@ export function Runway({
   const deloadIn = weeks.findIndex((week) => week.isDeload)
 
   return (
-    <Card className="mt-4">
-      <CardHeading icon={<CalendarRange size={16} aria-hidden />} title="Next four weeks" />
+    <Card className="relative mt-4">
+      <CardHeading
+        icon={<CalendarRange size={16} aria-hidden />}
+        title="Next four weeks"
+        action={<CalendarExport program={program} blockStartedOn={blockStartedOn} today={today} />}
+      />
       <p className="text-ink-500 mb-3 text-xs">
         {deloadIn === -1
           ? 'No deload in the next four weeks.'
