@@ -57,6 +57,15 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **A card names what the next session is ripe for** (`RipeCard`, home
+  card `ripe`; `ripeLifts` in `domain/logging/ripe.ts`, tested): each lift
+  whose planned bar is heavier than its last top set, drawn as the old bar
+  climbing to the new, and a gold **Heaviest** where that bar beats every
+  bar the lift has carried. Read off the session preview, so it names only
+  what Start will ask for; silent when nothing moves. **No rep records**:
+  double progression plans one rep past last time, so at the top bar
+  nearly every lift is a planned rep record every session — the first
+  version tagged four of four and said nothing.
 - **A rest day's hero says how rested the next session's muscles are**
   (`RestedFor`, from `dayMuscles` in `domain/programs/day-muscles.ts`,
   tested): each muscle the next session trains directly, in session

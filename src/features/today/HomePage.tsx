@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { RipeCard } from '@/features/train/RipeCard'
 import { NoticeStrip } from './NoticeStrip'
 import { arrangeCards } from '@/domain/settings/home-cards'
 import { ArrangeCards } from './ArrangeCards'
@@ -160,6 +161,7 @@ const HOME_CARDS: readonly {
   readonly node: React.ReactNode
 }[] = [
   { key: 'session', label: 'Next session', node: <NextSessionCard /> },
+  { key: 'ripe', label: 'Ripe for the next session', node: <RipeCard /> },
   { key: 'week', label: 'This week', node: <WeekCard /> },
   { key: 'last-week', label: 'Last week', node: <LastWeekCard /> },
   { key: 'lately', label: 'Lately', node: <BodyMapCard /> },
