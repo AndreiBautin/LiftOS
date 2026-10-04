@@ -215,13 +215,17 @@ function GlidePath({
         points={actual
           .map((point) => `${String(x(point.date))},${String(y(point.value))}`)
           .join(' ')}
+        className="line-draw"
+        pathLength={1}
         fill="none"
         stroke={colour}
         strokeWidth={2}
         strokeLinejoin="round"
         strokeLinecap="round"
       />
-      {last !== undefined && <circle cx={x(last.date)} cy={y(last.value)} r={3} fill={colour} />}
+      {last !== undefined && (
+        <circle className="line-end" cx={x(last.date)} cy={y(last.value)} r={3} fill={colour} />
+      )}
       <circle
         cx={x(goal.by)}
         cy={y(goal.load)}

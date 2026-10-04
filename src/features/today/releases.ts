@@ -1,6 +1,16 @@
 /** Release notes, newest first; `WhatsNew` shows the first once. */
 export const RELEASES: readonly { readonly id: string; readonly items: readonly string[] }[] = [
   {
+    id: '2026-10-08',
+    items: [
+      'A new look: bundled type, grained surfaces, and a backdrop that follows the time of day.',
+      'Every exercise wears a glyph of its movement; the hero draws the lift the day leads with.',
+      'Every session has a crest — its exercises, sets and records as one emblem, on the share card too.',
+      'The loaded bar is drawn as iron, plates land with a clunk, and a logged set sweeps its row.',
+      'Charts draw themselves in, with one colour per lift everywhere.',
+    ],
+  },
+  {
     id: '2026-10-07',
     items: [
       'Every screen in one place — the grid button beside Settings on the home page.',

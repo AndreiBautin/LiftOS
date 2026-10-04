@@ -1512,12 +1512,6 @@ html {
   animation: peek-fade 240ms ease-out both;
 }
 
-.peek-line {
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  animation: fan-draw 700ms 150ms cubic-bezier(0.3, 0.7, 0.2, 1) forwards;
-}
-
 @keyframes peek-rise {
   from {
     transform: translateY(100%);
@@ -1560,13 +1554,6 @@ html {
     opacity: 0.4;
     transform: scale(0.85);
   }
-}
-
-/* The comparison's lines draw out once from their start. */
-.fan-line-path {
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  animation: fan-draw 900ms cubic-bezier(0.3, 0.7, 0.2, 1) forwards;
 }
 
 /* The records timeline's nodes rise in once, newest first. */

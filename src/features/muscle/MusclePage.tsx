@@ -148,7 +148,13 @@ function Tide({ weeks, today }: { readonly weeks: readonly number[]; readonly to
         fill="url(#tide-fill)"
         className="tide-rise"
       />
-      <path d={line} className="stroke-accent-400 fill-none" strokeWidth="2" />
+      <path
+        d={line}
+        className="stroke-accent-400 line-draw fill-none"
+        pathLength={1}
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
       {weeks[busiest] !== undefined && (weeks[busiest] ?? 0) > 0 && (
         <g>
           <circle cx={x(busiest)} cy={y(weeks[busiest] ?? 0)} r="3.5" className="fill-ink-50" />

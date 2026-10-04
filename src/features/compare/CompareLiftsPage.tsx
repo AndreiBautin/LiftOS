@@ -159,6 +159,14 @@ function TwoLines({
           )
           .join('; ')}
       </title>
+      <defs>
+        {lines.map((_, at) => (
+          <linearGradient key={at} id={`compare-under-${String(at)}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor={COLOURS[at]} stopOpacity="0.22" />
+            <stop offset="1" stopColor={COLOURS[at]} stopOpacity="0" />
+          </linearGradient>
+        ))}
+      </defs>
       <line
         x1="10"
         x2={width - 60}
@@ -179,20 +187,38 @@ function TwoLines({
           )
           .join(' ')
         const last = line.points.at(-1)
+        const first = line.points[0]
         return (
-          <g key={`${String(line.id)}-${String(at)}`}>
+          <g
+            key={`${String(line.id)}-${String(at)}`}
+            style={{ '--line-delay': `${String(at * 200)}ms` } as React.CSSProperties}
+          >
+            {first !== undefined && last !== undefined && (
+              <path
+                className="area-fade"
+                d={`${path} L ${String(x(last.date))} ${String(height - 22)} L ${String(x(first.date))} ${String(height - 22)} Z`}
+                fill={`url(#compare-under-${String(at)})`}
+              />
+            )}
             <path
               d={path}
               fill="none"
               stroke={COLOURS[at]}
               strokeWidth="2.25"
               strokeLinejoin="round"
-              className="fan-line-path"
+              strokeLinecap="round"
+              className="line-draw"
               pathLength={1}
             />
             {last !== undefined && (
               <>
-                <circle cx={x(last.date)} cy={y(last.percent)} r="3.5" fill={COLOURS[at]} />
+                <circle
+                  className="line-end"
+                  cx={x(last.date)}
+                  cy={y(last.percent)}
+                  r="3.5"
+                  fill={COLOURS[at]}
+                />
                 <text
                   x={x(last.date) + 6}
                   y={y(last.percent) + (at === 0 ? -4 : 10)}

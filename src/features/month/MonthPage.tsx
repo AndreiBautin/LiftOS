@@ -1,4 +1,5 @@
 import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Play, Star } from 'lucide-react'
+import { LIFT_COLOURS } from '@/features/charts/palette'
 import { Link, Navigate, useParams } from 'react-router-dom'
 
 import { useServices, useSettings } from '@/app/context'
@@ -15,11 +16,6 @@ import { useExercises, useRecentWorkouts } from '@/features/train/hooks'
 import { cn } from '@/lib/cn'
 
 const LIFT_NAMES = { squat: 'Squat', bench: 'Bench press', deadlift: 'Deadlift' } as const
-const LIFT_COLOURS = {
-  squat: 'var(--color-accent-400)',
-  bench: 'var(--color-cool-500)',
-  deadlift: 'var(--color-warn-500)',
-} as const
 
 /**
  * A month of training on one page (`monthRecap`): the totals against the

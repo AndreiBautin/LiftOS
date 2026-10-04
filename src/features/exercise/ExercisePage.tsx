@@ -239,6 +239,17 @@ function Staircase({
         role="img"
         aria-label={`${byReps ? 'Reps' : 'Top-set load'} over the last ${String(sessions.length)} sessions, from ${String(values[0])} to ${String(values.at(-1))}`}
       >
+        <defs>
+          <linearGradient id="staircase-under" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="var(--color-accent-500)" stopOpacity="0.24" />
+            <stop offset="1" stopColor="var(--color-accent-500)" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path
+          className="area-fade"
+          d={`${path} V${String(H - pad.bottom)} H${x(0).toFixed(1)} Z`}
+          fill="url(#staircase-under)"
+        />
         <path
           className="line-draw"
           d={path}

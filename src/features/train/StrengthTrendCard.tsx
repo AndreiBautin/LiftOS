@@ -1,4 +1,5 @@
 import { TrendingUp } from 'lucide-react'
+import { LIFT_COLOURS } from '@/features/charts/palette'
 import { useId, useState, type PointerEvent } from 'react'
 
 import { useSettings } from '@/app/context'
@@ -24,9 +25,9 @@ const LIFTS: readonly {
   readonly label: string
   readonly colour: string
 }[] = [
-  { lift: 'squat', label: 'Squat', colour: 'var(--color-accent-400)' },
-  { lift: 'bench', label: 'Bench', colour: 'var(--color-cool-500)' },
-  { lift: 'deadlift', label: 'Deadlift', colour: 'var(--color-warn-500)' },
+  { lift: 'squat', label: 'Squat', colour: LIFT_COLOURS.squat },
+  { lift: 'bench', label: 'Bench', colour: LIFT_COLOURS.bench },
+  { lift: 'deadlift', label: 'Deadlift', colour: LIFT_COLOURS.deadlift },
 ]
 
 const WIDTH = 600

@@ -173,15 +173,24 @@ function RepCurve({
   return (
     <svg viewBox={`0 0 ${String(width)} ${String(height)}`} className="w-full" role="img">
       <title>{rows.map((row) => `${String(row.reps)} reps: ${String(row.load)}`).join('; ')}</title>
+      <defs>
+        <linearGradient id="rep-curve-under" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="var(--color-accent-500)" stopOpacity="0.28" />
+          <stop offset="1" stopColor="var(--color-accent-500)" stopOpacity="0" />
+        </linearGradient>
+      </defs>
       <path
         d={`${path} L ${String(x(maxReps))} ${String(height - 20)} L ${String(x(1))} ${String(height - 20)} Z`}
-        className="fill-accent-500/10"
+        className="area-fade"
+        fill="url(#rep-curve-under)"
       />
       <path
         d={path}
-        className="stroke-accent-400 fill-none"
+        className="stroke-accent-400 line-draw fill-none"
+        pathLength={1}
         strokeWidth="2"
         strokeLinejoin="round"
+        strokeLinecap="round"
       />
       {rows.map((row) => (
         <g key={row.reps}>

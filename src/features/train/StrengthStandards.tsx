@@ -1,5 +1,6 @@
 import { Trophy } from 'lucide-react'
 
+import { LIFT_COLOURS as CHART_LIFT_COLOURS } from '@/features/charts/palette'
 import { Link } from 'react-router-dom'
 import { useServices, useSettings } from '@/app/context'
 import { STRENGTH_LIFT_SLUGS } from '@/domain/exercises/catalogue'
@@ -28,9 +29,9 @@ import { useRecentWorkouts } from './hooks'
  * the two cards read as one subject.
  */
 const LIFT_COLOURS: Readonly<Record<string, string>> = {
-  Squat: 'var(--color-accent-400)',
-  'Bench press': 'var(--color-cool-500)',
-  Deadlift: 'var(--color-warn-500)',
+  Squat: CHART_LIFT_COLOURS.squat,
+  'Bench press': CHART_LIFT_COLOURS.bench,
+  Deadlift: CHART_LIFT_COLOURS.deadlift,
 }
 
 /** The card's row names, as the trend names the same lifts. */

@@ -168,13 +168,20 @@ function Sparkline({
           .map((point) => `${point.date}: ${describe(point.top, bodyweight, units)}`)
           .join('; ')}
       </title>
+      <defs>
+        <linearGradient id="peek-under" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="var(--color-accent-500)" stopOpacity="0.28" />
+          <stop offset="1" stopColor="var(--color-accent-500)" stopOpacity="0" />
+        </linearGradient>
+      </defs>
       <path
         d={`${path} L ${String(x(values.length - 1))} 80 L ${String(x(0))} 80 Z`}
-        className="fill-accent-500/10"
+        className="area-fade"
+        fill="url(#peek-under)"
       />
       <path
         d={path}
-        className="stroke-accent-400 peek-line fill-none"
+        className="stroke-accent-400 line-draw fill-none"
         strokeWidth="2"
         strokeLinejoin="round"
         pathLength={1}

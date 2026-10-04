@@ -57,6 +57,16 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **The line charts speak one language**: a line draws itself in once
+  (`.line-draw`, `pathLength=1`), a gradient wash fades in under it
+  (`.area-fade`), and its end point lands after (`.line-end`), staggered
+  by `--line-delay` where there are several — on the strength chart,
+  the comparison, the staircase, the peek sparkline, the rep curve, the
+  goal glide path and the muscle tide. Two private dialects of the same
+  effect (`.fan-line-path`, `.peek-line`) are gone. **One lift palette**
+  (`LIFT_COLOURS` in `features/charts/palette.ts`) replaced four copies,
+  so a squat is the same cyan everywhere. Shapes stay each chart's own —
+  the language is the motion and the colour, not a shared component.
 - **Every session has a crest** (`sessionCrest` in `domain/logging/
 crest.ts`, tested; `SessionCrest` in `features/history`): a ring cut into
   a segment per exercise as long as its share of the working sets — sets,
