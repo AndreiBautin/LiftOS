@@ -57,6 +57,14 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **A rest day's hero says how rested the next session's muscles are**
+  (`RestedFor`, from `dayMuscles` in `domain/programs/day-muscles.ts`,
+  tested): each muscle the next session trains directly, in session
+  order, with a three-cell bar filled by the body map's own bands and
+  the days since for a screen reader. **Days since, nothing more** — the
+  app measures no readiness and the bar claims none. Only on a rest day:
+  on a training day the session is the news, and a rest day's hero had
+  nothing to say but "Rest day". Warm-ups and conditioning are left out.
 - **History can be read as a wall of crests** (List / Crests on the
   history card, `CrestWall`): every session's crest a month at a time,
   each opening its session, abandoned ones faded. Search and the day

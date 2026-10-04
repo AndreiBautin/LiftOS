@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom'
 
 import { useServices, useSettings } from '@/app/context'
 import { EverythingSheet } from '@/features/navigation/EverythingSheet'
+import { RestedFor } from './RestedFor'
 import { Button } from '@/components/shared/primitives'
 import { buttonStyles } from '@/components/shared/styles'
 import { weekIndexToStartOn } from '@/domain/programs/schedule'
@@ -14,6 +15,7 @@ import { GLYPH_DOTS, GLYPH_PATHS } from '@/features/glyphs/glyph-paths'
 import {
   useExercises,
   useJumpToWeek,
+  useMuscleRecency,
   useStartWorkout,
   useWeekSummary,
 } from '@/features/train/hooks'
@@ -52,6 +54,7 @@ export function HeroBanner() {
   const startWorkout = useStartWorkout()
   const exercises = useExercises()
   const jumpToWeek = useJumpToWeek()
+  const recency = useMuscleRecency()
   const [everything, setEverything] = useState(false)
   const closeEverything = useCallback(() => {
     setEverything(false)
@@ -196,6 +199,14 @@ export function HeroBanner() {
           </div>
           {day?.focus !== undefined && (
             <p className="text-ink-300 mt-2 max-w-prose text-sm">{day.focus}</p>
+          )}
+          {restDay && !doneToday && day !== undefined && recency.data !== undefined && (
+            <RestedFor
+              day={day}
+              library={exercises.data ?? []}
+              recency={recency.data}
+              when={when === 'tomorrow' ? 'tomorrow' : (label?.weekday ?? 'the next session')}
+            />
           )}
 
           <div className="mt-5 flex flex-wrap items-center gap-2">
