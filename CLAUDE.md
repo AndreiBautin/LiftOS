@@ -116,6 +116,16 @@ SessionPage.tsx`, from `sessionDetail`). History rows could be deleted
   finished the minute it started reads as of unknown length rather
   than "0 min"; the demo seed stamped every session that way until this
   page showed it, and now gives each 45–75 minutes.
+- **A deleted session can be taken back for five seconds** (the player's
+  `UndoToast` on the history list; `restoreWorkout` beside
+  `deleteWorkout`, tested). The delete returns the record it removed, and
+  Undo **saves** it again — stamped now, so newer than the tombstone its
+  deletion wrote, which by `shouldAccept` no longer covers it: the
+  session is back for good, an old backup imported later cannot remove it
+  again, and a device that already saw the deletion takes the newer record
+  next round. The tombstone is left in place, because removing one is not
+  an operation the store offers and none is needed. Checked in the
+  preview by the stamps: deleted at :35.1, restored at :36.0.
 - **An open session can be reordered** (`ReorderPanel` at the foot of
   the player, "Change the order"; `moveEntry` in `domain/logging/
 reorder.ts` and `reorderSession`, tested): up and down per exercise,

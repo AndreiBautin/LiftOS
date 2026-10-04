@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useServices } from '@/app/context'
 import {
   deleteWorkout,
+  restoreWorkout,
   type DeleteWorkoutResult,
 } from '@/application/use-cases/training/delete-workout'
 import {
@@ -12,6 +13,7 @@ import {
 import { sessionDetail } from '@/application/use-cases/training/session-detail'
 import { noteWorkout } from '@/application/use-cases/training/note-workout'
 import type { WorkoutId } from '@/domain/ids/ids'
+import type { WorkoutLog } from '@/domain/logging/workout-log'
 import { logger } from '@/shared/logging/logger'
 
 /**
@@ -33,6 +35,19 @@ export function useDeleteWorkout() {
         outcome: result.kind,
         workingSets: result.kind === 'deleted' ? result.workingSets : 0,
       })
+      void client.invalidateQueries({ queryKey: ['workouts'] })
+    },
+  })
+}
+
+/** Puts a just-deleted session back, for the undo; see `restoreWorkout`. */
+export function useRestoreWorkout() {
+  const services = useServices()
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (workout: WorkoutLog) => restoreWorkout(workout, services),
+    onSuccess: (outcome) => {
+      logger.info('workout.restore', { outcome })
       void client.invalidateQueries({ queryKey: ['workouts'] })
     },
   })

@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { MorphText } from '@/components/shared/MorphText'
 import { morphName } from '@/components/shared/morph'
 import { History, RotateCcw, Search, Star, Trash2 } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import { useServices, useSettings } from '@/app/context'
 import type { WorkoutId } from '@/domain/ids/ids'
@@ -23,7 +23,8 @@ import { splitDayLabel } from '@/features/train/useNextSession'
 import { cn } from '@/lib/cn'
 import { Link } from 'react-router-dom'
 
-import { useDeleteWorkout, useReopenWorkout } from './hooks'
+import { useDeleteWorkout, useReopenWorkout, useRestoreWorkout } from './hooks'
+import { UndoToast } from '@/features/train/UndoToast'
 
 /**
  * The sessions logged, newest first, with the ways to take one back.
@@ -46,6 +47,15 @@ export function TrainingHistory() {
   const services = useServices()
   const { settings } = useSettings()
   const deleteWorkout = useDeleteWorkout()
+  const restoreWorkout = useRestoreWorkout()
+  /** The session just deleted, kept for the few seconds its Undo shows. */
+  const [deleted, setDeleted] = useState<{ workout: WorkoutLog; stamp: number } | undefined>(
+    undefined,
+  )
+  /* Stable, or every render of the list would restart the toast's clock. */
+  const dismissDeleted = useCallback(() => {
+    setDeleted(undefined)
+  }, [])
   const reopenWorkout = useReopenWorkout()
   const [showAll, setShowAll] = useState(false)
   const [filter, setFilter] = useState<HistoryFilter>(NO_FILTER)
@@ -104,16 +114,39 @@ export function TrainingHistory() {
 
   if (workouts.data === undefined) return null
 
+  /*
+   * **A delete can be taken back for five seconds**, the toast the player
+   * uses after a log: the record is put back as it was (`restoreWorkout`),
+   * newer than the deletion it undoes.
+   */
+  const undoToast =
+    deleted === undefined ? null : (
+      <UndoToast
+        label={`Deleted ${deleted.workout.title}`}
+        stamp={deleted.stamp}
+        raised={false}
+        onDone={dismissDeleted}
+        onUndo={() => {
+          restoreWorkout.mutate(deleted.workout)
+          setDeleted(undefined)
+        }}
+      />
+    )
+
   if (sessions.length === 0) {
     return (
-      <Empty title="Nothing logged yet">
-        <p>Finish a session and it will appear here.</p>
-      </Empty>
+      <>
+        {undoToast}
+        <Empty title="Nothing logged yet">
+          <p>Finish a session and it will appear here.</p>
+        </Empty>
+      </>
     )
   }
 
   return (
     <Card>
+      {undoToast}
       <CardHeading
         icon={<History size={16} aria-hidden />}
         title="Recent sessions"
@@ -157,8 +190,11 @@ export function TrainingHistory() {
               }}
               onConfirm={() => {
                 deleteWorkout.mutate(workout.id, {
-                  onSuccess: () => {
+                  onSuccess: (result) => {
                     setConfirming(undefined)
+                    if (result.kind === 'deleted') {
+                      setDeleted({ workout: result.workout, stamp: services.clock.now().getTime() })
+                    }
                   },
                 })
               }}

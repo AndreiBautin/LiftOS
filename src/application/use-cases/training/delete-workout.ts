@@ -1,5 +1,5 @@
 import type { WorkoutId } from '@/domain/ids/ids'
-import { totalWorkingSets } from '@/domain/logging/workout-log'
+import { totalWorkingSets, type WorkoutLog } from '@/domain/logging/workout-log'
 import type { WorkoutRepository } from '@/domain/repositories/ports'
 
 /**
@@ -20,7 +20,9 @@ import type { WorkoutRepository } from '@/domain/repositories/ports'
  * knows they never trained. History that a lifter has to mentally
  * discount is worse than history with a gap in it.
  *
- * Deliberately not undoable, and deliberately not paired with anything
+ * **Undoable for a few seconds, by putting the record back** — the result
+ * carries what was removed, and `restoreWorkout` saves it again. Not
+ * paired with anything
  * that moves the program. Deleting a record says the record was wrong; it
  * says nothing about where the lifter is in their block, and quietly
  * rewinding the position from here would make one destructive action into
@@ -32,8 +34,9 @@ export interface DeleteWorkoutDeps {
 }
 
 export type DeleteWorkoutResult =
-  /** The record was removed. `workingSets` is what went with it. */
-  { readonly kind: 'deleted'; readonly workingSets: number } | { readonly kind: 'not-found' }
+  /** The record was removed. `workingSets` is what went with it; `workout` is the way back. */
+  | { readonly kind: 'deleted'; readonly workingSets: number; readonly workout: WorkoutLog }
+  | { readonly kind: 'not-found' }
 
 export async function deleteWorkout(
   workoutId: WorkoutId,
@@ -45,5 +48,25 @@ export async function deleteWorkout(
   const workingSets = totalWorkingSets(workout)
   await deps.workouts.remove(workout.id)
 
-  return { kind: 'deleted', workingSets }
+  return { kind: 'deleted', workingSets, workout }
+}
+
+/**
+ * A deleted session put back exactly as it was, for the undo after a
+ * delete.
+ *
+ * **Saved, not restored**: `save` stamps it now, later than the tombstone
+ * its deletion wrote, and a tombstone covers only a record no newer than
+ * itself (`shouldAccept`) — so the session is back for good, an old
+ * backup imported later cannot take it away again, and another device
+ * that saw the deletion takes the newer record on its next round. A
+ * record already here (a second undo) is left alone.
+ */
+export async function restoreWorkout(
+  workout: WorkoutLog,
+  deps: DeleteWorkoutDeps,
+): Promise<'restored' | 'already-here'> {
+  if ((await deps.workouts.byId(workout.id)) !== undefined) return 'already-here'
+  await deps.workouts.save(workout)
+  return 'restored'
 }
