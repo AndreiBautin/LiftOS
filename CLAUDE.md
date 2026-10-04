@@ -57,6 +57,16 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **The loaded bar is drawn as iron** (`PlateLoader`): each plate has a
+  raised lip and a darker hub where the sleeve passes, the collars a
+  machined ridge, and the shaft knurling (an SVG pattern) on two grip
+  stretches either side of a smooth centre. **Plates land with a clunk**:
+  they slide on, overshoot the one before by a hair and settle back, once
+  per load. **A logged set sweeps** (`SetSweep` in `SetRow`): a band of
+  the good colour crosses the row once, mounted with the completion and
+  decided in the state initializer to be fresh (three seconds), the
+  `RecordBurst` rule, so a revisited exercise does not sweep again — that
+  last part follows from the rule and was not re-measured.
 - **The hero draws the day** (`HeroBanner`): beside the session's name
   a **medallion of its lead lift** — the competition lift, else the first
   real exercise — its movement glyph tracing itself in once

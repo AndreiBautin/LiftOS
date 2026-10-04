@@ -11,7 +11,7 @@ import { describePrescription } from '@/domain/programs/prescription'
 import { formatLoad } from '@/domain/units/weight'
 import type { WeightUnit } from '@/domain/units/weight'
 import { Badge, Button } from '@/components/shared/primitives'
-import { useSettings } from '@/app/context'
+import { useServices, useSettings } from '@/app/context'
 import { cn } from '@/lib/cn'
 
 import { usePreviousSet, usePriorSets } from './hooks'
@@ -171,12 +171,13 @@ export function SetRow(props: Props) {
       >
         <div
           className={cn(
-            'flex items-stretch overflow-hidden rounded-xl border transition-colors',
+            'relative flex items-stretch overflow-hidden rounded-xl border transition-colors',
             done && 'border-good-500/30 bg-good-500/10',
             skipped && 'border-ink-800 bg-ink-850 opacity-60',
             !done && !skipped && 'border-ink-800 bg-ink-850 hover:border-ink-700',
           )}
         >
+          {done && <SetSweep key={set.completedAt} completedAt={set.completedAt} />}
           <button
             type="button"
             onClick={onOpen}
@@ -414,4 +415,22 @@ function SetEditorPanel({
 function describeLoad(load: number | undefined, units: WeightUnit, bodyweight: boolean): string {
   if (bodyweight) return load === undefined || load <= 0 ? 'BW' : `BW + ${formatLoad(load, units)}`
   return load === undefined ? '—' : formatLoad(load, units)
+}
+
+/** How fresh a logged set must be to sweep — the tap, not a revisit. */
+const SWEEP_FRESH_MS = 3000
+
+/**
+ * The sweep across a row as its set is logged. Mounted with the completion
+ * (keyed on it) and decided once, in the state initializer, so paging back
+ * to an exercise logged a minute ago does not sweep its rows again.
+ */
+function SetSweep({ completedAt }: { readonly completedAt: string | undefined }) {
+  const { clock } = useServices()
+  const [live] = useState(
+    () =>
+      completedAt !== undefined &&
+      clock.now().getTime() - Date.parse(completedAt) <= SWEEP_FRESH_MS,
+  )
+  return live ? <span className="set-sweep" aria-hidden /> : null
 }

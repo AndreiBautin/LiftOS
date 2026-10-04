@@ -49,6 +49,11 @@ const WIDTHS = [16, 14, 12, 9, 7, 6, 5]
 const VIEW = { width: 320, height: 82 }
 const MID = VIEW.height / 2
 const COLLAR_INNER = { left: 112, right: 208 }
+/** Where the hands go: two knurled stretches either side of a smooth centre. */
+const KNURL_ZONES = [
+  [118, 150],
+  [170, 202],
+] as const
 const SLEEVE_START = { left: 104, right: 216 }
 
 export function PlateLoader({
@@ -121,6 +126,10 @@ export function PlateLoader({
             <stop offset="0" stopColor="oklch(0.82 0.01 250)" />
             <stop offset="1" stopColor="oklch(0.48 0.01 250)" />
           </linearGradient>
+          {/* Knurling: fine crossed hatching where the hands go. */}
+          <pattern id="knurl" width="3" height="3" patternUnits="userSpaceOnUse">
+            <path d="M0 3 3 0M-1 1 1-1M2 4 4 2" stroke="oklch(0.3 0.01 250)" strokeWidth="0.6" />
+          </pattern>
         </defs>
 
         {/* Shaft, sleeves and collars. */}
@@ -148,8 +157,31 @@ export function PlateLoader({
           rx="2"
           fill="url(#bar-steel)"
         />
+        {KNURL_ZONES.map(([from, to]) => (
+          <rect
+            key={from}
+            x={from}
+            y={MID - 2.5}
+            width={to - from}
+            height="5"
+            fill="url(#knurl)"
+            opacity="0.75"
+          />
+        ))}
         {[COLLAR_INNER.left - 8, COLLAR_INNER.right + 2].map((at) => (
-          <rect key={at} x={at} y={MID - 8} width="6" height="16" rx="1.5" fill="url(#bar-steel)" />
+          <g key={at}>
+            <rect x={at} y={MID - 8} width="6" height="16" rx="1.5" fill="url(#bar-steel)" />
+            {/* The collar's machined ridge catches the light. */}
+            <rect
+              x={at + 1}
+              y={MID - 7}
+              width="1.2"
+              height="14"
+              rx="0.6"
+              fill="white"
+              opacity="0.35"
+            />
+          </g>
         ))}
 
         {placed.flatMap((one) =>
@@ -181,6 +213,27 @@ export function PlateLoader({
                   height={one.height}
                   rx="2"
                   fill="url(#plate-sheen)"
+                />
+                {/* The raised lip a plate's edge shows from the side. */}
+                <rect
+                  x={plateX + 1}
+                  y={MID - one.height / 2 + 1}
+                  width={Math.max(0, one.width - 2)}
+                  height={one.height - 2}
+                  rx="1.4"
+                  fill="none"
+                  stroke="white"
+                  strokeOpacity="0.22"
+                  strokeWidth="0.7"
+                />
+                {/* The hub, where the sleeve passes through. */}
+                <rect
+                  x={plateX}
+                  y={MID - 5}
+                  width={one.width}
+                  height="10"
+                  fill="black"
+                  opacity="0.18"
                 />
               </g>
             )

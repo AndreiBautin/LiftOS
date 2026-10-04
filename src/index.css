@@ -1229,23 +1229,70 @@ html {
  * The plate loader: each plate slides along the sleeve from its outer end
  * and seats against the one before, in loading order (`--plate-delay`).
  */
+/* A plate slides on, hits the one before it, and settles back a hair —
+   the clunk of iron on iron, drawn once per load. */
 @keyframes plate-slide-left {
-  from {
+  0% {
     opacity: 0;
     transform: translateX(-60px);
+  }
+  62% {
+    opacity: 1;
+    transform: translateX(2.5px);
+  }
+  80% {
+    transform: translateX(-1px);
+  }
+  100% {
+    transform: translateX(0);
   }
 }
 
 @keyframes plate-slide-right {
-  from {
+  0% {
     opacity: 0;
     transform: translateX(60px);
+  }
+  62% {
+    opacity: 1;
+    transform: translateX(-2.5px);
+  }
+  80% {
+    transform: translateX(1px);
+  }
+  100% {
+    transform: translateX(0);
   }
 }
 
 .plate-on-left,
 .plate-on-right {
-  animation: 520ms cubic-bezier(0.22, 1.2, 0.36, 1) var(--plate-delay, 0ms) both;
+  animation: 600ms cubic-bezier(0.33, 0, 0.2, 1) var(--plate-delay, 0ms) both;
+}
+
+/* A set logged: a band of the good colour sweeps across its row, once. */
+@keyframes set-sweep {
+  from {
+    transform: translateX(-100%);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.set-sweep {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklab, var(--color-good-500) 32%, transparent) 45%,
+    transparent 75%
+  );
+  animation: set-sweep 750ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
 .plate-on-left {
