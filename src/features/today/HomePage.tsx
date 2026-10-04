@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { AdherenceCard } from '@/features/train/AdherenceCard'
 import { RipeCard } from '@/features/train/RipeCard'
 import { NoticeStrip } from './NoticeStrip'
 import { arrangeCards } from '@/domain/settings/home-cards'
@@ -164,6 +165,7 @@ const HOME_CARDS: readonly {
   { key: 'ripe', label: 'Ripe for the next session', node: <RipeCard /> },
   { key: 'week', label: 'This week', node: <WeekCard /> },
   { key: 'last-week', label: 'Last week', node: <LastWeekCard /> },
+  { key: 'adherence', label: 'Showing up', node: <AdherenceCard /> },
   { key: 'lately', label: 'Lately', node: <BodyMapCard /> },
   { key: 'balance', label: 'Balance', node: <BalanceCard /> },
   { key: 'standards', label: 'Strength', node: <StrengthStandards /> },

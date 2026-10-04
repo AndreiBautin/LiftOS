@@ -57,6 +57,18 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **A card says how the block has followed the plan** ("Showing up",
+  `AdherenceCard`; `adherence` in `domain/programs/adherence.ts`, tested):
+  a punch card, a row a week and a hole a scheduled day — punched where
+  done, torn amber where its day went by, ringed for today, faint ahead,
+  the deload row violet — with full weeks in a row above and missed days
+  by name below. Weeks past the next fold into one line. **It asks
+  `sessionOn`**, so a missed day is one the app offered, and **matches by
+  title within the week** (`doneTitles`' rule): Monday's session done on
+  Friday is Monday done. A session with no scheduled title is `extra`,
+  never a make-up. The running week does not break the run until a day
+  in it is missed. **The missed state was checked by tests, not on
+  screen** — the demo has no missed day this block.
 - **The next session can be edited before it starts** (Edit on the
   session plan card, `SessionDraftEditor`; `applyDraft` and friends in
   `domain/programs/session-draft.ts`, tested; `settings.sessionDraft`, in
