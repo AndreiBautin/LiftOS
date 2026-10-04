@@ -116,6 +116,18 @@ SessionPage.tsx`, from `sessionDetail`). History rows could be deleted
   finished the minute it started reads as of unknown length rather
   than "0 min"; the demo seed stamped every session that way until this
   page showed it, and now gives each 45–75 minutes.
+- **An exercise can be added mid-session** (`addExercise` in
+  `application/use-cases/training/add-exercise.ts`, tested;
+  `AddExercisePanel` folded at the foot of the player). It goes after the
+  exercise on screen and the player turns to it; straight sets in the
+  range its kind runs in (`defaultRepRange`, now exported from the
+  assembler rather than copied) at the load its own history earns through
+  `planFromHistory` — Start's and the swap's function — and no weight with
+  no history. It carries no slot, because nothing in the programme asked
+  for it. Exercises already in the session and conditioning (which is
+  where warm-up rows are catalogued) are not offered. The player turns to
+  it with `showEntry`, not `go`: `go` clamps against the session as it
+  was before the add.
 - **An open session follows you** (`SessionPill`, in `AppShell` after
   `main`): on any screen but the player and the story, a pill at the foot
   names the session, its sets settled and its clock (through the clock

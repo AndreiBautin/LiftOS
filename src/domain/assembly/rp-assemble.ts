@@ -1379,10 +1379,20 @@ function daysAvailableFor(muscle: MuscleGroup, split: RpSplit): number {
  * session from what was actually logged, so the template says what to do
  * and the session says what to lift. See `domain/programs/progression.ts`.
  */
+/**
+ * The range an exercise is run in when nothing says otherwise: its own
+ * exception if it has one, else compounds 5–10 and isolations 15–30.
+ * Exported so an exercise added mid-session runs in the range the
+ * programme would have given it.
+ */
+export function defaultRepRange(exercise: Exercise): RepRange {
+  return exercise.repRange ?? (exercise.isCompound ? COMPOUND_REPS : ISOLATION_REPS)
+}
+
 function hypertrophySets(
   exercise: Exercise,
   count: number,
-  range: RepRange = exercise.repRange ?? (exercise.isCompound ? COMPOUND_REPS : ISOLATION_REPS),
+  range: RepRange = defaultRepRange(exercise),
 ): readonly SetPrescription[] {
   return Array.from({ length: count }, () => ({
     load: { kind: 'working' as const },

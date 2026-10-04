@@ -37,7 +37,14 @@ import { Badge, Button, Card } from '@/components/shared/primitives'
 import { useKeepAwake } from '@/shared/hooks/useKeepAwake'
 import { cn } from '@/lib/cn'
 
-import { useClearSet, useExerciseHistory, useLogSet, useSuperset, useSwapExercise } from './hooks'
+import {
+  useAddExercise,
+  useClearSet,
+  useExerciseHistory,
+  useLogSet,
+  useSuperset,
+  useSwapExercise,
+} from './hooks'
 import { canPair, partnerOf } from '@/domain/logging/superset'
 import { SwapPanel } from './SwapPanel'
 import { UndoToast } from './UndoToast'
@@ -49,6 +56,7 @@ import { BarSection } from './BarSection'
 import { RestTimer } from './RestTimer'
 import { FocusView } from './FocusView'
 import { ExercisePeek } from './ExercisePeek'
+import { AddExercisePanel } from './AddExercisePanel'
 import { primeRestSounds } from './rest-sounds'
 import { SessionMap } from './SessionMap'
 import { SetRow } from './SetRow'
@@ -152,6 +160,7 @@ export function SessionPlayer({
     })
   }, [index])
   const clearSet = useClearSet(workout.id)
+  const addOne = useAddExercise(workout.id)
 
   useKeepAwake(keepAwake)
 
@@ -676,6 +685,24 @@ export function SessionPlayer({
               <p className="text-ink-500 flex-1 text-center text-sm">Last exercise</p>
             )}
           </div>
+
+          <AddExercisePanel
+            library={exercises}
+            inSession={new Set(workout.entries.map((one) => one.exerciseId))}
+            busy={addOne.isPending}
+            onAdd={(exercise) => {
+              addOne.mutate(
+                { afterIndex: stepEnd, exerciseId: exercise.id },
+                {
+                  // Straight to it; `go` would clamp against the session before the add.
+                  onSuccess: () => {
+                    showEntry(stepEnd + 1)
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                  },
+                },
+              )
+            }}
+          />
 
           {/*
         **Finishing is quiet until there is nothing left.** It was a lit,

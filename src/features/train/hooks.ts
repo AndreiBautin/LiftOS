@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
+import { addExercise } from '@/application/use-cases/training/add-exercise'
 import { pairSuperset, unpairSuperset } from '@/application/use-cases/training/superset'
 import { muscleBalance } from '@/application/use-cases/training/balance'
 import { recentMuscles } from '@/application/use-cases/training/recency'
@@ -236,6 +237,33 @@ export function useSuperset(workoutId: WorkoutId | undefined) {
     onSuccess: (updated) => {
       client.setQueryData(keys.activeWorkout, updated)
       void client.invalidateQueries({ queryKey: keys.activeWorkout })
+    },
+  })
+}
+
+export function useAddExercise(workoutId: WorkoutId | undefined) {
+  const services = useServices()
+  const { settings } = useSettings()
+  const client = useQueryClient()
+
+  return useMutation({
+    mutationFn: (input: { afterIndex: number; exerciseId: ExerciseId }) => {
+      if (workoutId === undefined) throw new Error('No workout is open.')
+      return addExercise(
+        {
+          workoutId,
+          ...input,
+          ...(settings.loadResets !== undefined ? { resets: settings.loadResets } : {}),
+        },
+        services,
+      )
+    },
+    onSuccess: (updated) => {
+      client.setQueryData(keys.activeWorkout, updated)
+      void client.invalidateQueries({ queryKey: keys.activeWorkout })
+    },
+    onError: (error) => {
+      logger.warn('exercise.add-failed', { message: error.message })
     },
   })
 }
