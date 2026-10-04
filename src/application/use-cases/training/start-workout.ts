@@ -26,6 +26,7 @@ import {
 import type { RepRange } from '@/domain/programs/prescription'
 import { matchesQuery } from '@/domain/exercises/exercise'
 import { applyDraft, type SessionDraft } from '@/domain/programs/session-draft'
+import type { DayMoves } from '@/domain/programs/schedule'
 import { DAY_VERSIONS, sameVersion } from '@/domain/splits/rp-splits'
 
 /**
@@ -57,6 +58,8 @@ export interface StartWorkoutRequest {
   readonly resets?: LoadResets
   /** Edits made to this session before starting it, when they are for its day. */
   readonly draft?: SessionDraft
+  /** Sessions moved within their week; see `moveSession`. */
+  readonly moves?: DayMoves
 }
 
 export type StartWorkoutResult =
@@ -87,7 +90,7 @@ export async function startWorkout(
    * after today's is filed, opens tomorrow's early rather than nothing.
    * See `domain/programs/schedule.ts`.
    */
-  const schedule = await scheduleFor(request.program, deps)
+  const schedule = await scheduleFor(request.program, deps, request.moves)
   const scheduled = schedule.next
   if (scheduled === undefined) {
     return { kind: 'program-finished', message: 'This program has no scheduled days.' }
@@ -154,7 +157,7 @@ export async function previewWorkout(
   request: Omit<StartWorkoutRequest, 'freestyleTitle'>,
   deps: Omit<StartWorkoutDeps, 'ids'>,
 ): Promise<WorkoutLog | undefined> {
-  const schedule = await scheduleFor(request.program, deps)
+  const schedule = await scheduleFor(request.program, deps, request.moves)
   const scheduled = schedule.next
   if (scheduled === undefined) return undefined
 

@@ -110,13 +110,14 @@ export function useActivity() {
  */
 export function useSchedule() {
   const services = useServices()
+  const { settings } = useSettings()
   const program = useProgram()
 
   return useQuery({
-    queryKey: ['workouts', 'schedule', program.data?.id, program.dataUpdatedAt],
+    queryKey: ['workouts', 'schedule', program.data?.id, program.dataUpdatedAt, settings.dayMoves],
     queryFn: () => {
       if (program.data === undefined) throw new Error('The program is still loading.')
-      return scheduleFor(program.data, services)
+      return scheduleFor(program.data, services, settings.dayMoves)
     },
     enabled: program.data !== undefined,
   })
@@ -171,6 +172,7 @@ export function useStartWorkout() {
           roundingIncrement: settings.roundingIncrement,
           ...(settings.loadResets !== undefined ? { resets: settings.loadResets } : {}),
           ...(settings.sessionDraft !== undefined ? { draft: settings.sessionDraft } : {}),
+          ...(settings.dayMoves !== undefined ? { moves: settings.dayMoves } : {}),
           ...(options?.freestyleTitle !== undefined
             ? { freestyleTitle: options.freestyleTitle }
             : {}),
@@ -517,6 +519,7 @@ export function useSessionPreview() {
       athlete,
       settings.loadResets,
       settings.sessionDraft,
+      settings.dayMoves,
     ],
     enabled: program.data !== undefined,
     queryFn: async () => {
@@ -528,6 +531,7 @@ export function useSessionPreview() {
           roundingIncrement: settings.roundingIncrement,
           ...(settings.loadResets !== undefined ? { resets: settings.loadResets } : {}),
           ...(settings.sessionDraft !== undefined ? { draft: settings.sessionDraft } : {}),
+          ...(settings.dayMoves !== undefined ? { moves: settings.dayMoves } : {}),
         },
         services,
       )

@@ -242,6 +242,7 @@ function mergeWithDefaults(parsed: unknown): AppSettings {
     ...(stored.swipeLearned === true ? { swipeLearned: true } : {}),
     ...loadResetsOf(stored.loadResets),
     ...loadStepsOf(stored.loadSteps),
+    ...dayMovesOf(stored.dayMoves),
     ...liftGoalsOf(stored.liftGoals),
     ...exerciseCuesOf(stored.exerciseCues),
     ...sessionDraftOf(stored.sessionDraft),
@@ -358,6 +359,18 @@ function liftGoalsOf(value: unknown): Pick<AppSettings, 'liftGoals'> {
       : []
   })
   return kept.length === 0 ? {} : { liftGoals: Object.fromEntries(kept) }
+}
+
+/** Day moves keyed and valued by day keys (or null); anything else falls out. */
+function dayMovesOf(value: unknown): Pick<AppSettings, 'dayMoves'> {
+  if (typeof value !== 'object' || value === null) return {}
+  const isDay = (one: unknown): one is string =>
+    typeof one === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(one)
+  const kept = Object.entries(value).filter(
+    (entry): entry is [string, string | null] =>
+      isDay(entry[0]) && (entry[1] === null || isDay(entry[1])),
+  )
+  return kept.length === 0 ? {} : { dayMoves: Object.fromEntries(kept) }
 }
 
 /** Chosen load steps, each a positive number; anything else falls out. */

@@ -1,7 +1,7 @@
 import { CalendarPlus } from 'lucide-react'
 import { useState } from 'react'
 
-import { useServices } from '@/app/context'
+import { useServices, useSettings } from '@/app/context'
 import { calendarFile } from '@/domain/programs/calendar'
 import type { ProgramTemplate } from '@/domain/programs/program'
 import { weeksAhead } from '@/domain/programs/schedule'
@@ -33,7 +33,8 @@ export function CalendarExport({
   const [start, setStart] = useState('18:00')
   const [minutes, setMinutes] = useState<number>(60)
 
-  const sessions = weeksAhead(program, blockStartedOn, today, 4)
+  const { settings } = useSettings()
+  const sessions = weeksAhead(program, blockStartedOn, today, 4, settings.dayMoves)
     .flatMap((week) => week.days)
     .flatMap((day) =>
       day.session === undefined || day.on < today

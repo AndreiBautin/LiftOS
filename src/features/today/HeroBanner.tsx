@@ -1,4 +1,5 @@
 import { CheckCircle2, Dumbbell, LayoutGrid, Play, Plus, Settings } from 'lucide-react'
+import { MoveSession } from './MoveSession'
 import { useCallback, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
@@ -57,6 +58,7 @@ export function HeroBanner() {
   const jumpToWeek = useJumpToWeek()
   const recency = useMuscleRecency()
   const [everything, setEverything] = useState(false)
+  const [moving, setMoving] = useState(false)
   const closeEverything = useCallback(() => {
     setEverything(false)
   }, [])
@@ -194,7 +196,32 @@ export function HeroBanner() {
                   Skip the deload
                 </button>
               )}
+            {program !== undefined &&
+              on !== undefined &&
+              todayKey !== undefined &&
+              day !== undefined && (
+                <button
+                  type="button"
+                  aria-expanded={moving}
+                  onClick={() => {
+                    setMoving(!moving)
+                  }}
+                  className="text-ink-300 hover:text-accent-400 tap-target -my-3 px-1 text-xs font-medium tracking-normal normal-case underline-offset-2 hover:underline"
+                >
+                  {moving ? 'Keep it' : 'Move'}
+                </button>
+              )}
           </p>
+          {moving && program !== undefined && on !== undefined && todayKey !== undefined && (
+            <MoveSession
+              program={program}
+              on={on}
+              today={todayKey}
+              onDone={() => {
+                setMoving(false)
+              }}
+            />
+          )}
           <div className="mt-2 flex items-center justify-between gap-4">
             <h2
               id="hero-title"

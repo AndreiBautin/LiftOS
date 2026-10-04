@@ -1,6 +1,6 @@
 import { CalendarCheck } from 'lucide-react'
 
-import { useServices } from '@/app/context'
+import { useServices, useSettings } from '@/app/context'
 import { blockWindow } from '@/domain/logging/block'
 import { adherence, type AdherenceDay } from '@/domain/programs/adherence'
 import { mondayOf, parseDay, shiftDay, toDayKey, WEEKDAY_LABELS } from '@/domain/time/day'
@@ -25,6 +25,7 @@ const NAMED = 3
  */
 export function AdherenceCard() {
   const today = toDayKey(useServices().clock.now())
+  const { settings } = useSettings()
   const program = useProgram()
   const schedule = useSchedule()
   const workouts = useRecentWorkouts(1000)
@@ -39,7 +40,14 @@ export function AdherenceCard() {
 
   const weeks = program.data.blocks.flatMap((block) => block.weeks).length
   const window = blockWindow(schedule.data.blockStartedOn, weeks, today)
-  const result = adherence(program.data, schedule.data.blockStartedOn, filed, today, window)
+  const result = adherence(
+    program.data,
+    schedule.data.blockStartedOn,
+    filed,
+    today,
+    window,
+    settings.dayMoves,
+  )
   const columns = Math.max(...result.weeks.map((week) => week.planned), 1)
   /* Weeks past the next are all still ahead: one line, not a stack of empty rows. */
   const nowAt = result.weeks.findIndex((week) => week.monday === mondayOf(today))

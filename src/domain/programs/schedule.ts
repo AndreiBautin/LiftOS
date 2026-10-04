@@ -99,8 +99,79 @@ export function slotOn(
   }
 }
 
-/** The session a date holds, or undefined on a rest day. */
+/**
+ * Sessions moved to another day, for a week only: each entry says which
+ * day's session a day holds instead of its own (`null` for none). Keyed by
+ * day, so a move belongs to the dates it names and lapses with them —
+ * nothing about the routine changes. See `moveSession`.
+ */
+export type DayMoves = Readonly<Record<string, string | null>>
+
+/** The day whose scheduled session a date holds, once moves apply. */
+function heldOn(on: string, moves: DayMoves | undefined): string | null {
+  const moved = moves?.[on]
+  return moved === undefined ? on : moved
+}
+
+/**
+ * The session a date holds, or undefined on a rest day. A moved session
+ * keeps everything about the day it was scheduled for — its week, its day
+ * and so its title — and is dated where it now sits.
+ */
 export function sessionOn(
+  program: ProgramTemplate,
+  blockStartedOn: string,
+  on: string,
+  moves?: DayMoves,
+): ScheduledSession | undefined {
+  const from = heldOn(on, moves)
+  if (from === null) return undefined
+  const found = scheduledOn(program, blockStartedOn, from)
+  return found === undefined ? undefined : { ...found, on }
+}
+
+/**
+ * Moves the session a day holds to another day of the same week. If the
+ * other day already holds one the two swap; otherwise the first day is
+ * left empty. Composes with earlier moves, and drops an entry that has
+ * come back to holding its own day. Refuses a move across weeks: a moved
+ * session keeps its week, and a Monday session done on the next Tuesday
+ * would be in two weeks at once.
+ */
+export function moveSession(
+  program: ProgramTemplate,
+  blockStartedOn: string,
+  moves: DayMoves | undefined,
+  from: string,
+  to: string,
+): DayMoves {
+  const current = moves ?? {}
+  if (from === to || mondayOf(from) !== mondayOf(to)) return current
+  const moving = heldOn(from, moves)
+  if (moving === null || scheduledOn(program, blockStartedOn, moving) === undefined) return current
+  const there = heldOn(to, moves)
+  const occupied = there !== null && scheduledOn(program, blockStartedOn, there) !== undefined
+  const next: Record<string, string | null> = {
+    ...current,
+    [to]: moving,
+    [from]: occupied ? there : null,
+  }
+  // A day holding its own session needs no entry; nor does an empty rest day.
+  const needed = ([day, held]: [string, string | null]) =>
+    held === null ? scheduledOn(program, blockStartedOn, day) !== undefined : held !== day
+  return Object.fromEntries(Object.entries(next).filter(needed))
+}
+
+/** Moves only for this week and later; anything older has lapsed. */
+export function liveMoves(moves: DayMoves | undefined, today: string): DayMoves | undefined {
+  if (moves === undefined) return undefined
+  const from = mondayOf(today)
+  const kept = Object.entries(moves).filter(([day]) => day >= from)
+  return kept.length === 0 ? undefined : Object.fromEntries(kept)
+}
+
+/** The session the routine itself puts on a date, before any move. */
+function scheduledOn(
   program: ProgramTemplate,
   blockStartedOn: string,
   on: string,
@@ -127,9 +198,10 @@ export function sessionFrom(
   program: ProgramTemplate,
   blockStartedOn: string,
   from: string,
+  moves?: DayMoves,
 ): ScheduledSession | undefined {
   for (let offset = 0; offset < 14; offset += 1) {
-    const found = sessionOn(program, blockStartedOn, shiftDay(from, offset))
+    const found = sessionOn(program, blockStartedOn, shiftDay(from, offset), moves)
     if (found !== undefined) return found
   }
   return undefined
@@ -173,6 +245,7 @@ export function weeksAhead(
   blockStartedOn: string,
   today: string,
   count: number,
+  moves?: DayMoves,
 ): readonly WeekAhead[] {
   const first = mondayOf(today)
   return Array.from({ length: count }, (_, at) => shiftDay(first, at * 7)).flatMap((monday) => {
@@ -186,7 +259,7 @@ export function weeksAhead(
         isDeload: week?.isDeload === true,
         days: Array.from({ length: 7 }, (_, offset) => {
           const on = shiftDay(monday, offset)
-          const session = sessionOn(program, blockStartedOn, on)?.day
+          const session = sessionOn(program, blockStartedOn, on, moves)?.day
           return session === undefined ? { on } : { on, session }
         }),
       },

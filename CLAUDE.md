@@ -57,6 +57,21 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **A session can be moved within its week** ("Move" beside the week
+  name on the hero, `MoveSession`; `moveSession`, `liveMoves` and the
+  `moves` argument of `sessionOn` in `domain/programs/schedule.ts`,
+  tested in `day-moves.test.ts`; `settings.dayMoves`, in the parse with a
+  test). A chip per day from today to Sunday; a day already holding a
+  session swaps with it. **Stored per day** — "this day holds that day's
+  session", or `null` for none — so a move names dates and lapses with
+  them, and the routine is untouched. A moved session keeps its week, day
+  and title and is dated where it sits, so `adherence`'s by-title match
+  still counts it. **`sessionOn` is the one place moves are read**, and
+  `sessionFrom`, `weeksAhead`, `scheduleFor`, Start, the preview, the
+  runway, the calendar export and the adherence card all pass them
+  through. A move across weeks is refused. Checked: Upper moved onto
+  Tuesday swapped with Legs A on the hero, the plan card and the runway,
+  and Put the week back restored it.
 - **A step too big for the bar offers a smaller one** ("The next step"
   on the exercise page, `StepCard`; `stepJump`, `smallerStep`,
   `defaultStepFor` and `withLoadSteps` in `domain/programs/load-steps.ts`,

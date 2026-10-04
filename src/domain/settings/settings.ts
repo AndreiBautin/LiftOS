@@ -1,5 +1,6 @@
 import { asExerciseId, type ExerciseId } from '@/domain/ids/ids'
 import type { SessionDraft } from '@/domain/programs/session-draft'
+import type { DayMoves } from '@/domain/programs/schedule'
 import type { SessionTemplate } from '@/domain/logging/template'
 import type { HomeCardPrefs } from '@/domain/settings/home-cards'
 import type { E1rmFormula } from '@/domain/strength/one-rep-max'
@@ -134,6 +135,8 @@ export interface AppSettings {
   readonly templates?: readonly SessionTemplate[] | undefined
   /** A lifter's own load step per exercise; see `programs/load-steps`. */
   readonly loadSteps?: Readonly<Record<string, number>> | undefined
+  /** Sessions moved within their week; see `moveSession`. */
+  readonly dayMoves?: DayMoves | undefined
   /** The newest release note dismissed; see `WhatsNew`. */
   readonly seenNotes?: string
   /** The home page's card order and hidden cards; see `home-cards.ts`. */

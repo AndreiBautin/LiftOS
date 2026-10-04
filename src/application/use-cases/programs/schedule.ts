@@ -5,6 +5,7 @@ import {
   mondayOf,
   sessionFrom,
   sessionOn,
+  type DayMoves,
   type ScheduledSession,
 } from '@/domain/programs/schedule'
 import type { Clock, PositionRepository, WorkoutRepository } from '@/domain/repositories/ports'
@@ -55,12 +56,16 @@ export function blockStartOf(
   return blockStartFor(program, stored, localDayOf(stored.updatedAt ?? stored.startedAt))
 }
 
-export async function scheduleFor(program: ProgramTemplate, deps: ScheduleDeps): Promise<Schedule> {
+export async function scheduleFor(
+  program: ProgramTemplate,
+  deps: ScheduleDeps,
+  moves?: DayMoves,
+): Promise<Schedule> {
   const today = toDayKey(deps.clock.now())
   const [stored, recent] = await Promise.all([deps.position.get(), deps.workouts.recent(20)])
   const blockStartedOn = blockStartOf(program, stored, today)
 
-  const todays = sessionOn(program, blockStartedOn, today)
+  const todays = sessionOn(program, blockStartedOn, today, moves)
   const doneToday =
     todays !== undefined &&
     recent.some(
@@ -75,7 +80,7 @@ export async function scheduleFor(program: ProgramTemplate, deps: ScheduleDeps):
   const next =
     todays !== undefined && !doneToday
       ? todays
-      : sessionFrom(program, blockStartedOn, shiftDay(today, 1))
+      : sessionFrom(program, blockStartedOn, shiftDay(today, 1), moves)
 
   return {
     today,

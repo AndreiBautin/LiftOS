@@ -172,6 +172,26 @@ describe('accepted resets', () => {
     expect(readSettings(storage).settings.trueBlack).toBeUndefined()
   })
 
+  it('keeps day moves that name days, and drops anything else', () => {
+    const storage = memoryStorage()
+    storage.setItem(
+      STORAGE_KEYS.settings,
+      JSON.stringify({
+        ...DEFAULT_SETTINGS,
+        dayMoves: {
+          '2026-10-08': '2026-10-07',
+          '2026-10-07': null,
+          soon: '2026-10-09',
+          '2026-10-09': 4,
+        },
+      }),
+    )
+    expect(readSettings(storage).settings.dayMoves).toEqual({
+      '2026-10-08': '2026-10-07',
+      '2026-10-07': null,
+    })
+  })
+
   it('keeps a chosen load step only when it is a positive number', () => {
     const storage = memoryStorage()
     storage.setItem(

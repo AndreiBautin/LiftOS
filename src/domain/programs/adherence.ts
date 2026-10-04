@@ -1,7 +1,7 @@
 import type { ProgramTemplate } from '@/domain/programs/program'
 import { mondayOf, shiftDay } from '@/domain/time/day'
 
-import { sessionOn, slotOn } from './schedule'
+import { sessionOn, slotOn, type DayMoves } from './schedule'
 
 /**
  * How closely the block's weeks have followed the plan: each week a row,
@@ -65,6 +65,7 @@ function weekOf(
   monday: string,
   filed: readonly FiledSession[],
   today: string,
+  moves?: DayMoves,
 ): AdherenceWeek | undefined {
   const slot = slotOn(program, blockStartedOn, monday)
   if (slot === undefined) return undefined
@@ -74,7 +75,7 @@ function weekOf(
     .map((one) => one.title)
   const days = Array.from({ length: 7 }, (_, offset) => shiftDay(monday, offset)).flatMap(
     (on): AdherenceDay[] => {
-      const session = sessionOn(program, blockStartedOn, on)
+      const session = sessionOn(program, blockStartedOn, on, moves)
       if (session === undefined) return []
       const title = session.day.label
       const state = titles.includes(title)
@@ -108,19 +109,20 @@ export function adherence(
   filed: readonly FiledSession[],
   today: string,
   window: { readonly start: string; readonly weeks: number },
+  moves?: DayMoves,
 ): Adherence {
   const thisMonday = mondayOf(today)
   const weeks = Array.from({ length: window.weeks }, (_, at) =>
     shiftDay(window.start, at * 7),
   ).flatMap((monday) => {
-    const week = weekOf(program, blockStartedOn, monday, filed, today)
+    const week = weekOf(program, blockStartedOn, monday, filed, today, moves)
     return week === undefined ? [] : [week]
   })
 
   let fullWeeks = 0
   let cursor = thisMonday
   for (let step = 0; step < STREAK_LIMIT; step += 1) {
-    const week = weekOf(program, blockStartedOn, cursor, filed, today)
+    const week = weekOf(program, blockStartedOn, cursor, filed, today, moves)
     if (week === undefined) break
     if (complete(week)) fullWeeks += 1
     else if (cursor !== thisMonday || hasMiss(week)) break
