@@ -55,9 +55,21 @@ function dayKeyAgo(clock: Clock, days: number): string {
   return `${String(day.getFullYear())}-${month}-${date}`
 }
 
-/** Days before the seed moment, as an ISO timestamp. */
-function daysAgo(clock: Clock, days: number): string {
-  return new Date(clock.now().getTime() - days * 86_400_000).toISOString()
+/**
+ * When a sample session started, on its own day: early on Tuesdays and
+ * Thursdays, after work Monday, Wednesday and Friday, late morning at the
+ * weekend, a few minutes either way. **A routine has a shape in time**,
+ * and with every session stamped at the moment of seeding the "When you
+ * train" card read one dot and "105 of 105 records in the afternoon".
+ * Today's session keeps the seeding moment, so nothing starts in the
+ * future.
+ */
+function startOf(on: Date, daysBack: number, clock: Clock): string {
+  if (daysBack === 0) return clock.now().toISOString()
+  const hours = [10, 18, 6, 18, 6, 17, 10] as const
+  const start = new Date(on.getTime())
+  start.setHours(hours[start.getDay()] ?? 18, (daysBack * 7) % 45, 0, 0)
+  return start.toISOString()
 }
 
 /**
@@ -282,15 +294,12 @@ async function seedTraining(deps: DemoDeps): Promise<void> {
 
   for (const session of sessions) {
     const on = new Date(deps.clock.now().getTime() - session.daysBack * 86_400_000)
-    const timed = stampTimes(
-      session.entries,
-      daysAgo(deps.clock, session.daysBack),
-      session.daysBack,
-    )
+    const startedAt = startOf(on, session.daysBack, deps.clock)
+    const timed = stampTimes(session.entries, startedAt, session.daysBack)
     const log: WorkoutLog = {
       id: deps.ids.next() as WorkoutId,
       date: dayKeyAgo(deps.clock, session.daysBack),
-      startedAt: daysAgo(deps.clock, session.daysBack),
+      startedAt,
       completedAt: timed.completedAt,
       status: 'completed',
       /*

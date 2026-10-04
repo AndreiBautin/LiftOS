@@ -7,6 +7,7 @@ import { WhatsNew } from './WhatsNew'
 import { DeloadSuggestion } from '@/features/train/DeloadSuggestion'
 import { BalanceCard } from '@/features/train/BalanceCard'
 import { BodyMapCard } from '@/features/train/BodyMapCard'
+import { TrainingTimesCard } from '@/features/train/TrainingTimesCard'
 import { GoalsCard } from '@/features/train/GoalsCard'
 import { withViewTransition } from '@/app/view-transitions'
 import type { WorkoutReport } from '@/application/use-cases/training/finish-workout'
@@ -163,5 +164,6 @@ const HOME_CARDS: readonly {
   { key: 'goals', label: 'Goals', node: <GoalsCard /> },
   { key: 'trend', label: 'Strength over time', node: <StrengthTrendCard /> },
   { key: 'activity', label: 'Training grid', node: <ActivityHeatmap /> },
+  { key: 'times', label: 'When you train', node: <TrainingTimesCard /> },
   { key: 'history', label: 'Recent sessions', node: <TrainingHistory /> },
 ]

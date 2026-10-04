@@ -116,6 +116,18 @@ SessionPage.tsx`, from `sessionDetail`). History rows could be deleted
   finished the minute it started reads as of unknown length rather
   than "0 min"; the demo seed stamped every session that way until this
   page showed it, and now gives each 45–75 minutes.
+- **A card says when you train** (`TrainingTimesCard`, "When you train";
+  `trainingTimes` in `domain/logging/training-times.ts`, tested): a dot
+  for each weekday and part of the day, as large as the sessions started
+  there, and a gold bar per part for the records set in it. **Counts
+  beside counts, never a rate**: that most records come in the evening
+  says most sessions do, and the closing line only adds "where most
+  sessions are, too" when that is true. **The demo had no shape in time**
+  — every session stamped at the seeding moment, so the card read "105 of
+  105 records in the afternoon"; `startOf` in the seed now starts sessions
+  early on Tuesdays and Thursdays, after work on the other weekdays, and
+  late morning at the weekend, today's keeping the seeding moment so
+  nothing starts in the future.
 - **Two exercises can be compared** (`/compare?a=&b=`, `relativeSeries`
   in `domain/strength/relative.ts`, tested; Compare on an exercise page
   and in the palette): each line read against its own first session, so
