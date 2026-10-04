@@ -16,6 +16,7 @@ export function shareCardFrom(args: {
   readonly tonnage: number
   readonly minutes: number | undefined
   readonly units: WeightUnit
+  readonly crest?: ShareCard['crest']
   readonly records: readonly {
     readonly name: string
     readonly set: Performance
@@ -30,6 +31,7 @@ export function shareCardFrom(args: {
     // Grouped: "23850 lb" read as a code rather than a weight.
     volume: `${Math.round(args.tonnage).toLocaleString()} ${args.units}`,
     minutes: args.minutes,
+    ...(args.crest === undefined ? {} : { crest: args.crest }),
     ...(heft === undefined ? {} : { heft: `about ${describeHeft(heft)}` }),
     records: args.records.map((record) => ({
       name: record.name,

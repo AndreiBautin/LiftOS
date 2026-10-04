@@ -57,6 +57,18 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **Every session has a crest** (`sessionCrest` in `domain/logging/
+crest.ts`, tested; `SessionCrest` in `features/history`): a ring cut into
+  a segment per exercise as long as its share of the working sets — sets,
+  not tonnage, or a deadlift takes the ring — in the timeline's colours,
+  a tick inside for every set, a gold stud for a record, and the lead
+  lift's glyph at the centre. **Turned by an angle hashed from the
+  session's id**, so it draws the same every time and two days of the
+  same exercises still differ. On the report hero, the session page and
+  the share card (drawn again on the canvas with the colours as literals;
+  the title wraps short of it). Draws in once. **The report's crest was
+  not seen on screen** — it needs a session finished — and shares the
+  component and the data with the session page, which was.
 - **The loaded bar is drawn as iron** (`PlateLoader`): each plate has a
   raised lip and a darker hub where the sleeve passes, the collars a
   machined ridge, and the shaft knurling (an SVG pattern) on two grip

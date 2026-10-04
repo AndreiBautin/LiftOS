@@ -13,6 +13,8 @@ import { RecordChip } from './RecordChip'
 import { SessionStats } from './SessionStats'
 import { SessionTimeline } from './SessionTimeline'
 import { useExercises } from './hooks'
+import { sessionCrest } from '@/domain/logging/crest'
+import { SessionCrest } from '@/features/history/SessionCrest'
 
 /**
  * What happened, immediately after finishing.
@@ -125,6 +127,11 @@ function ApplyEstimates({ progress }: { readonly progress: WorkoutReport['progre
  * cards, the same as everywhere else in the app.
  */
 export function SessionReport({ report, units, onDismiss }: Props) {
+  const exercises = useExercises()
+  const crest = sessionCrest(
+    report.workout,
+    new Set(report.records.map((record) => record.exerciseId)),
+  )
   return (
     <div className="mx-auto max-w-2xl space-y-4 pb-8">
       <section
@@ -146,16 +153,24 @@ export function SessionReport({ report, units, onDismiss }: Props) {
               tonnage: report.tonnage,
               minutes: report.durationMinutes,
               units,
+              crest,
               records: report.records,
             })}
           />
         </div>
-        <h1
-          id="report-title"
-          className="text-ink-50 mt-2 text-3xl font-semibold tracking-tight sm:text-4xl"
-        >
-          {report.workout.title}
-        </h1>
+        <div className="mt-2 flex items-center justify-between gap-4">
+          <h1
+            id="report-title"
+            className="text-ink-50 min-w-0 text-3xl font-semibold tracking-tight sm:text-4xl"
+          >
+            {report.workout.title}
+          </h1>
+          <SessionCrest
+            crest={crest}
+            library={exercises.data ?? []}
+            className="size-20 shrink-0 sm:size-24"
+          />
+        </div>
         <p className="text-ink-300 mt-2 text-sm">{report.headline}</p>
 
         <SessionStats

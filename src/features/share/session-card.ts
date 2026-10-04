@@ -35,6 +35,15 @@ export interface ShareCard {
   readonly statLabels?: readonly [string, string, string]
   /** A step line of top-set loads, oldest first — an exercise's card draws its climb. */
   readonly staircase?: readonly number[]
+  /** The session's crest, drawn in the top corner (`sessionCrest`). */
+  readonly crest?: {
+    readonly segments: readonly {
+      readonly share: number
+      readonly sets: number
+      readonly record: boolean
+    }[]
+    readonly rotation: number
+  }
   readonly records: readonly {
     readonly name: string
     readonly detail: string
@@ -51,6 +60,8 @@ const INK_500 = '#79808f'
 const INK_800 = '#2b2f38'
 const ACCENT = '#5ccad9'
 const GOLD = '#f0c35a'
+/** The timeline's four colours as literals, in its order. */
+const CREST_COLOURS = [ACCENT, '#9d8df1', '#e9b54f', '#62c98d'] as const
 
 export function drawShareCard(card: ShareCard): Promise<Blob> {
   const canvas = document.createElement('canvas')
@@ -71,6 +82,9 @@ export function drawShareCard(card: ShareCard): Promise<Blob> {
   const left = 88
   let y = 140
 
+  if (card.crest !== undefined && card.crest.segments.length > 0)
+    drawCrest(ctx, card.crest, W - 210, 230, 120)
+
   ctx.fillStyle = ACCENT
   ctx.font = `600 30px ${FONT}`
   ctx.fillText((card.eyebrow ?? 'Session complete').toUpperCase(), left, y)
@@ -78,7 +92,9 @@ export function drawShareCard(card: ShareCard): Promise<Blob> {
   y += 100
   ctx.fillStyle = INK_50
   ctx.font = `700 92px ${FONT}`
-  y = wrap(ctx, card.title, left, y, W - left * 2, 104)
+  // The crest holds the top corner, so a title beside it wraps short of it.
+  const titleWidth = card.crest === undefined ? W - left * 2 : W - left - 340
+  y = wrap(ctx, card.title, left, y, titleWidth, 104)
 
   y += 56
   ctx.fillStyle = INK_300
@@ -258,4 +274,49 @@ function longDate(day: string): string {
     day: 'numeric',
     year: 'numeric',
   })
+}
+
+/** The crest as on screen: segments by share, a tick a set, gold studs. */
+function drawCrest(
+  ctx: CanvasRenderingContext2D,
+  crest: NonNullable<ShareCard['crest']>,
+  cx: number,
+  cy: number,
+  r: number,
+): void {
+  const gap = (3 * Math.PI) / 180
+  const turn = (crest.rotation * Math.PI) / 180 - Math.PI / 2
+  let from = 0
+  ctx.save()
+  ctx.lineCap = 'round'
+  crest.segments.forEach((segment, at) => {
+    const span = segment.share * Math.PI * 2
+    const start = turn + from + (crest.segments.length > 1 ? gap / 2 : 0)
+    const end = turn + from + span - (crest.segments.length > 1 ? gap / 2 : 0)
+    const colour = CREST_COLOURS[at % CREST_COLOURS.length] ?? ACCENT
+    ctx.strokeStyle = colour
+    ctx.lineWidth = r * 0.17
+    ctx.beginPath()
+    ctx.arc(cx, cy, r, start, Math.max(end, start + 0.01))
+    ctx.stroke()
+    ctx.globalAlpha = 0.6
+    ctx.lineWidth = 3
+    for (let tick = 0; tick < segment.sets; tick++) {
+      const angle = turn + from + ((tick + 0.5) / segment.sets) * span
+      ctx.beginPath()
+      ctx.moveTo(cx + Math.cos(angle) * r * 0.71, cy + Math.sin(angle) * r * 0.71)
+      ctx.lineTo(cx + Math.cos(angle) * r * 0.82, cy + Math.sin(angle) * r * 0.82)
+      ctx.stroke()
+    }
+    ctx.globalAlpha = 1
+    if (segment.record) {
+      const mid = turn + from + span / 2
+      ctx.fillStyle = GOLD
+      ctx.beginPath()
+      ctx.arc(cx + Math.cos(mid) * r, cy + Math.sin(mid) * r, r * 0.09, 0, Math.PI * 2)
+      ctx.fill()
+    }
+    from += span
+  })
+  ctx.restore()
 }

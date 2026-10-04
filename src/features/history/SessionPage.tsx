@@ -12,6 +12,7 @@ import { useSettings } from '@/app/context'
 import type { EntryDetail } from '@/application/use-cases/training/session-detail'
 import type { Exercise } from '@/domain/exercises/exercise'
 import { asWorkoutId, type WorkoutId } from '@/domain/ids/ids'
+import { sessionCrest } from '@/domain/logging/crest'
 import type { SessionRecord } from '@/domain/logging/records'
 import type { LoggedSet } from '@/domain/logging/workout-log'
 import { describePrescription } from '@/domain/programs/prescription'
@@ -21,6 +22,7 @@ import { PageSkeleton } from '@/components/shared/PageSkeleton'
 import { Badge, Button, Card } from '@/components/shared/primitives'
 import { cn } from '@/lib/cn'
 import { useExercises, useRepeatSession } from '@/features/train/hooks'
+import { SessionCrest } from './SessionCrest'
 import { SessionStats } from '@/features/train/SessionStats'
 import { SessionTimeline } from '@/features/train/SessionTimeline'
 import { SessionReplay } from './SessionReplay'
@@ -60,6 +62,7 @@ export function SessionPage() {
   }
 
   const { workout, sets, tonnage, minutes, entries, records } = detail.data
+  const crest = sessionCrest(workout, new Set(records.map((record) => record.exerciseId)))
   const when = new Date(`${workout.date}T00:00:00`)
   const library = exercises.data ?? []
   const warmups = entries.filter(({ entry }) => entry.sets.every((set) => set.isWarmup))
@@ -84,6 +87,7 @@ export function SessionPage() {
                 tonnage,
                 minutes,
                 units: settings.units,
+                crest,
                 records: records.map((record) => ({
                   ...record,
                   name: nameOf(library, record.exerciseId),
@@ -106,13 +110,16 @@ export function SessionPage() {
       />
 
       <section className="hero-panel p-5 sm:p-6" aria-label="Session totals">
-        <p className="text-ink-300 text-sm">
-          {working.length === 0
-            ? 'Nothing but the warm-up was logged.'
-            : up.length === 0
-              ? `${String(working.length)} exercises, none ahead of the session before.`
-              : `${String(up.length)} of ${String(working.length)} exercises moved past the session before.`}
-        </p>
+        <div className="flex items-center gap-4">
+          <SessionCrest crest={crest} library={library} className="size-20 shrink-0" />
+          <p className="text-ink-300 text-sm">
+            {working.length === 0
+              ? 'Nothing but the warm-up was logged.'
+              : up.length === 0
+                ? `${String(working.length)} exercises, none ahead of the session before.`
+                : `${String(up.length)} of ${String(working.length)} exercises moved past the session before.`}
+          </p>
+        </div>
         <SessionStats sets={sets} tonnage={tonnage} minutes={minutes} units={settings.units} />
       </section>
 
