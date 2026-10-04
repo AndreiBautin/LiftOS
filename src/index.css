@@ -106,6 +106,29 @@
   --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
 }
 
+/* The sky's four numbers, registered so a new reading eases rather than
+   jumps — an unregistered property is a string and snaps. */
+@property --sky-x {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 50%;
+}
+@property --sky-y {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: -10%;
+}
+@property --sky-hue {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 200;
+}
+@property --sky-strength {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0.1;
+}
+
 /* Registered so it can be transitioned: an unregistered custom property
    is a string and snaps between values rather than easing. */
 @property --spot {
@@ -691,6 +714,21 @@ html {
   z-index: -1;
   overflow: hidden;
   pointer-events: none;
+}
+
+.ambient-sky {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    70vmax 55vmax at var(--sky-x) var(--sky-y),
+    oklch(0.72 0.13 var(--sky-hue) / var(--sky-strength)),
+    transparent 70%
+  );
+  transition:
+    --sky-x 60s linear,
+    --sky-y 60s linear,
+    --sky-hue 60s linear,
+    --sky-strength 60s linear;
 }
 
 .ambient-wash {

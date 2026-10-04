@@ -57,6 +57,15 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **The backdrop follows the time of day** (`skyAt` and `skyPhase` in
+  `domain/time/sky.ts`, tested; `.ambient-sky` in `AmbientBackdrop`): a
+  glow low on the left at dawn, high and pale by day, low and amber on
+  the right at dusk, violet at night — **interpolated between stops**,
+  hue turned the short way round, so it drifts rather than switching.
+  Read every five minutes and on returning to the app, and eased over a
+  minute through four registered properties (`--sky-*`). It sits under
+  the season's washes, which still tint it, and goes with them under
+  pure black. Only seen in the gutters between cards, on purpose.
 - **Three depths, so a screen reads as layered** (`index.css`): the
   hero (`.hero-panel`, loudest, now with a rim of light along its top
   edge), the card (raised), and the **well** (`.well`, sunken — darker
