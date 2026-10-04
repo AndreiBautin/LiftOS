@@ -193,3 +193,20 @@ export function weeksAhead(
     ]
   })
 }
+
+/**
+ * The week this calendar week must be set to so that the week holding
+ * `on` becomes the first of the block — what skipping a deload asks for.
+ *
+ * Usually 0. On a rest day at the end of the week the next session falls
+ * in the week after, and setting *this* week to the first would put that
+ * one at the second; so it counts back from the session's own week,
+ * wrapping into the block before (`(-ahead) mod length`).
+ */
+export function weekIndexToStartOn(on: string, today: string, weeksInBlock: number): number {
+  if (weeksInBlock <= 0) return 0
+  const ahead = Math.round(
+    (parseDay(mondayOf(on)).getTime() - parseDay(mondayOf(today)).getTime()) / (7 * DAY_MS),
+  )
+  return ((-ahead % weeksInBlock) + weeksInBlock) % weeksInBlock
+}

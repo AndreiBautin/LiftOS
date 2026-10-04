@@ -56,8 +56,8 @@ export function NextSessionCard() {
       */}
       {(week?.isDeload === true || (here?.cycleNumber ?? 1) > 1) && (
         <div className="mb-3 flex flex-wrap gap-1.5">
-          {week?.isDeload === true && <Badge tone="warn">deload</Badge>}
-          {(here?.cycleNumber ?? 1) > 1 && <Badge>cycle {here?.cycleNumber}</Badge>}
+          {week?.isDeload === true && <Badge tone="warn">Deload</Badge>}
+          {(here?.cycleNumber ?? 1) > 1 && <Badge>Cycle {here?.cycleNumber}</Badge>}
         </div>
       )}
 

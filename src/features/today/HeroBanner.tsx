@@ -5,12 +5,18 @@ import { Link } from 'react-router-dom'
 
 import { useServices, useSettings } from '@/app/context'
 import { EverythingSheet } from '@/features/navigation/EverythingSheet'
-import { Badge, Button } from '@/components/shared/primitives'
+import { Button } from '@/components/shared/primitives'
 import { buttonStyles } from '@/components/shared/styles'
+import { weekIndexToStartOn } from '@/domain/programs/schedule'
 import { strengthStandings } from '@/domain/strength/standards'
 import { glyphFor, type Glyph } from '@/features/glyphs/glyph-for'
 import { GLYPH_DOTS, GLYPH_PATHS } from '@/features/glyphs/glyph-paths'
-import { useExercises, useStartWorkout, useWeekSummary } from '@/features/train/hooks'
+import {
+  useExercises,
+  useJumpToWeek,
+  useStartWorkout,
+  useWeekSummary,
+} from '@/features/train/hooks'
 import { splitDayLabel, useNextSession } from '@/features/train/useNextSession'
 
 /**
@@ -31,10 +37,21 @@ import { splitDayLabel, useNextSession } from '@/features/train/useNextSession'
 export function HeroBanner() {
   const { clock } = useServices()
   const { settings } = useSettings()
-  const { day, week, program, when, doneToday, restDay } = useNextSession()
+  const {
+    day,
+    week,
+    program,
+    when,
+    doneToday,
+    restDay,
+    here,
+    on,
+    today: todayKey,
+  } = useNextSession()
   const summary = useWeekSummary()
   const startWorkout = useStartWorkout()
   const exercises = useExercises()
+  const jumpToWeek = useJumpToWeek()
   const [everything, setEverything] = useState(false)
   const closeEverything = useCallback(() => {
     setEverything(false)
@@ -138,7 +155,33 @@ export function HeroBanner() {
             {week?.label !== undefined && (
               <span className="text-ink-500 tracking-normal normal-case">· {week.label}</span>
             )}
-            {week?.isDeload === true && <Badge tone="warn">deload</Badge>}
+            {/*
+              **The deload can be skipped from here**, the same write the
+              Program page's week picker makes: the block starts again this
+              week at week one. Asked for as "I'm not feeling the need for a
+              deload — can you skip this one". Offered beside the week name that
+              says it is one, because that is where the question is asked.
+            */}
+            {week?.isDeload === true &&
+              program !== undefined &&
+              on !== undefined &&
+              todayKey !== undefined && (
+                <button
+                  type="button"
+                  disabled={jumpToWeek.isPending}
+                  onClick={() => {
+                    // The week the session in view falls in becomes week one.
+                    const weeksInBlock = program.blocks[here?.blockIndex ?? 0]?.weeks.length ?? 1
+                    jumpToWeek.mutate({
+                      program,
+                      weekIndex: weekIndexToStartOn(on, todayKey, weeksInBlock),
+                    })
+                  }}
+                  className="text-ink-300 hover:text-accent-400 tap-target -my-3 px-1 text-xs font-medium tracking-normal normal-case underline-offset-2 hover:underline disabled:opacity-50"
+                >
+                  Skip the deload
+                </button>
+              )}
           </p>
           <div className="mt-2 flex items-center justify-between gap-4">
             <h2

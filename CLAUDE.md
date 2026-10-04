@@ -57,6 +57,17 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **A deload can be skipped from the hero** ("Skip the deload" beside
+  the week's name, asked for as _"I'm not feeling the need for a deload —
+  can you skip this one"_): the same `jumpToWeek` the Program page's
+  picker writes, so the block starts again at week one. **The week that
+  becomes week one is the session's, not today's** (`weekIndexToStartOn`
+  in `schedule.ts`, tested): on a rest day at the end of a week the hero
+  shows Monday's session, and setting _this_ week to the first would have
+  put Monday at the second — so it counts back and wraps into the block
+  before. The hero dropped its own Deload pill, which repeated the
+  week's name beside it; the plan card's pills are capitalised now
+  (Deload, Cycle 2).
 - **A session with nothing done cannot be filed** (`anythingDone` in
   `SessionPlayer`). An empty open session's only exit was "Finish with
   nothing logged", which filed a blank record — reported with a

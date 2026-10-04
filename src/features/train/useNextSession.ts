@@ -43,6 +43,7 @@ export function useNextSession() {
     here: next,
     /** The day key the next session is scheduled on. */
     on: next?.on,
+    today: data?.today,
     when: data === undefined || next === undefined ? undefined : whenOf(next.on, data.today),
     doneToday: data?.doneToday === true,
     restDay: data !== undefined && data.todays === undefined,
