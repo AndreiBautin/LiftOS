@@ -1,6 +1,16 @@
 /** Release notes, newest first; `WhatsNew` shows the first once. */
 export const RELEASES: readonly { readonly id: string; readonly items: readonly string[] }[] = [
   {
+    id: '2026-10-10',
+    items: [
+      'Edit the next session before you start it — swap, reorder or drop, this session only.',
+      'Showing up: the block as a punch card, and a twelve-week forecast for the big three.',
+      'A finished session ends on three lines: what moved, what held, what next time holds.',
+      'Flag a niggle on a set; the body map and a stalled lift take it into account.',
+      'Then and now for each lift, share the records wall or the year, and loads the plates make.',
+    ],
+  },
+  {
     id: '2026-10-09',
     items: [
       'Your history as a wall of session crests — Crests on the history card.',
