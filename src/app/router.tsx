@@ -5,6 +5,7 @@ import { BlockPage } from '@/features/block/BlockPage'
 import { CalculatorPage } from '@/features/calculator/CalculatorPage'
 import { CompareLiftsPage } from '@/features/compare/CompareLiftsPage'
 import { LibraryPage } from '@/features/library/LibraryPage'
+import { YearPage } from '@/features/year/YearPage'
 import { MusclePage } from '@/features/muscle/MusclePage'
 import { WrappedPage } from '@/features/wrapped/WrappedPage'
 import { RecordsPage } from '@/features/records/RecordsPage'
@@ -84,6 +85,8 @@ export const router = createBrowserRouter(
         { path: 'records', element: <RecordsPage /> },
         { path: 'exercises', element: <LibraryPage /> },
         { path: 'block', element: <BlockPage /> },
+        { path: 'year', element: <YearPage /> },
+        { path: 'year/:year', element: <YearPage /> },
         { path: 'compare', element: <CompareLiftsPage /> },
         { path: 'calculator', element: <CalculatorPage /> },
         { path: 'muscle/:id', element: <MusclePage /> },

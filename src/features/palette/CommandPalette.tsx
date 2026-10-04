@@ -45,6 +45,7 @@ const PAGES: readonly PaletteItem[] = [
     keywords: 'versus two lifts progress',
     to: '/compare',
   },
+  { id: 'year', label: 'The year', kind: 'Page', keywords: 'year calendar streak', to: '/year' },
   { id: 'month', label: 'This month', kind: 'Page', keywords: 'recap month', to: '/month' },
   {
     id: 'settings',

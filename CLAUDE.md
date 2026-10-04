@@ -116,6 +116,15 @@ SessionPage.tsx`, from `sessionDetail`). History rows could be deleted
   finished the minute it started reads as of unknown length rather
   than "0 min"; the demo seed stamped every session that way until this
   page showed it, and now gives each 45–75 minutes.
+- **A year in squares** (`/year/:year`, `yearInSquares` in
+  `domain/logging/year.ts`, tested; Year on the month page and in the
+  palette — the month page's year story link now reads "Play the year"):
+  twelve small calendars, a square a day lit in the training grid's own
+  bands, today ringed and days to come faint, with weeks trained and the
+  best and current **week** streaks above — counted the way the hero's
+  streak is, the week still running not breaking the run. Twelve months
+  rather than one long ribbon, because a year as a strip is too long to
+  take in.
 - **The records wall has a timeline view** (`?view=timeline`,
   `RecordTimeline`; `recordTimeline` in `domain/logging/record-timeline.ts`,
   tested): every record in the order it was set on a gold spine, a month

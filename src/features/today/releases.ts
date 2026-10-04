@@ -1,6 +1,16 @@
 /** Release notes, newest first; `WhatsNew` shows the first once. */
 export const RELEASES: readonly { readonly id: string; readonly items: readonly string[] }[] = [
   {
+    id: '2026-10-06',
+    items: [
+      'Repeat any past session at today’s loads, or build an open one from the library.',
+      'Change the order of an open session, and undo a deleted session.',
+      'Add the coming weeks to your calendar from the Program page.',
+      'Compare two exercises, and see when you train and where records land.',
+      'A records timeline, and your year in squares.',
+    ],
+  },
+  {
     id: '2026-10-05',
     items: [
       'Add an exercise mid-session, planned from its own history.',

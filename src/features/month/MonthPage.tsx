@@ -85,10 +85,17 @@ export function MonthPage() {
               </Link>
               <Link
                 viewTransition
+                to={`/year/${month.slice(0, 4)}`}
+                className="text-ink-500 hover:text-accent-400 tap-target flex items-center px-2 text-sm"
+              >
+                Year
+              </Link>
+              <Link
+                viewTransition
                 to={`/wrapped/${month.slice(0, 4)}`}
                 className="text-ink-500 hover:text-accent-400 tap-target flex items-center px-2 text-sm"
               >
-                The year
+                Play the year
               </Link>
             </span>
           )}
