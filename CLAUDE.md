@@ -57,6 +57,14 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **The hero draws the day** (`HeroBanner`): beside the session's name
+  a **medallion of its lead lift** — the competition lift, else the first
+  real exercise — its movement glyph tracing itself in once
+  (`pathLength=1` and a dash offset, then the head lands), keyed by the
+  exercise so a new day draws again; and **This week** leads with a ring
+  of segments, one per planned day, lit for each finished. The medallion
+  is `role="img"` named "Leads with …", the ring `aria-hidden` beside
+  the number it pictures. Reduced motion shows both finished.
 - **An exercise wears a glyph of its movement** (`features/glyphs`:
   `glyphFor`, tested; `GLYPH_PATHS`; `MoveGlyph`): eighteen figures
   hand-drawn on a 24 grid — squat, hinge, bench, press, row, pull-up,

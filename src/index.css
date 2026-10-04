@@ -1037,6 +1037,33 @@ html {
   animation: plate-in 1600ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* The lead lift's medallion traces its figure in once, then the head and
+   weights land — drawn, not faded. Reduced motion shows it finished. */
+@keyframes medallion-trace {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+
+@keyframes medallion-dot {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+
+.medallion-trace {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  animation: medallion-trace 1100ms cubic-bezier(0.65, 0, 0.35, 1) 250ms both;
+}
+
+.medallion-dot {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: medallion-dot 400ms cubic-bezier(0.34, 1.56, 0.64, 1) 1200ms both;
+}
+
 /*
  * Rest complete: the timer card breathes out once in the good colour.
  * Two beats then still — a signal, not a siren.

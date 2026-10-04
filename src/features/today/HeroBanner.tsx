@@ -8,7 +8,9 @@ import { EverythingSheet } from '@/features/navigation/EverythingSheet'
 import { Badge, Button } from '@/components/shared/primitives'
 import { buttonStyles } from '@/components/shared/styles'
 import { strengthStandings } from '@/domain/strength/standards'
-import { useStartWorkout, useWeekSummary } from '@/features/train/hooks'
+import { glyphFor, type Glyph } from '@/features/glyphs/glyph-for'
+import { GLYPH_DOTS, GLYPH_PATHS } from '@/features/glyphs/glyph-paths'
+import { useExercises, useStartWorkout, useWeekSummary } from '@/features/train/hooks'
 import { splitDayLabel, useNextSession } from '@/features/train/useNextSession'
 
 /**
@@ -32,6 +34,7 @@ export function HeroBanner() {
   const { day, week, program, when, doneToday, restDay } = useNextSession()
   const summary = useWeekSummary()
   const startWorkout = useStartWorkout()
+  const exercises = useExercises()
   const [everything, setEverything] = useState(false)
   const closeEverything = useCallback(() => {
     setEverything(false)
@@ -43,6 +46,12 @@ export function HeroBanner() {
   })
 
   const planned = program?.blocks[0]?.weeks[0]?.days.length
+  /* The day's lead lift: its competition lift, else its first real exercise. */
+  const leadSlot =
+    day?.slots.find((slot) => slot.role === 'strength') ??
+    day?.slots.find((slot) => slot.role !== 'warmup' && slot.exercise.kind === 'specific')
+  const leadId = leadSlot?.exercise.kind === 'specific' ? leadSlot.exercise.exerciseId : undefined
+  const lead = exercises.data?.find((one) => one.id === leadId)
   const label = day === undefined ? undefined : splitDayLabel(day.label)
   const today = clock.now().toLocaleDateString(undefined, {
     weekday: 'long',
@@ -131,12 +140,17 @@ export function HeroBanner() {
             )}
             {week?.isDeload === true && <Badge tone="warn">deload</Badge>}
           </p>
-          <h2
-            id="hero-title"
-            className="text-ink-50 mt-2 text-4xl font-semibold tracking-tight sm:text-5xl"
-          >
-            {label?.name ?? 'Your next session'}
-          </h2>
+          <div className="mt-2 flex items-center justify-between gap-4">
+            <h2
+              id="hero-title"
+              className="text-ink-50 min-w-0 text-4xl font-semibold tracking-tight sm:text-5xl"
+            >
+              {label?.name ?? 'Your next session'}
+            </h2>
+            {lead !== undefined && (
+              <LeadMedallion key={lead.id} glyph={glyphFor(lead)} name={lead.name} />
+            )}
+          </div>
           {day?.focus !== undefined && (
             <p className="text-ink-300 mt-2 max-w-prose text-sm">{day.focus}</p>
           )}
@@ -173,6 +187,11 @@ export function HeroBanner() {
             label="This week"
             value={summary.data?.sessions}
             suffix={planned === undefined ? undefined : `/${String(planned)}`}
+            lead={
+              planned === undefined || summary.data === undefined ? undefined : (
+                <WeekRing done={summary.data.sessions} of={planned} />
+              )
+            }
           />
           <Stat label="Week streak" value={summary.data?.streakWeeks} />
           <Stat
@@ -190,19 +209,25 @@ function Stat({
   label,
   value,
   suffix,
+  lead,
 }: {
   readonly label: string
   readonly value: number | undefined
   readonly suffix?: string | undefined
+  /** A small picture before the figure. */
+  readonly lead?: ReactNode
 }): ReactNode {
   return (
     <div className="bg-ink-950/60 px-3 py-3">
       <dt className="text-ink-500 text-[0.7rem] font-medium tracking-wide uppercase">{label}</dt>
-      <dd className="numeric text-ink-50 mt-1 text-xl font-semibold">
-        {value ?? '—'}
-        {value !== undefined && suffix !== undefined && (
-          <span className="text-ink-500 text-sm font-normal">{suffix}</span>
-        )}
+      <dd className="numeric text-ink-50 mt-1 flex items-center gap-1.5 text-xl font-semibold">
+        {lead}
+        <span>
+          {value ?? '—'}
+          {value !== undefined && suffix !== undefined && (
+            <span className="text-ink-500 text-sm font-normal">{suffix}</span>
+          )}
+        </span>
       </dd>
     </div>
   )
@@ -236,6 +261,85 @@ function Plate() {
           />
         ))}
       </g>
+    </svg>
+  )
+}
+
+/**
+ * The day's lead lift as a medallion: its movement glyph, ringed, tracing
+ * itself in once when the hero mounts (keyed by the exercise, so a new day
+ * draws again). The name is in the plan below, so this is a picture of it
+ * rather than a second label — `role="img"` with the name for a reader.
+ */
+function LeadMedallion({ glyph, name }: { readonly glyph: Glyph; readonly name: string }) {
+  return (
+    <svg
+      viewBox="0 0 48 48"
+      className="hero-medallion text-accent-400 size-16 shrink-0 sm:size-20"
+      role="img"
+      aria-label={`Leads with ${name}`}
+    >
+      <circle
+        cx="24"
+        cy="24"
+        r="22.5"
+        fill="color-mix(in oklab, var(--color-accent-500) 12%, transparent)"
+        stroke="color-mix(in oklab, var(--color-accent-400) 45%, transparent)"
+        strokeWidth="1"
+      />
+      <g
+        transform="translate(10 10) scale(1.1667)"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path className="medallion-trace" d={GLYPH_PATHS[glyph]} pathLength={1} />
+        {GLYPH_DOTS[glyph].map(([x, y, r]) => (
+          <circle
+            key={`${String(x)}-${String(y)}`}
+            className="medallion-dot"
+            cx={x}
+            cy={y}
+            r={r}
+            fill="currentColor"
+            stroke="none"
+          />
+        ))}
+      </g>
+    </svg>
+  )
+}
+
+/**
+ * The week's sessions as a ring of segments, one per planned day, lit for
+ * each finished — the "5/5" beside it is the number, this is the shape of
+ * it. A week over its plan lights every segment and no more.
+ */
+function WeekRing({ done, of }: { readonly done: number; readonly of: number }) {
+  if (of <= 0) return null
+  const gap = 0.08
+  const step = (Math.PI * 2) / of
+  const arc = (at: number) => {
+    const from = -Math.PI / 2 + at * step + gap
+    const to = from + step - gap * 2
+    const point = (angle: number) =>
+      `${(10 + 8 * Math.cos(angle)).toFixed(2)} ${(10 + 8 * Math.sin(angle)).toFixed(2)}`
+    return `M${point(from)} A8 8 0 0 1 ${point(to)}`
+  }
+  return (
+    <svg viewBox="0 0 20 20" className="size-5 shrink-0" aria-hidden>
+      {Array.from({ length: of }, (_, at) => (
+        <path
+          key={at}
+          d={arc(at)}
+          fill="none"
+          strokeWidth="2.6"
+          strokeLinecap="round"
+          stroke={at < done ? 'var(--color-accent-400)' : 'var(--color-ink-700)'}
+        />
+      ))}
     </svg>
   )
 }
