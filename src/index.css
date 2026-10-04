@@ -1,6 +1,32 @@
 @import 'tailwindcss';
 
 /*
+ * The two faces, bundled rather than fetched: Inter for reading, Space
+ * Grotesk for headings and the big figures. Latin only, declared here
+ * rather than through the packages' own CSS, which lists every subset —
+ * and the service worker precaches every woff2 the build emits, so the
+ * Cyrillic and Vietnamese files would have been downloaded by every
+ * phone that never shows a letter of either.
+ */
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('../node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2')
+    format('woff2-variations');
+}
+
+@font-face {
+  font-family: 'Space Grotesk Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 300 700;
+  src: url('../node_modules/@fontsource-variable/space-grotesk/files/space-grotesk-latin-wght-normal.woff2')
+    format('woff2-variations');
+}
+
+/*
  * Dark, and only dark — this app is used in a gym, often in poor light,
  * one-handed, between sets. There was a light theme that had never
  * worked and it has been removed; the note further down says what that
@@ -74,7 +100,9 @@
   --color-cool-500: oklch(0.7 0.13 285);
 
   --font-sans:
-    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, sans-serif;
+  --font-display: 'Space Grotesk Variable', var(--font-sans);
   --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
 }
 
@@ -242,6 +270,9 @@
     background-repeat: no-repeat;
     color: var(--text-primary);
     font-family: var(--font-sans);
+    /* Inter's single-storey a and open digits: rounder, and a 1 that
+       cannot be read as a 7 across a rack. */
+    font-feature-settings: 'cv11', 'ss01';
     /* Room for the bottom navigation and the iOS home indicator. */
     padding-bottom: var(--safe-bottom);
     overscroll-behavior-y: none;
@@ -451,6 +482,25 @@
    */
   .numeric {
     font-variant-numeric: tabular-nums;
+  }
+
+  /* The display face carries headings and the big figures — the things a
+     glance lands on — and nothing smaller, where Inter reads better. Large
+     type is tightened because a face's default spacing is tuned for body
+     sizes and opens up visibly past 24px. */
+  :where(h1, h2) {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  .numeric:where(.text-xl, .text-2xl, .text-3xl, .text-4xl, .text-5xl, .text-6xl, .text-7xl) {
+    font-family: var(--font-display);
+    letter-spacing: -0.03em;
+    /* Space Grotesk's tabular 1 grows a slab foot to fill its cell, which
+       read as a different typeface inside "115 lb". A figure this size is
+       not a column to align, so it takes the face's own digits. */
+    font-variant-numeric: proportional-nums;
   }
 
   /* Press feedback, and it is deliberately tiny.

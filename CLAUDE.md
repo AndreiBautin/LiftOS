@@ -57,6 +57,17 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **Two faces, bundled** (`@fontsource-variable/inter` and
+  `space-grotesk`, declared by hand at the top of `index.css`): Inter for
+  reading, with its single-storey a and open digits (`cv11`, `ss01`), and
+  Space Grotesk for `h1`/`h2` and **numeric figures from `text-xl` up** —
+  the things a glance lands on. **Latin only, declared rather than
+  imported**: the packages' own CSS lists every subset, and the service
+  worker precaches every woff2 the build emits, so every phone would
+  have downloaded Cyrillic and Vietnamese. 70 KB in all. **Display
+  figures take proportional digits**: Space Grotesk's tabular 1 grows a
+  slab foot that read as another typeface inside "115 lb". The share
+  card draws on a canvas with its own literal fonts and is unchanged.
 - **A page loads as its shape, not as "Loading…"** (`PageSkeleton`,
   tested): the real header, a hero block and two cards, with one polite
   status. Eight pages drew a header over the word and then snapped a
