@@ -64,7 +64,9 @@ export function BodyMapCard() {
     <Card>
       <CardHeading icon={<PersonStanding size={16} aria-hidden />} title="Lately" />
       <p className="text-ink-300 text-sm">
-        {chosen === undefined ? (
+        {chosen === undefined && Object.values(data).every((one) => one.lastDay === undefined) ? (
+          <>A muscle lights here when it is trained, and fades as it recovers.</>
+        ) : chosen === undefined ? (
           <>
             <span className="numeric text-ink-50 font-semibold">{lately}</span> muscle
             {lately === 1 ? '' : 's'} worked in the last two days

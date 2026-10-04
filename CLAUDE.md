@@ -57,6 +57,15 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **A page with nothing to count says so in a sentence** — the block
+  report, the year, the balance card and the body map were checked on an
+  emptied demo (`sampleData: 'cleared'`, database deleted) and drew rows
+  of zeros: four `0`s and "0.0k" on the block, three tugs of war each
+  reading "Nothing logged", "0 muscles worked". Each says it once now,
+  and what will appear. The muscle page also claimed nothing was
+  _programmed_ for a muscle the week trains — it meant nothing had been
+  _logged_. **Re-run that walk when a page is added**: the demo fills
+  every page, so an empty state is the one thing nobody sees.
 - **Every vibration is one vocabulary** (`HAPTICS` and `useHaptics` in
   `features/feel/haptics.ts`): detent, press, logged, skipped, finished,
   record, rest over — so a set logged by the check, the swipe or the key

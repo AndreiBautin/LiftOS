@@ -67,11 +67,18 @@ export function YearPage() {
       />
 
       <section className="hero-panel p-5 sm:p-6" aria-label="The year's streaks">
-        <dl className="grid grid-cols-3 gap-3">
-          <Figure label="Weeks trained" value={squares.weeksTrained} />
-          <Figure label="Best streak" value={squares.bestStreak} unit="wk" />
-          <Figure label="Current" value={squares.currentStreak} unit="wk" />
-        </dl>
+        {squares.sessions === 0 ? (
+          <p className="text-ink-300 text-sm">
+            Nothing trained in {year} yet. A finished session lights its day, and the weeks in a row
+            count up here.
+          </p>
+        ) : (
+          <dl className="grid grid-cols-3 gap-3">
+            <Figure label="Weeks trained" value={squares.weeksTrained} />
+            <Figure label="Best streak" value={squares.bestStreak} unit="wk" />
+            <Figure label="Current" value={squares.currentStreak} unit="wk" />
+          </dl>
+        )}
       </section>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">

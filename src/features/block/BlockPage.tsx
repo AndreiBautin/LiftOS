@@ -62,12 +62,21 @@ export function BlockPage() {
       />
 
       <section className="hero-panel p-5 sm:p-6" aria-label="Block totals">
-        <dl className="grid grid-cols-4 gap-3">
-          <Figure label="Sessions" value={String(report.sessions)} />
-          <Figure label="Sets" value={String(report.sets)} />
-          <Figure label="Volume" value={`${(report.tonnage / 1000).toFixed(1)}k`} />
-          <Figure label="Records" value={String(report.records)} />
-        </dl>
+        {/* Four zeros said nothing a sentence does not say better. */}
+        {report.sessions === 0 ? (
+          <p className="text-ink-300 text-sm">
+            {running
+              ? 'Nothing finished this block yet — its first session starts the count.'
+              : 'Nothing was finished in this block.'}
+          </p>
+        ) : (
+          <dl className="grid grid-cols-4 gap-3">
+            <Figure label="Sessions" value={String(report.sessions)} />
+            <Figure label="Sets" value={String(report.sets)} />
+            <Figure label="Volume" value={`${(report.tonnage / 1000).toFixed(1)}k`} />
+            <Figure label="Records" value={String(report.records)} />
+          </dl>
+        )}
         <ol className="mt-5 flex gap-1.5" aria-label="Sets by week">
           {report.perWeek.map((sets, week) => {
             const most = Math.max(1, ...report.perWeek)

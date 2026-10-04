@@ -75,7 +75,8 @@ export function MusclePage() {
         <CardHeading title="What trained it" />
         {history.exercises.length === 0 ? (
           <p className="text-ink-500 text-sm">
-            Nothing in the last twelve weeks was programmed for the {label.toLowerCase()}.
+            Nothing has trained the {label.toLowerCase()} in the last twelve weeks. The exercises
+            appear here as their sets are logged.
           </p>
         ) : (
           <ul className="space-y-3">

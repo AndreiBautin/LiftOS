@@ -24,11 +24,19 @@ export function BalanceCard() {
   return (
     <Card>
       <CardHeading icon={<Scale size={16} aria-hidden />} title="Balance · 4 weeks" />
-      <ul className="space-y-5">
-        {balance.data.map((pair) => (
-          <TugRow key={pair.pair.key} balance={pair} />
-        ))}
-      </ul>
+      {/* Three empty tugs of war read as three failures; one line says it once. */}
+      {balance.data.every((pair) => pair.total.left + pair.total.right === 0) ? (
+        <p className="text-ink-500 text-sm">
+          Nothing logged in four weeks. Push against pull, quads against the hinge and upper against
+          lower lean here once it is.
+        </p>
+      ) : (
+        <ul className="space-y-5">
+          {balance.data.map((pair) => (
+            <TugRow key={pair.pair.key} balance={pair} />
+          ))}
+        </ul>
+      )}
     </Card>
   )
 }
