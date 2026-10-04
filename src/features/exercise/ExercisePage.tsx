@@ -69,7 +69,7 @@ export function ExercisePage() {
   const estimate = [...shown.sessions].reverse().find((one) => one.estimate !== undefined)
 
   return (
-    <div className="mx-auto max-w-2xl space-y-4 pb-8">
+    <div className="mx-auto max-w-2xl space-y-4 pb-8 lg:max-w-5xl">
       <PageHeader
         title={title}
         morph={morphName('exercise', exerciseId)}
@@ -136,8 +136,11 @@ export function ExercisePage() {
       )}
 
       <StallCard exerciseId={exerciseId} series={shown} bodyweight={bodyweight} />
-      <CueCard key={exerciseId} exerciseId={exerciseId} />
-      <NotesCard exerciseId={exerciseId} />
+      {/* From `lg`, two columns: the cue beside the notes, the charts beside each other. */}
+      <div className="space-y-4 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
+        <CueCard key={exerciseId} exerciseId={exerciseId} />
+        <NotesCard exerciseId={exerciseId} />
+      </div>
 
       <section className="hero-panel p-5 sm:p-6" aria-label="Progress">
         <dl className="grid grid-cols-3 gap-3">
@@ -158,11 +161,12 @@ export function ExercisePage() {
         <Staircase series={shown} bodyweight={bodyweight} units={settings.units} />
       </section>
 
-      {!bodyweight && estimate?.estimate !== undefined && (
-        <RepMaxCard series={shown} estimate={estimate.estimate} />
-      )}
-
-      <WeeklySetsCard sessions={shown.sessions} />
+      <div className="space-y-4 lg:grid lg:grid-cols-2 lg:items-start lg:gap-4 lg:space-y-0">
+        {!bodyweight && estimate?.estimate !== undefined && (
+          <RepMaxCard series={shown} estimate={estimate.estimate} />
+        )}
+        <WeeklySetsCard sessions={shown.sessions} />
+      </div>
 
       <SessionList sessions={shown.sessions} units={settings.units} bodyweight={bodyweight} />
     </div>

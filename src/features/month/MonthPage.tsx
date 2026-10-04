@@ -57,7 +57,7 @@ export function MonthPage() {
   const title = monthName(month, today)
 
   return (
-    <div className="mx-auto max-w-2xl space-y-4 pb-8">
+    <div className="mx-auto max-w-2xl space-y-4 pb-8 lg:max-w-5xl">
       <PageHeader
         title={title}
         subtitle={`${String(recap.sessions)} sessions · ${String(Object.keys(recap.days).length)} days trained`}
@@ -136,84 +136,92 @@ export function MonthPage() {
             />
           )}
         </div>
-        <dl className="grid grid-cols-3 gap-3">
-          <Total label="Sets" now={recap.sets} before={recap.previous.sets} />
-          <Total
-            label="Volume"
-            now={Math.round(recap.tonnage)}
-            before={Math.round(recap.previous.tonnage)}
-            suffix={settings.units}
-          />
-          <Total
-            label="Hours"
-            now={Math.round(recap.minutes / 60)}
-            before={Math.round(recap.previous.minutes / 60)}
-          />
-        </dl>
-        {recap.previous.sessions > 0 && (
-          <p className="text-ink-500 mt-2 text-xs">
-            Against{' '}
-            {recap.previousThrough.endsWith('-31')
-              ? monthName(recap.previousThrough.slice(0, 7), today)
-              : `${shortDay(`${recap.previousThrough.slice(0, 7)}-01`)}–${String(Number(recap.previousThrough.slice(8)))}`}
-          </p>
-        )}
-        <MonthCalendar recap={recap} today={today} />
+        {/* From `lg` the totals stand left and the calendar right, at a phone's size. */}
+        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start lg:gap-8">
+          <div>
+            <dl className="grid grid-cols-3 gap-3">
+              <Total label="Sets" now={recap.sets} before={recap.previous.sets} />
+              <Total
+                label="Volume"
+                now={Math.round(recap.tonnage)}
+                before={Math.round(recap.previous.tonnage)}
+                suffix={settings.units}
+              />
+              <Total
+                label="Hours"
+                now={Math.round(recap.minutes / 60)}
+                before={Math.round(recap.previous.minutes / 60)}
+              />
+            </dl>
+            {recap.previous.sessions > 0 && (
+              <p className="text-ink-500 mt-2 text-xs">
+                Against{' '}
+                {recap.previousThrough.endsWith('-31')
+                  ? monthName(recap.previousThrough.slice(0, 7), today)
+                  : `${shortDay(`${recap.previousThrough.slice(0, 7)}-01`)}–${String(Number(recap.previousThrough.slice(8)))}`}
+              </p>
+            )}
+          </div>
+          <MonthCalendar recap={recap} today={today} />
+        </div>
       </section>
 
-      {recap.lifts.length > 0 && (
-        <Card>
-          <CardHeading title="Estimated max, start to end of month" />
-          <ul className="space-y-2.5">
-            {recap.lifts.map(({ lift, from, to }) => (
-              <li key={lift} className="flex items-center justify-between gap-3 text-sm">
-                <span className="text-ink-100 flex items-center gap-2">
-                  <span
-                    className="size-2 rounded-full"
-                    style={{ background: LIFT_COLOURS[lift] }}
-                    aria-hidden
-                  />
-                  {LIFT_NAMES[lift]}
-                </span>
-                <span className="numeric text-ink-300">
-                  {from} → <span className="text-ink-50 font-semibold">{to}</span>{' '}
-                  <Change by={to - from} />
-                </span>
-              </li>
-            ))}
-          </ul>
-        </Card>
-      )}
-
-      {recap.records.length > 0 && (
-        <Card>
-          <CardHeading
-            icon={<Star size={16} aria-hidden />}
-            title={`${String(recap.records.length)} ${recap.records.length === 1 ? 'record' : 'records'}`}
-          />
-          <ul className="space-y-2">
-            {recap.records.map((record) => (
-              <li
-                key={`${record.exerciseId}-${record.date}`}
-                className="flex items-center justify-between gap-3 text-sm"
-              >
-                <span className="min-w-0">
-                  <span className="text-ink-100 block truncate">{nameOf(record.exerciseId)}</span>
-                  <span className="text-ink-500 text-xs">
-                    {shortDay(record.date)} · {RECORD_LABELS[record.kind]}
+      {/* From `lg` the lifts and the records stand side by side. */}
+      <div className="space-y-4 lg:grid lg:grid-cols-2 lg:items-start lg:gap-4 lg:space-y-0">
+        {recap.lifts.length > 0 && (
+          <Card>
+            <CardHeading title="Estimated max, start to end of month" />
+            <ul className="space-y-2.5">
+              {recap.lifts.map(({ lift, from, to }) => (
+                <li key={lift} className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-ink-100 flex items-center gap-2">
+                    <span
+                      className="size-2 rounded-full"
+                      style={{ background: LIFT_COLOURS[lift] }}
+                      aria-hidden
+                    />
+                    {LIFT_NAMES[lift]}
                   </span>
-                </span>
-                <span className="numeric shrink-0 font-semibold text-[oklch(0.86_0.13_85)]">
-                  {record.set.load === undefined
-                    ? 'BW'
-                    : formatLoad(record.set.load, settings.units)}{' '}
-                  × {record.set.reps ?? '—'}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </Card>
-      )}
+                  <span className="numeric text-ink-300">
+                    {from} → <span className="text-ink-50 font-semibold">{to}</span>{' '}
+                    <Change by={to - from} />
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        )}
+
+        {recap.records.length > 0 && (
+          <Card>
+            <CardHeading
+              icon={<Star size={16} aria-hidden />}
+              title={`${String(recap.records.length)} ${recap.records.length === 1 ? 'record' : 'records'}`}
+            />
+            <ul className="space-y-2">
+              {recap.records.map((record) => (
+                <li
+                  key={`${record.exerciseId}-${record.date}`}
+                  className="flex items-center justify-between gap-3 text-sm"
+                >
+                  <span className="min-w-0">
+                    <span className="text-ink-100 block truncate">{nameOf(record.exerciseId)}</span>
+                    <span className="text-ink-500 text-xs">
+                      {shortDay(record.date)} · {RECORD_LABELS[record.kind]}
+                    </span>
+                  </span>
+                  <span className="numeric shrink-0 font-semibold text-[oklch(0.86_0.13_85)]">
+                    {record.set.load === undefined
+                      ? 'BW'
+                      : formatLoad(record.set.load, settings.units)}{' '}
+                    × {record.set.reps ?? '—'}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        )}
+      </div>
     </div>
   )
 }
@@ -300,7 +308,7 @@ function MonthCalendar({ recap, today }: { readonly recap: MonthRecap; readonly 
   const most = Math.max(1, ...Object.values(recap.days))
 
   return (
-    <div className="mt-5">
+    <div className="mt-5 lg:mt-0">
       <div className="text-ink-500 mb-1.5 grid grid-cols-7 gap-1.5 text-center text-[0.65rem]">
         {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((letter, index) => (
           <span key={index} aria-hidden>

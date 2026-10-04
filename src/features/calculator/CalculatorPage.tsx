@@ -37,7 +37,7 @@ export function CalculatorPage() {
   const barLoad = shown ?? table?.percents.find((row) => row.percent === 100)?.load ?? undefined
 
   return (
-    <div className="mx-auto max-w-2xl space-y-4 pb-8">
+    <div className="mx-auto max-w-2xl space-y-4 pb-8 lg:max-w-5xl">
       <PageHeader
         title="Calculator"
         subtitle={`${E1RM_FORMULA_LABELS[settings.e1rmFormula]} · rounded down to ${String(settings.roundingIncrement)} ${units}`}
@@ -74,8 +74,9 @@ export function CalculatorPage() {
         )}
       </section>
 
+      {/* From `lg` the two tables stand side by side under the set. */}
       {table !== undefined && (
-        <>
+        <div className="space-y-4 lg:grid lg:grid-cols-2 lg:items-start lg:gap-4 lg:space-y-0">
           <Card>
             <CardHeading title="For other rep counts" />
             <RepCurve rows={table.reps} given={Number(reps)} />
@@ -144,7 +145,7 @@ export function CalculatorPage() {
               </div>
             )}
           </Card>
-        </>
+        </div>
       )}
     </div>
   )

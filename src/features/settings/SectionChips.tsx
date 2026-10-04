@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 
 import { cn } from '@/lib/cn'
 
@@ -58,12 +58,12 @@ export function SectionChips({ sections }: { readonly sections: readonly Setting
   return (
     <nav
       aria-label="Settings sections"
-      className="bg-ink-950 sticky top-0 z-20 -mx-4 mb-4 border-b border-white/5 px-4 py-2"
-      style={{ paddingTop: 'calc(0.5rem + var(--safe-top))' }}
+      className="bg-ink-950 sticky top-0 z-20 -mx-4 mb-4 border-b border-white/5 px-4 py-2 lg:top-6 lg:mx-0 lg:self-start lg:border-0 lg:bg-transparent lg:p-0 pt-[var(--chips-top)] lg:pt-0"
+      style={{ '--chips-top': 'calc(0.5rem + var(--safe-top))' } as CSSProperties}
     >
       <ul
         ref={strip}
-        className="flex gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="flex gap-1.5 overflow-x-auto lg:flex-col lg:overflow-visible [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {sections.map((section) => (
           <li key={section.id} className="shrink-0">

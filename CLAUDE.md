@@ -57,6 +57,16 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **The newer pages have a desktop shape, from `lg` only.** Measured at
+  1400: Settings ran the full 1356 px with toggles at the far edge, and
+  the exercise page, the calculator and the month were one 714 px column
+  two screens long. Settings is now a 5xl page with the chips as a
+  contents list down the left; the exercise page puts the cue beside the
+  notes and the rep-max table beside the weekly towers; the calculator's
+  two tables stand side by side; the month's hero puts the totals left
+  and the calendar right, at a phone's size — at 5xl its cells were
+  each a hand wide. All `lg:` utilities, so a phone cannot reach them
+  (checked: no overflow at 375, chips still a row).
 - **Settings has a sticky row of section chips** (`SectionChips`):
   Look, Units, Session, Maxes, Sync, Data, the one in view lit — the
   last section whose top has passed a third of the way down, or the last

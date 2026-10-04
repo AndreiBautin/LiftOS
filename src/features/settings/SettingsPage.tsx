@@ -80,127 +80,129 @@ export function SettingsPage() {
   })
 
   return (
-    <div>
+    <div className="lg:mx-auto lg:max-w-5xl">
       <PageHeader title="Settings" />
-      <SectionChips sections={SECTIONS} />
-
-      <Section id="look" title="Look">
-        <Card>
-          <p className="text-ink-300 mb-3 text-sm">Accent</p>
-          <div className="flex flex-wrap gap-3" role="radiogroup" aria-label="Accent colour">
-            {ACCENT_HUES.map(({ hue, name }) => {
-              const chosen = (settings.accentHue ?? DEFAULT_ACCENT_HUE) === hue
-              return (
-                <button
-                  key={hue}
-                  type="button"
-                  role="radio"
-                  aria-checked={chosen}
-                  aria-label={name}
-                  onClick={() => {
-                    update({ accentHue: hue })
-                  }}
-                  className="tap-target flex flex-col items-center gap-1.5"
-                >
-                  <span
-                    className={cn(
-                      'size-9 rounded-full ring-2 ring-offset-2 ring-offset-transparent transition-shadow',
-                      chosen ? 'ring-ink-100' : 'ring-transparent',
-                    )}
-                    style={{
-                      background: `radial-gradient(circle at 35% 30%, oklch(0.85 0.1 ${String(hue)}), oklch(0.63 0.12 ${String(hue)}))`,
-                    }}
-                    aria-hidden
-                  />
-                  <span className={cn('text-xs', chosen ? 'text-ink-50' : 'text-ink-500')}>
-                    {name}
-                  </span>
-                </button>
-              )
-            })}
-          </div>
-          <p className="text-ink-300 mt-5 mb-3 text-sm">Background</p>
-          <div className="grid grid-cols-2 gap-3" role="radiogroup" aria-label="Background">
-            {BACKGROUNDS.map(({ black, name, page, card }) => {
-              const chosen = (settings.trueBlack === true) === black
-              return (
-                <button
-                  key={name}
-                  type="button"
-                  role="radio"
-                  aria-checked={chosen}
-                  onClick={() => {
-                    update({ trueBlack: black })
-                  }}
-                  className={cn(
-                    'tap-target overflow-hidden rounded-xl border-2 text-left transition-colors',
-                    chosen ? 'border-accent-500' : 'border-ink-800 hover:border-ink-700',
-                  )}
-                >
-                  {/* A page with a card on it, drawn in that background. */}
-                  <span className="block p-2.5" style={{ background: page }} aria-hidden>
-                    <span
-                      className="border-ink-800 block rounded-md border p-2"
-                      style={{ background: card }}
+      {/* From `lg` the chips stand down the left as a contents list. */}
+      <div className="lg:grid lg:grid-cols-[10rem_minmax(0,1fr)] lg:gap-10">
+        <SectionChips sections={SECTIONS} />
+        <div className="min-w-0">
+          <Section id="look" title="Look">
+            <Card>
+              <p className="text-ink-300 mb-3 text-sm">Accent</p>
+              <div className="flex flex-wrap gap-3" role="radiogroup" aria-label="Accent colour">
+                {ACCENT_HUES.map(({ hue, name }) => {
+                  const chosen = (settings.accentHue ?? DEFAULT_ACCENT_HUE) === hue
+                  return (
+                    <button
+                      key={hue}
+                      type="button"
+                      role="radio"
+                      aria-checked={chosen}
+                      aria-label={name}
+                      onClick={() => {
+                        update({ accentHue: hue })
+                      }}
+                      className="tap-target flex flex-col items-center gap-1.5"
                     >
-                      <span className="bg-accent-500 block h-1.5 w-1/2 rounded-full" />
-                      <span className="bg-ink-700 mt-1.5 block h-1 w-3/4 rounded-full" />
-                    </span>
-                  </span>
-                  <span
-                    className={cn(
-                      'block px-2.5 py-1.5 text-xs',
-                      chosen ? 'text-ink-50' : 'text-ink-500',
-                    )}
+                      <span
+                        className={cn(
+                          'size-9 rounded-full ring-2 ring-offset-2 ring-offset-transparent transition-shadow',
+                          chosen ? 'ring-ink-100' : 'ring-transparent',
+                        )}
+                        style={{
+                          background: `radial-gradient(circle at 35% 30%, oklch(0.85 0.1 ${String(hue)}), oklch(0.63 0.12 ${String(hue)}))`,
+                        }}
+                        aria-hidden
+                      />
+                      <span className={cn('text-xs', chosen ? 'text-ink-50' : 'text-ink-500')}>
+                        {name}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+              <p className="text-ink-300 mt-5 mb-3 text-sm">Background</p>
+              <div className="grid grid-cols-2 gap-3" role="radiogroup" aria-label="Background">
+                {BACKGROUNDS.map(({ black, name, page, card }) => {
+                  const chosen = (settings.trueBlack === true) === black
+                  return (
+                    <button
+                      key={name}
+                      type="button"
+                      role="radio"
+                      aria-checked={chosen}
+                      onClick={() => {
+                        update({ trueBlack: black })
+                      }}
+                      className={cn(
+                        'tap-target overflow-hidden rounded-xl border-2 text-left transition-colors',
+                        chosen ? 'border-accent-500' : 'border-ink-800 hover:border-ink-700',
+                      )}
+                    >
+                      {/* A page with a card on it, drawn in that background. */}
+                      <span className="block p-2.5" style={{ background: page }} aria-hidden>
+                        <span
+                          className="border-ink-800 block rounded-md border p-2"
+                          style={{ background: card }}
+                        >
+                          <span className="bg-accent-500 block h-1.5 w-1/2 rounded-full" />
+                          <span className="bg-ink-700 mt-1.5 block h-1 w-3/4 rounded-full" />
+                        </span>
+                      </span>
+                      <span
+                        className={cn(
+                          'block px-2.5 py-1.5 text-xs',
+                          chosen ? 'text-ink-50' : 'text-ink-500',
+                        )}
+                      >
+                        {name}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </Card>
+          </Section>
+
+          <Section id="units" title="Units">
+            <Card className="space-y-4">
+              <div className="flex gap-2">
+                {(['lb', 'kg'] as const).map((unit) => (
+                  <Button
+                    key={unit}
+                    variant={settings.units === unit ? 'primary' : 'outline'}
+                    className="flex-1"
+                    onClick={() => {
+                      update({ units: unit, roundingIncrement: DEFAULT_INCREMENT[unit] })
+                    }}
                   >
-                    {name}
-                  </span>
-                </button>
-              )
-            })}
-          </div>
-        </Card>
-      </Section>
+                    {unit}
+                  </Button>
+                ))}
+              </div>
 
-      <Section id="units" title="Units">
-        <Card className="space-y-4">
-          <div className="flex gap-2">
-            {(['lb', 'kg'] as const).map((unit) => (
-              <Button
-                key={unit}
-                variant={settings.units === unit ? 'primary' : 'outline'}
-                className="flex-1"
-                onClick={() => {
-                  update({ units: unit, roundingIncrement: DEFAULT_INCREMENT[unit] })
+              <NumberSetting
+                label="Round loads to the nearest"
+                suffix={settings.units}
+                value={settings.roundingIncrement}
+                onChange={(roundingIncrement) => {
+                  update({ roundingIncrement })
                 }}
-              >
-                {unit}
-              </Button>
-            ))}
-          </div>
+              />
 
-          <NumberSetting
-            label="Round loads to the nearest"
-            suffix={settings.units}
-            value={settings.roundingIncrement}
-            onChange={(roundingIncrement) => {
-              update({ roundingIncrement })
-            }}
-          />
+              <PlateSetting />
 
-          <PlateSetting />
-
-          <NumberSetting
-            label="Bodyweight"
-            suffix={settings.units}
-            value={settings.bodyweight ?? 0}
-            onChange={(bodyweight) => {
-              update({ bodyweight })
-            }}
-          />
-        </Card>
-      </Section>
-      {/*
+              <NumberSetting
+                label="Bodyweight"
+                suffix={settings.units}
+                value={settings.bodyweight ?? 0}
+                onChange={(bodyweight) => {
+                  update({ bodyweight })
+                }}
+              />
+            </Card>
+          </Section>
+          {/*
         Nothing here autoregulates, whatever this used to say.
 
         The description claimed "session length moves the day count,
@@ -211,7 +213,7 @@ export function SettingsPage() {
         is checkable against a session, and a claim about behaviour that
         does not happen cannot be checked at all.
       */}
-      {/*
+          {/*
         **There is no Block section any more.** It held one control —
         days per week — which chose between four splits. Asked for as
         _"we probably don't need any of the customize workout stuff,
@@ -219,66 +221,66 @@ export function SettingsPage() {
         see `rp-splits.ts` for why the other three were already worse
         than the one that shipped.
       */}
-      <Section id="session" title="During a session">
-        <Card className="space-y-3">
-          <Toggle
-            label="Rest timer"
-            checked={settings.restTimerEnabled}
-            onChange={(restTimerEnabled) => {
-              update({ restTimerEnabled })
+          <Section id="session" title="During a session">
+            <Card className="space-y-3">
+              <Toggle
+                label="Rest timer"
+                checked={settings.restTimerEnabled}
+                onChange={(restTimerEnabled) => {
+                  update({ restTimerEnabled })
+                }}
+              />
+              <Toggle
+                label="Rest sounds — ticks before the end, a chime at it"
+                checked={settings.restSounds}
+                onChange={(restSounds) => {
+                  update({ restSounds })
+                }}
+              />
+              <Toggle
+                label="Vibrate — a set logged, a skip, a record, the rest's end"
+                checked={settings.haptics}
+                onChange={(haptics) => {
+                  update({ haptics })
+                }}
+              />
+              <Toggle
+                label="Keep the screen awake"
+                checked={settings.keepScreenAwake}
+                onChange={(keepScreenAwake) => {
+                  update({ keepScreenAwake })
+                }}
+              />
+            </Card>
+          </Section>
+
+          {/* ---------------------------------------------------------------- */}
+
+          <MaxesEditor
+            settings={settings}
+            onChange={(estimatedMaxes) => {
+              update({ estimatedMaxes })
             }}
           />
-          <Toggle
-            label="Rest sounds — ticks before the end, a chime at it"
-            checked={settings.restSounds}
-            onChange={(restSounds) => {
-              update({ restSounds })
-            }}
-          />
-          <Toggle
-            label="Vibrate — a set logged, a skip, a record, the rest's end"
-            checked={settings.haptics}
-            onChange={(haptics) => {
-              update({ haptics })
-            }}
-          />
-          <Toggle
-            label="Keep the screen awake"
-            checked={settings.keepScreenAwake}
-            onChange={(keepScreenAwake) => {
-              update({ keepScreenAwake })
-            }}
-          />
-        </Card>
-      </Section>
 
-      {/* ---------------------------------------------------------------- */}
+          <SyncSection />
 
-      <MaxesEditor
-        settings={settings}
-        onChange={(estimatedMaxes) => {
-          update({ estimatedMaxes })
-        }}
-      />
-
-      <SyncSection />
-
-      <Section
-        id="data"
-        title="Your data"
-        description={
-          syncing
-            ? 'In this browser, and in your GitHub repository after each sync'
-            : 'All of it is in this browser and nowhere else'
-        }
-      >
-        <Card className="space-y-4">
-          <div className="flex items-start gap-3">
-            <HardDrive size={18} className="text-ink-500 mt-0.5 shrink-0" aria-hidden />
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <p className="text-ink-50 text-sm font-medium">Storage</p>
-                {/*
+          <Section
+            id="data"
+            title="Your data"
+            description={
+              syncing
+                ? 'In this browser, and in your GitHub repository after each sync'
+                : 'All of it is in this browser and nowhere else'
+            }
+          >
+            <Card className="space-y-4">
+              <div className="flex items-start gap-3">
+                <HardDrive size={18} className="text-ink-500 mt-0.5 shrink-0" aria-hidden />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="text-ink-50 text-sm font-medium">Storage</p>
+                    {/*
                   An installed app on best-effort is not a warning. Safari
                   refuses `persist()` outright, so every iPhone reads
                   best-effort — and an installed one is exempt from the
@@ -286,223 +288,229 @@ export function SettingsPage() {
                   badge over a state nobody can change is how a person
                   learns to ignore the badge.
                 */}
-                {storage.data !== undefined && (
-                  <Badge
-                    tone={
-                      storage.data.state === 'persisted'
-                        ? 'good'
-                        : storage.data.state === 'best-effort' && storage.data.installed
-                          ? 'neutral'
-                          : 'warn'
-                    }
-                  >
-                    {storage.data.state === 'persisted' ? 'persistent' : storage.data.state}
-                  </Badge>
-                )}
-              </div>
-              {storage.data !== undefined && (
-                <>
-                  <p className="text-ink-300 mt-1 text-sm">
-                    {describePersistence(storage.data.state, storage.data.installed)}
-                  </p>
-                  {storage.data.usageBytes !== undefined &&
-                    storage.data.quotaBytes !== undefined && (
-                      <p className="text-ink-500 numeric mt-1 text-xs">
-                        {formatBytes(storage.data.usageBytes)} used of{' '}
-                        {formatBytes(storage.data.quotaBytes)} available
-                        {exercises.data !== undefined &&
-                          ` · ${String(exercises.data.length)} exercises`}
-                      </p>
+                    {storage.data !== undefined && (
+                      <Badge
+                        tone={
+                          storage.data.state === 'persisted'
+                            ? 'good'
+                            : storage.data.state === 'best-effort' && storage.data.installed
+                              ? 'neutral'
+                              : 'warn'
+                        }
+                      >
+                        {storage.data.state === 'persisted' ? 'persistent' : storage.data.state}
+                      </Badge>
                     )}
-                </>
+                  </div>
+                  {storage.data !== undefined && (
+                    <>
+                      <p className="text-ink-300 mt-1 text-sm">
+                        {describePersistence(storage.data.state, storage.data.installed)}
+                      </p>
+                      {storage.data.usageBytes !== undefined &&
+                        storage.data.quotaBytes !== undefined && (
+                          <p className="text-ink-500 numeric mt-1 text-xs">
+                            {formatBytes(storage.data.usageBytes)} used of{' '}
+                            {formatBytes(storage.data.quotaBytes)} available
+                            {exercises.data !== undefined &&
+                              ` · ${String(exercises.data.length)} exercises`}
+                          </p>
+                        )}
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div className="border-warn-500/30 bg-warn-500/5 flex gap-3 rounded-lg border p-3">
+                <AlertTriangle size={16} className="text-warn-500 mt-0.5 shrink-0" aria-hidden />
+                <div className="text-ink-300 space-y-1.5 text-xs">
+                  <p className="text-ink-100 font-medium">What will delete this data</p>
+                  <p>
+                    Clearing site data, and in most browsers clearing cookies — the control is
+                    usually labelled &ldquo;cookies and other site data&rdquo; and it takes this
+                    database with it.
+                  </p>
+                  <p>
+                    Uninstalling the app, switching browser, or moving to a new phone.{' '}
+                    {syncing
+                      ? 'Connecting the new browser to the same repository brings it all back.'
+                      : 'None of it transfers; there is no account and no server.'}
+                  </p>
+                  <p className="text-ink-100 font-medium">
+                    {syncing
+                      ? 'The repository and an export both survive all of it.'
+                      : 'Export is the only thing that survives all of it.'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <Button
+                  variant="primary"
+                  className="flex-1"
+                  disabled={backup.exportBackup.isPending}
+                  onClick={() => {
+                    backup.exportBackup.mutate()
+                  }}
+                >
+                  <Download size={16} aria-hidden />
+                  Export
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => {
+                    fileInput.current?.click()
+                  }}
+                >
+                  <Upload size={16} aria-hidden />
+                  Import
+                </Button>
+              </div>
+              <ExportCsv />
+              <ImportOther />
+
+              <input
+                ref={fileInput}
+                type="file"
+                accept="application/json,.json"
+                className="hidden"
+                aria-label="Choose a backup file"
+                onChange={(event) => {
+                  const file = event.target.files?.[0]
+                  if (file === undefined) return
+                  void file.text().then(backup.inspect)
+                  event.target.value = ''
+                }}
+              />
+
+              <p
+                className={
+                  age.stale && age.days !== undefined
+                    ? 'text-warn-500 text-xs'
+                    : 'text-ink-500 text-xs'
+                }
+              >
+                {age.days === undefined
+                  ? 'No backup taken yet.'
+                  : `Last export ${new Date(settings.lastExportAt ?? '').toLocaleDateString()} — ${
+                      age.days === 0 ? 'today' : `${String(age.days)} days ago`
+                    }.`}
+              </p>
+
+              {backup.preview !== undefined && (
+                <ImportPanel
+                  preview={backup.preview}
+                  canImport={backup.canImport}
+                  confirmReplace={confirmReplace}
+                  onConfirmChange={setConfirmReplace}
+                  onMerge={() => {
+                    backup.runImport.mutate('merge')
+                  }}
+                  onReplace={() => {
+                    backup.runImport.mutate('replace')
+                    setConfirmReplace('')
+                  }}
+                  onCancel={() => {
+                    backup.clearPreview()
+                    setConfirmReplace('')
+                  }}
+                  busy={backup.runImport.isPending}
+                />
               )}
-            </div>
-          </div>
 
-          <div className="border-warn-500/30 bg-warn-500/5 flex gap-3 rounded-lg border p-3">
-            <AlertTriangle size={16} className="text-warn-500 mt-0.5 shrink-0" aria-hidden />
-            <div className="text-ink-300 space-y-1.5 text-xs">
-              <p className="text-ink-100 font-medium">What will delete this data</p>
-              <p>
-                Clearing site data, and in most browsers clearing cookies — the control is usually
-                labelled &ldquo;cookies and other site data&rdquo; and it takes this database with
-                it.
-              </p>
-              <p>
-                Uninstalling the app, switching browser, or moving to a new phone.{' '}
-                {syncing
-                  ? 'Connecting the new browser to the same repository brings it all back.'
-                  : 'None of it transfers; there is no account and no server.'}
-              </p>
-              <p className="text-ink-100 font-medium">
-                {syncing
-                  ? 'The repository and an export both survive all of it.'
-                  : 'Export is the only thing that survives all of it.'}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex gap-2">
-            <Button
-              variant="primary"
-              className="flex-1"
-              disabled={backup.exportBackup.isPending}
-              onClick={() => {
-                backup.exportBackup.mutate()
-              }}
-            >
-              <Download size={16} aria-hidden />
-              Export
-            </Button>
-
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={() => {
-                fileInput.current?.click()
-              }}
-            >
-              <Upload size={16} aria-hidden />
-              Import
-            </Button>
-          </div>
-          <ExportCsv />
-          <ImportOther />
-
-          <input
-            ref={fileInput}
-            type="file"
-            accept="application/json,.json"
-            className="hidden"
-            aria-label="Choose a backup file"
-            onChange={(event) => {
-              const file = event.target.files?.[0]
-              if (file === undefined) return
-              void file.text().then(backup.inspect)
-              event.target.value = ''
-            }}
-          />
-
-          <p
-            className={
-              age.stale && age.days !== undefined ? 'text-warn-500 text-xs' : 'text-ink-500 text-xs'
-            }
-          >
-            {age.days === undefined
-              ? 'No backup taken yet.'
-              : `Last export ${new Date(settings.lastExportAt ?? '').toLocaleDateString()} — ${
-                  age.days === 0 ? 'today' : `${String(age.days)} days ago`
-                }.`}
-          </p>
-
-          {backup.preview !== undefined && (
-            <ImportPanel
-              preview={backup.preview}
-              canImport={backup.canImport}
-              confirmReplace={confirmReplace}
-              onConfirmChange={setConfirmReplace}
-              onMerge={() => {
-                backup.runImport.mutate('merge')
-              }}
-              onReplace={() => {
-                backup.runImport.mutate('replace')
-                setConfirmReplace('')
-              }}
-              onCancel={() => {
-                backup.clearPreview()
-                setConfirmReplace('')
-              }}
-              busy={backup.runImport.isPending}
-            />
-          )}
-
-          {/*
+              {/*
             **Start fresh and load the sample are never on screen together.**
             Which one is offered follows whether there is anything here:
             a database with records can only be wiped, and an empty one
             can only be filled. The wipe asks twice and offers the export
             first, because it is the one control here that cannot be undone.
           */}
-          <div className="border-ink-800 space-y-2 border-t pt-4">
-            {/*
+              <div className="border-ink-800 space-y-2 border-t pt-4">
+                {/*
               **No sample on a synced device.** The next round would upload
               it into the real history, and sync cannot tell it apart
               afterwards — the same reason connecting clears it first.
             */}
-            {empty.data === true && syncing ? (
-              <p className="text-ink-500 text-xs">
-                Sample data is unavailable while this device syncs — it would be uploaded into your
-                history. Disconnect sync first to try it.
-              </p>
-            ) : empty.data === true ? (
-              <>
-                <Button
-                  variant="outline"
-                  full
-                  disabled={sample.loadSample.isPending}
-                  onClick={() => {
-                    sample.loadSample.mutate()
-                  }}
-                >
-                  <Sparkles size={16} aria-hidden />
-                  Load sample data
-                </Button>
-                <p className="text-ink-500 text-xs">
-                  Fills the app with a made-up person&rsquo;s quests, lifts and places, to see what
-                  every screen does. Start fresh again whenever you like.
-                </p>
-              </>
-            ) : confirmFresh ? (
-              <div className="border-bad-500/30 bg-bad-500/5 space-y-3 rounded-lg border p-3">
-                <p className="text-ink-100 text-sm font-medium">Delete everything in the app?</p>
-                <p className="text-ink-300 text-xs">
-                  Every session and exercise you added on this browser goes, and it cannot be
-                  undone. Export first if you want any of it back. Your settings are kept.
-                </p>
-                <div className="flex gap-2">
-                  <Button
-                    variant="danger"
-                    className="flex-1"
-                    disabled={sample.startFresh.isPending}
-                    onClick={() => {
-                      sample.startFresh.mutate(undefined, {
-                        onSuccess: () => {
+                {empty.data === true && syncing ? (
+                  <p className="text-ink-500 text-xs">
+                    Sample data is unavailable while this device syncs — it would be uploaded into
+                    your history. Disconnect sync first to try it.
+                  </p>
+                ) : empty.data === true ? (
+                  <>
+                    <Button
+                      variant="outline"
+                      full
+                      disabled={sample.loadSample.isPending}
+                      onClick={() => {
+                        sample.loadSample.mutate()
+                      }}
+                    >
+                      <Sparkles size={16} aria-hidden />
+                      Load sample data
+                    </Button>
+                    <p className="text-ink-500 text-xs">
+                      Fills the app with a made-up person&rsquo;s quests, lifts and places, to see
+                      what every screen does. Start fresh again whenever you like.
+                    </p>
+                  </>
+                ) : confirmFresh ? (
+                  <div className="border-bad-500/30 bg-bad-500/5 space-y-3 rounded-lg border p-3">
+                    <p className="text-ink-100 text-sm font-medium">
+                      Delete everything in the app?
+                    </p>
+                    <p className="text-ink-300 text-xs">
+                      Every session and exercise you added on this browser goes, and it cannot be
+                      undone. Export first if you want any of it back. Your settings are kept.
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="danger"
+                        className="flex-1"
+                        disabled={sample.startFresh.isPending}
+                        onClick={() => {
+                          sample.startFresh.mutate(undefined, {
+                            onSuccess: () => {
+                              setConfirmFresh(false)
+                            },
+                          })
+                        }}
+                      >
+                        Delete everything
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        className="flex-1"
+                        onClick={() => {
                           setConfirmFresh(false)
-                        },
-                      })
-                    }}
-                  >
-                    Delete everything
-                  </Button>
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
                   <Button
-                    variant="ghost"
-                    className="flex-1"
+                    variant="outline"
+                    full
                     onClick={() => {
-                      setConfirmFresh(false)
+                      setConfirmFresh(true)
                     }}
                   >
-                    Cancel
+                    <RotateCcw size={16} aria-hidden />
+                    Start fresh
                   </Button>
-                </div>
+                )}
               </div>
-            ) : (
-              <Button
-                variant="outline"
-                full
-                onClick={() => {
-                  setConfirmFresh(true)
-                }}
-              >
-                <RotateCcw size={16} aria-hidden />
-                Start fresh
-              </Button>
-            )}
-          </div>
-        </Card>
-      </Section>
+            </Card>
+          </Section>
 
-      {/* Not a Section — a footer, not a thing to decide about. */}
-      <BuildLine />
+          {/* Not a Section — a footer, not a thing to decide about. */}
+          <BuildLine />
+        </div>
+      </div>
     </div>
   )
 }
