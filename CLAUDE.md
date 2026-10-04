@@ -116,6 +116,18 @@ SessionPage.tsx`, from `sessionDetail`). History rows could be deleted
   finished the minute it started reads as of unknown length rather
   than "0 min"; the demo seed stamped every session that way until this
   page showed it, and now gives each 45–75 minutes.
+- **A past session can be run again, and an open session can be built
+  from nothing.** Repeat on the session page (`repeatSession` in
+  `application/use-cases/training/repeat-session.ts`, tested) opens the
+  same exercises, order, sets and ranges as a freestyle session — **at
+  today's loads**, each planned from its own history, so a March session
+  repeated in October opens where the lifter is now. Results, times and
+  notes are cleared (`replanned`, now shared with the swap, clears set
+  notes too — the test found them surviving), a superset pairing is kept,
+  a retired exercise is left out, and an open session is resumed instead,
+  as Start does. The hero's **Open session** used to land on "add some
+  from the program" with no way to; it now opens the library
+  (`AddExercisePanel` with `startOpen`) to pick the first exercise.
 - **An exercise's progress shares as a picture** (Share on the exercise
   page, from two sessions up): the session card's renderer with its three
   figures relabelled (`statLabels` — sessions, best set, estimated max)

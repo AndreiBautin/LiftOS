@@ -1,4 +1,4 @@
-import { Check, ChevronDown, ChevronRight, Minus, Star } from 'lucide-react'
+import { Check, ChevronDown, ChevronRight, Minus, Repeat, Star } from 'lucide-react'
 import { SessionNote } from './SessionNote'
 import { CompareCard } from './CompareCard'
 import { ShareSession } from '@/features/share/ShareSession'
@@ -6,20 +6,20 @@ import { shareCardFrom } from '@/features/share/card-from'
 import { MorphText } from '@/components/shared/MorphText'
 import { morphName } from '@/components/shared/morph'
 import { useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 
 import { useSettings } from '@/app/context'
 import type { EntryDetail } from '@/application/use-cases/training/session-detail'
 import type { Exercise } from '@/domain/exercises/exercise'
-import { asWorkoutId } from '@/domain/ids/ids'
+import { asWorkoutId, type WorkoutId } from '@/domain/ids/ids'
 import type { SessionRecord } from '@/domain/logging/records'
 import type { LoggedSet } from '@/domain/logging/workout-log'
 import { describePrescription } from '@/domain/programs/prescription'
 import { formatLoad, type WeightUnit } from '@/domain/units/weight'
 import { PageHeader } from '@/components/shared/PageHeader'
-import { Badge, Card } from '@/components/shared/primitives'
+import { Badge, Button, Card } from '@/components/shared/primitives'
 import { cn } from '@/lib/cn'
-import { useExercises } from '@/features/train/hooks'
+import { useExercises, useRepeatSession } from '@/features/train/hooks'
 import { SessionStats } from '@/features/train/SessionStats'
 import { SessionTimeline } from '@/features/train/SessionTimeline'
 import { SessionReplay } from './SessionReplay'
@@ -73,20 +73,23 @@ export function SessionPage() {
         title={splitDayLabel(workout.title).name}
         morph={morphName('session', workout.id)}
         action={
-          <ShareSession
-            card={shareCardFrom({
-              title: workout.title,
-              date: workout.date,
-              sets,
-              tonnage,
-              minutes,
-              units: settings.units,
-              records: records.map((record) => ({
-                ...record,
-                name: nameOf(library, record.exerciseId),
-              })),
-            })}
-          />
+          <>
+            <RepeatButton workoutId={workout.id} />
+            <ShareSession
+              card={shareCardFrom({
+                title: workout.title,
+                date: workout.date,
+                sets,
+                tonnage,
+                minutes,
+                units: settings.units,
+                records: records.map((record) => ({
+                  ...record,
+                  name: nameOf(library, record.exerciseId),
+                })),
+              })}
+            />
+          </>
         }
         subtitle={
           <span className="flex flex-wrap items-center gap-2">
@@ -319,4 +322,32 @@ function OutcomeMark({ set }: { readonly set: LoggedSet | undefined }) {
     return <Check size={14} className="text-good-500" aria-label="Done" />
   }
   return <Minus size={14} className="text-ink-700" aria-label="Not done" />
+}
+
+/**
+ * Runs this session again, at today's loads (`repeatSession`), and goes
+ * to the player. If a session is already open, that one is resumed
+ * instead — the button says what it did by where it lands.
+ */
+function RepeatButton({ workoutId }: { readonly workoutId: WorkoutId }) {
+  const repeat = useRepeatSession()
+  const navigate = useNavigate()
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      disabled={repeat.isPending}
+      onClick={() => {
+        repeat.mutate(workoutId, {
+          onSuccess: () => {
+            void navigate('/today')
+          },
+        })
+      }}
+    >
+      <Repeat size={14} aria-hidden />
+      <span className="hidden sm:inline">Repeat</span>
+      <span className="sr-only sm:hidden">Repeat this session</span>
+    </Button>
+  )
 }

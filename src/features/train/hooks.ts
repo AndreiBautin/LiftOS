@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
+import { repeatSession } from '@/application/use-cases/training/repeat-session'
 import { addExercise } from '@/application/use-cases/training/add-exercise'
 import { pairSuperset, unpairSuperset } from '@/application/use-cases/training/superset'
 import { muscleBalance } from '@/application/use-cases/training/balance'
@@ -166,6 +167,28 @@ export function useStartWorkout() {
     },
     onSuccess: (result) => {
       logger.info('workout.start', { kind: result.kind })
+      void client.invalidateQueries({ queryKey: keys.activeWorkout })
+    },
+  })
+}
+
+/** Runs a past session again at today's loads; see `repeatSession`. */
+export function useRepeatSession() {
+  const services = useServices()
+  const { settings } = useSettings()
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (sourceId: WorkoutId) =>
+      repeatSession(
+        {
+          sourceId,
+          ...(settings.loadResets !== undefined ? { resets: settings.loadResets } : {}),
+        },
+        services,
+      ),
+    onSuccess: (result) => {
+      logger.info('workout.repeat', { kind: result.kind })
+      client.setQueryData(keys.activeWorkout, result.workout)
       void client.invalidateQueries({ queryKey: keys.activeWorkout })
     },
   })

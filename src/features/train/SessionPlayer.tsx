@@ -174,13 +174,26 @@ export function SessionPlayer({
 
   if (entry === undefined) {
     return (
-      <Card className="text-center">
-        <p className="text-ink-100 font-medium">This session has no exercises.</p>
-        <p className="text-ink-500 mt-1 text-sm">
-          Add some from the program, or finish and log it as a rest day.
-        </p>
-        <Button variant="primary" full className="mt-4" onClick={onFinish}>
-          Finish session
+      <Card>
+        {/*
+          **An open session starts empty and is built here**: the first
+          exercise is chosen from the library and the player turns to it.
+          It used to say "add some from the program" with no way to.
+        */}
+        <p className="text-ink-100 font-medium">{workout.title}</p>
+        <p className="text-ink-500 mt-1 text-sm">Nothing in it yet — pick the first exercise.</p>
+        <AddExercisePanel
+          library={exercises}
+          inSession={new Set()}
+          busy={addOne.isPending}
+          startOpen
+          heading="The first exercise"
+          onAdd={(exercise) => {
+            addOne.mutate({ afterIndex: -1, exerciseId: exercise.id })
+          }}
+        />
+        <Button variant="ghost" full className="mt-3" onClick={onFinish}>
+          Finish with nothing logged
         </Button>
       </Card>
     )

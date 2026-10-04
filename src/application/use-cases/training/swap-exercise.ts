@@ -130,7 +130,12 @@ export async function swapExercise(
   return updated
 }
 
-function replanned(
+/**
+ * A set made pending again and planned afresh: its result cleared, the
+ * load the history earns, and the reps aimed one past last time. Shared
+ * by the swap and by repeating a past session.
+ */
+export function replanned(
   set: LoggedSet,
   load: number | undefined,
   lastTime: { readonly last: Performance; readonly bumped: boolean } | undefined,
@@ -141,6 +146,7 @@ function replanned(
     actualLoad: _actualLoad,
     actualReps: _actualReps,
     completedAt: _at,
+    notes: _notes,
     ...rest
   } = set
   const reps = set.prescription.reps

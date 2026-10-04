@@ -22,13 +22,18 @@ export function AddExercisePanel({
   inSession,
   busy,
   onAdd,
+  startOpen = false,
+  heading = 'Add after this exercise',
 }: {
   readonly library: readonly Exercise[]
   readonly inSession: ReadonlySet<ExerciseId>
   readonly busy: boolean
   readonly onAdd: (exercise: Exercise) => void
+  /** Open from the start: an empty session has nothing else to show. */
+  readonly startOpen?: boolean
+  readonly heading?: string
 }) {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(startOpen)
   const [query, setQuery] = useState('')
 
   if (!open) {
@@ -66,17 +71,19 @@ export function AddExercisePanel({
   return (
     <div className="border-ink-800 mt-2 rounded-xl border p-3">
       <div className="mb-2 flex items-center justify-between">
-        <p className="text-ink-100 text-sm font-medium">Add after this exercise</p>
-        <button
-          type="button"
-          onClick={() => {
-            setOpen(false)
-            setQuery('')
-          }}
-          className="text-ink-500 hover:text-ink-300 tap-target px-2 text-sm"
-        >
-          Cancel
-        </button>
+        <p className="text-ink-100 text-sm font-medium">{heading}</p>
+        {!startOpen && (
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false)
+              setQuery('')
+            }}
+            className="text-ink-500 hover:text-ink-300 tap-target px-2 text-sm"
+          >
+            Cancel
+          </button>
+        )}
       </div>
       <label className="relative block">
         <span className="sr-only">Search exercises to add</span>
