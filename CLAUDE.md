@@ -57,6 +57,17 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **Every vibration is one vocabulary** (`HAPTICS` and `useHaptics` in
+  `features/feel/haptics.ts`): detent, press, logged, skipped, finished,
+  record, rest over — so a set logged by the check, the swipe or the key
+  feels the same, and a record never feels like a skip. Few and short on
+  purpose; iOS has no web vibration, so none of it carries meaning
+  alone. `settings.haptics` (on by default, in the parse with a test)
+  turns it off. **Call `useHaptics`, never `navigator.vibrate`.** In
+  development StrictMode runs effects twice, so the record buzz is heard
+  twice there and once in production. **Pressed states**: `.tap-target`
+  scales; every other pressable thing lifts in brightness while held
+  (`index.css`), and the platform's grey tap box is off.
 - **The player's occasional tools are one tray** (`SessionTools`, the
   ⋯ on the exercise card): Focus, Swap, Pair, Recent sessions, Add an
   exercise, Change the order. They were three icons in the card's header

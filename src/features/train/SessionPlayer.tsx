@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { SwipePager } from './SwipePager'
 import { SessionTools, type SessionTool } from './SessionTools'
+import { useHaptics } from '@/features/feel/haptics'
 import { RollingNumber } from '@/components/shared/RollingNumber'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -108,6 +109,7 @@ export function SessionPlayer({
    * a set is swiped (`settings.swipeLearned`).
    */
   const { settings: playerSettings, update: updateSettings } = useSettings()
+  const haptic = useHaptics()
   const swipeLearned = playerSettings.swipeLearned === true
   const learnSwipe = () => {
     if (!swipeLearned) updateSettings({ swipeLearned: true })
@@ -250,6 +252,7 @@ export function SessionPlayer({
     // Closed and resting on the tap, not on the save: the row is already
     // green (see `useLogSet`).
     setOpenSet(undefined)
+    haptic('logged')
     const set = entry.sets[setIndex]
     if (set?.outcome === 'pending' && !set.isWarmup) {
       setUndo({
@@ -294,6 +297,7 @@ export function SessionPlayer({
 
   const skipAt = (setIndex: number) => {
     setOpenSet(undefined)
+    haptic('skipped')
     setUndo({ entryIndex: index, setIndex, label: 'Skipped', stamp: clock.now().getTime() })
     logSet.mutate({ entryIndex: index, setIndex, result: { outcome: 'skipped' } })
   }
@@ -562,7 +566,7 @@ export function SessionPlayer({
                   onPointerDown={() => {
                     window.clearTimeout(holdTimer.current)
                     holdTimer.current = window.setTimeout(() => {
-                      if ('vibrate' in navigator) navigator.vibrate(8)
+                      haptic('press')
                       setPeekAt(index)
                     }, 450)
                   }}
@@ -797,7 +801,10 @@ export function SessionPlayer({
             size={outstanding === 0 ? 'lg' : 'md'}
             full
             className="mt-6"
-            onClick={onFinish}
+            onClick={() => {
+              if (outstanding === 0) haptic('finished')
+              onFinish()
+            }}
           >
             <CheckCircle2 size={outstanding === 0 ? 20 : 16} aria-hidden />
             {outstanding === 0

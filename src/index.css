@@ -466,6 +466,20 @@
   .tap-target:active {
     transform: scale(0.96);
   }
+
+  /* Everything else you can press lights for as long as it is held — a
+     history row, a card that is a link, a set row. Scaling those would
+     shrink a whole block under the thumb; a lift in brightness says the
+     same thing in place. `.tap-target` keeps its own press above. */
+  :where(a[href], button, summary, [role='button']):not(.tap-target):not(:disabled):active {
+    filter: brightness(1.2);
+  }
+}
+
+/* The platform's grey tap box is replaced by the app's own press states,
+   so a press looks the same on every phone. */
+html {
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Screen-reader-only text that becomes visible when focused, for the

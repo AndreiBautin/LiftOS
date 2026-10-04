@@ -186,6 +186,14 @@ describe('accepted resets', () => {
     })
   })
 
+  it('keeps vibration off once turned off, and on by default', () => {
+    const storage = memoryStorage()
+    storage.setItem(STORAGE_KEYS.settings, JSON.stringify({ ...DEFAULT_SETTINGS, haptics: false }))
+    expect(readSettings(storage).settings.haptics).toBe(false)
+    storage.setItem(STORAGE_KEYS.settings, JSON.stringify({ units: 'lb' }))
+    expect(readSettings(storage).settings.haptics).toBe(true)
+  })
+
   it('keeps rest sounds on once turned on, and off by default', () => {
     const storage = memoryStorage()
     storage.setItem(

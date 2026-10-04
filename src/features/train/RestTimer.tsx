@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import { restCuesBetween } from '@/domain/programs/rest-cues'
 
 import { playRestCue } from './rest-sounds'
+import { useHaptics } from '@/features/feel/haptics'
 
 import { Button } from '@/components/shared/primitives'
 import { cn } from '@/lib/cn'
@@ -55,6 +56,7 @@ export function RestTimer({
    * shift applied to the deadline rather than as a stopped clock, so the
    * remaining time is still a pure function of the wall clock.
    */
+  const haptic = useHaptics()
   const [pausedFor, setPausedFor] = useState(0)
   const [pausedAt, setPausedAt] = useState<number | undefined>(undefined)
   /** Time the lifter added with +30s. A shift on the deadline, like a pause. */
@@ -97,8 +99,8 @@ export function RestTimer({
    */
   useEffect(() => {
     if (!elapsed) return
-    if ('vibrate' in navigator) navigator.vibrate([90, 70, 90])
-  }, [elapsed])
+    haptic('restOver')
+  }, [elapsed, haptic])
   /*
    * **Sounds fire on a crossing of the time left**, compared with the
    * reading before; see `restCuesBetween` for why not on equality.

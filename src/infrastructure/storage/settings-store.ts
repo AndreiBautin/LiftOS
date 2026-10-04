@@ -207,6 +207,7 @@ function mergeWithDefaults(parsed: unknown): AppSettings {
     restTimerEnabled: asBoolean(stored.restTimerEnabled, DEFAULT_SETTINGS.restTimerEnabled),
     keepScreenAwake: asBoolean(stored.keepScreenAwake, DEFAULT_SETTINGS.keepScreenAwake),
     restSounds: asBoolean(stored.restSounds, DEFAULT_SETTINGS.restSounds),
+    haptics: asBoolean(stored.haptics, DEFAULT_SETTINGS.haptics),
     theme:
       stored.theme === 'light' || stored.theme === 'dark' || stored.theme === 'system'
         ? stored.theme

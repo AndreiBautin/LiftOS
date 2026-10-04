@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 
 import { dialValue, stepValue } from '@/domain/units/step'
+import { useHaptics } from '@/features/feel/haptics'
 import { cn } from '@/lib/cn'
 
 /** Pixels of drag per step of weight. */
@@ -35,6 +36,7 @@ export function LoadDial({
   readonly hint?: string | undefined
   readonly unit: string
 }) {
+  const haptic = useHaptics()
   const parsed = Number(value === '' ? (hint ?? '0') : value)
   const current = Number.isFinite(parsed) ? parsed : 0
   const drag = useRef<{ x: number; y: number; start: number; locked: boolean } | undefined>(
@@ -47,7 +49,7 @@ export function LoadDial({
 
   const commit = (next: number) => {
     if (next === current && value !== '') return
-    if ('vibrate' in navigator) navigator.vibrate(4)
+    haptic('detent')
     onChange(String(next))
   }
 

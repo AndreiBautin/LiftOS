@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { useServices } from '@/app/context'
+import { useHaptics } from '@/features/feel/haptics'
 
 /** How recently a set must have been logged for its record to be celebrated. */
 const FRESH_MS = 3_000
@@ -20,6 +21,7 @@ const SPARKS = 12
  */
 export function RecordBurst({ completedAt }: { readonly completedAt: string | undefined }) {
   const { clock } = useServices()
+  const haptic = useHaptics()
   // Decided once, when the chip first appears: it mounts with the record.
   const [live, setLive] = useState(
     () => completedAt !== undefined && clock.now().getTime() - Date.parse(completedAt) <= FRESH_MS,
@@ -27,14 +29,14 @@ export function RecordBurst({ completedAt }: { readonly completedAt: string | un
 
   useEffect(() => {
     if (!live) return
-    if ('vibrate' in navigator) navigator.vibrate([30, 40, 70])
+    haptic('record')
     const handle = window.setTimeout(() => {
       setLive(false)
     }, 1200)
     return () => {
       window.clearTimeout(handle)
     }
-  }, [live])
+  }, [live, haptic])
 
   if (!live) return null
   return (

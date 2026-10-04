@@ -223,6 +223,13 @@ export function SettingsPage() {
             }}
           />
           <Toggle
+            label="Vibrate — a set logged, a skip, a record, the rest's end"
+            checked={settings.haptics}
+            onChange={(haptics) => {
+              update({ haptics })
+            }}
+          />
+          <Toggle
             label="Keep the screen awake"
             checked={settings.keepScreenAwake}
             onChange={(keepScreenAwake) => {

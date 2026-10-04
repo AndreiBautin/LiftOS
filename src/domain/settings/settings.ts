@@ -70,6 +70,8 @@ export interface AppSettings {
   readonly keepScreenAwake: boolean
   /** Ticks in the last three seconds of a rest and a chime at the end; off by default. */
   readonly restSounds: boolean
+  /** A short buzz on a logged set, a skip, a record and the rest's end; on by default. */
+  readonly haptics: boolean
 
   readonly theme: 'system' | 'light' | 'dark'
   /**
@@ -192,6 +194,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   restTimerEnabled: true,
   keepScreenAwake: true,
   restSounds: false,
+  haptics: true,
   theme: 'system',
   schemaVersion: SETTINGS_SCHEMA_VERSION,
 }
