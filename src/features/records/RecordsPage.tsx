@@ -58,6 +58,15 @@ export function RecordsPage() {
       <PageHeader
         title="Records"
         subtitle={`${String(bests.length)} exercises · ${String(freshCount)} new this week`}
+        action={
+          <Link
+            viewTransition
+            to="/calculator"
+            className="text-accent-400 tap-target flex items-center text-sm hover:underline"
+          >
+            Calculator
+          </Link>
+        }
       />
       {bests.length === 0 ? (
         <Card>

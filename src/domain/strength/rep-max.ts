@@ -53,7 +53,8 @@ export function repMaxTable(
     const actual = done.length === 0 ? undefined : Math.max(...done)
     return {
       reps,
-      predicted: roundLoad(loadForReps(oneRepMax, reps, formula), increment, 'down'),
+      // Forgive float dust before rounding down: 224.99999… is 225 (see `calculator.ts`).
+      predicted: roundLoad(loadForReps(oneRepMax, reps, formula) + 1e-6, increment, 'down'),
       ...(actual === undefined ? {} : { actual }),
     }
   })

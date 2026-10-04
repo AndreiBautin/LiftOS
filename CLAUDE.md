@@ -116,6 +116,16 @@ SessionPage.tsx`, from `sessionDetail`). History rows could be deleted
   finished the minute it started reads as of unknown length rather
   than "0 min"; the demo seed stamped every session that way until this
   page showed it, and now gives each 45–75 minutes.
+- **A strength calculator** (`/calculator`, `strengthTable` in
+  `domain/strength/calculator.ts`, tested; linked from the records wall
+  and the palette): a set in, its estimated max out, what the same
+  strength should do for 1–12 reps drawn as a falling curve with the set
+  ringed, and 100–50% — every load rounded **down** to one the plates
+  make, by the Settings formula. A row loads its bar on the plate picture.
+  **Building it found a bug on the exercise page**: run back through the
+  formula, a 225 × 5 estimate is 224.99999… for five reps, and rounding
+  that down printed the set's own row as 220. Both now forgive the float
+  dust before rounding (`rep-max.ts` too), with a test holding them equal.
 - **A set can be timed, to a tempo** (`SetClock` under the ladder,
   `tempoAt` in `domain/programs/tempo.ts`, tested): Start, lift, Stop. With
   2-0-1, 3-1-1 or 4-0-2 chosen it calls each part of every rep — Lower 3,

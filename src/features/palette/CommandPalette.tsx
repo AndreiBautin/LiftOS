@@ -31,6 +31,13 @@ const PAGES: readonly PaletteItem[] = [
     keywords: 'block deload cycle',
     to: '/block',
   },
+  {
+    id: 'calculator',
+    label: 'Calculator',
+    kind: 'Page',
+    keywords: 'one rep max e1rm percent',
+    to: '/calculator',
+  },
   { id: 'month', label: 'This month', kind: 'Page', keywords: 'recap month', to: '/month' },
   {
     id: 'settings',
