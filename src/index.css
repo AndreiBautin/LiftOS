@@ -159,6 +159,13 @@
     --card-sheen: rgb(255 255 255 / 5%);
     --card-shadow: 0 8px 24px -14px rgb(0 0 0 / 70%);
     --card-tint: transparent;
+    /* A fine grain laid over the two raised tiers, so a surface reads as
+       a material rather than as a flat fill on a screen. Fractal noise
+       rendered once to a 160px tile by the browser and repeated — no
+       per-frame cost. Only the bright half of the noise shows (alpha is
+       the red channel less a floor), so it speckles rather than laying
+       an even white fog that greys the surface it sits on. */
+    --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .16 0 0 0 -.07'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 
     /* The glow behind the whole app. Warm at the top, cool at one corner
        — enough to give the background a direction without competing with
@@ -304,6 +311,24 @@
 }
 
 @layer components {
+  /*
+   * The third tier: a well, pressed into the card it sits in.
+   *
+   * Three depths, so a screen reads as layered rather than as one flat
+   * level: the hero is the loudest, a card is raised, and a well is
+   * sunken — darker than its card, a shadow along its *top* inner edge
+   * where a recess catches it, and a hairline that is lighter at the
+   * bottom lip. It took over a dozen hand-written `border-ink-800
+   * rounded-xl border` boxes that each drew a fourth, flat level.
+   */
+  .well {
+    border-radius: 0.75rem;
+    border: 1px solid color-mix(in oklab, var(--color-ink-800) 80%, transparent);
+    border-bottom-color: color-mix(in oklab, var(--color-ink-700) 70%, transparent);
+    background-color: color-mix(in oklab, var(--color-ink-950) 70%, transparent);
+    box-shadow: inset 0 2px 6px -2px rgb(0 0 0 / 55%);
+  }
+
   /* A panel with a thickness, rather than a rectangle in another colour.
 
      Three things do that and none of them is expensive: a vertical
@@ -329,6 +354,7 @@
        a pseudo-element, and a pseudo-element would need `position:
        relative` on every card in the app. */
     background-image:
+      var(--grain),
       radial-gradient(
         420px circle at var(--mx) var(--my),
         color-mix(in oklab, var(--color-accent-500) calc(var(--spot) * 7%), transparent),
@@ -345,7 +371,7 @@
         transparent 75%
       ),
       linear-gradient(var(--border-subtle), var(--border-subtle));
-    background-clip: padding-box, padding-box, border-box, border-box;
+    background-clip: padding-box, padding-box, padding-box, border-box, border-box;
     background-origin: border-box;
     border: 1px solid transparent;
     border-radius: 0.875rem;
@@ -925,6 +951,7 @@ html {
   border: 1px solid color-mix(in oklab, var(--color-accent-500) 24%, var(--color-ink-800));
   background-color: var(--color-ink-900);
   background-image:
+    var(--grain),
     radial-gradient(
       120% 90% at 100% 0%,
       color-mix(in oklab, var(--color-accent-500) 24%, transparent),
@@ -939,6 +966,25 @@ html {
   box-shadow:
     inset 0 1px 0 0 var(--card-sheen),
     0 30px 60px -30px rgb(0 0 0 / 90%);
+}
+
+/* The hero's rim: a line of light along its top edge, brightest where
+   the accent wash enters at the right and fading to nothing at the left.
+   It is what makes the top tier read as lit from above rather than as a
+   larger card. Above the content's stacking context, ignoring the
+   pointer. */
+.hero-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 8%,
+    color-mix(in oklab, var(--color-accent-400) 55%, transparent) 70%,
+    transparent 98%
+  );
+  pointer-events: none;
 }
 
 /* The plate turns in once and settles — one-directional, never looping. */

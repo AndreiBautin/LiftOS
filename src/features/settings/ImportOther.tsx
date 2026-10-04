@@ -104,7 +104,7 @@ export function ImportOther() {
       )}
 
       {read !== undefined && (
-        <div className="border-ink-800 space-y-3 rounded-xl border p-3">
+        <div className="well space-y-3 p-3">
           <p className="text-ink-100 text-sm">
             {read.source === 'strong' ? 'Strong' : 'Hevy'} export ·{' '}
             <span className="font-semibold">{read.sessions.length}</span> sessions

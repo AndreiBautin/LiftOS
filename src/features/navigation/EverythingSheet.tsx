@@ -95,7 +95,7 @@ export function EverythingSheet({ onClose }: { readonly onClose: () => void }) {
                       viewTransition
                       to={screenPath(screen, today)}
                       onClick={onClose}
-                      className="border-ink-800 bg-ink-950/60 hover:border-ink-600 active:bg-ink-800 flex h-full flex-col gap-2 rounded-2xl border p-3 transition-colors"
+                      className="well hover:border-ink-600 flex h-full flex-col gap-2 p-3 transition-colors"
                     >
                       <span
                         className="flex size-8 items-center justify-center rounded-lg"

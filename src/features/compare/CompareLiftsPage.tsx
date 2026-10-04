@@ -87,10 +87,7 @@ export function CompareLiftsPage() {
           {lines.map((line, at) => {
             const last = line.points.at(-1)
             return (
-              <div
-                key={`${line.id}-${String(at)}`}
-                className="border-ink-800 rounded-xl border p-3"
-              >
+              <div key={`${line.id}-${String(at)}`} className="well p-3">
                 <dt className="flex items-center gap-2 text-xs">
                   <span
                     className="size-2 shrink-0 rounded-full"

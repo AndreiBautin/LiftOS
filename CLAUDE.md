@@ -57,6 +57,18 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **Three depths, so a screen reads as layered** (`index.css`): the
+  hero (`.hero-panel`, loudest, now with a rim of light along its top
+  edge), the card (raised), and the **well** (`.well`, sunken — darker
+  than its card, shadowed along its top inner edge, a lighter bottom
+  lip). Wells replaced seven hand-written `border-ink-800 rounded-xl
+border` boxes that each drew a fourth, flat level; **an inset box
+  inside a card is a `.well`**. The two raised tiers carry `--grain`, an
+  SVG fractal-noise tile rendered once and repeated. **Only the bright
+  half of the noise shows** — the first version laid an even white fog
+  that greyed the hero's wash. `.card` now has five background layers
+  and five `background-clip` entries; they must stay in step, or the
+  spotlit border paints the wrong layer.
 - **Two faces, bundled** (`@fontsource-variable/inter` and
   `space-grotesk`, declared by hand at the top of `index.css`): Inter for
   reading, with its single-storey a and open digits (`cv11`, `ss01`), and

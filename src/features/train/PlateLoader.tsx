@@ -90,7 +90,7 @@ export function PlateLoader({
 
   return (
     <figure
-      className="border-ink-800 bg-ink-950/50 mt-4 rounded-xl border px-3 pt-2 pb-3"
+      className="well mt-4 px-3 pt-2 pb-3"
       aria-label={`${String(load)} ${unit}: a ${String(loading.bar)} ${unit} bar with ${
         loading.perSide.length === 0 ? 'no plates' : `${perSideText} on each side`
       }`}

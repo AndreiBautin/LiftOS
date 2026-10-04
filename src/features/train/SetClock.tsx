@@ -65,7 +65,7 @@ export function SetClock() {
   const running = startedAt !== undefined
 
   return (
-    <div className="border-ink-800 mt-3 rounded-xl border px-3 py-2.5">
+    <div className="well mt-3 px-3 py-2.5">
       <div className="flex items-center gap-2">
         <Timer size={15} className="text-ink-500 shrink-0" aria-hidden />
         <div className="flex flex-1 flex-wrap gap-1" role="group" aria-label="Tempo">

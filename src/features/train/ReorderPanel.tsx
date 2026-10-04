@@ -49,7 +49,7 @@ export function ReorderPanel({
   }
 
   return (
-    <div className="border-ink-800 mt-2 rounded-xl border p-3">
+    <div className="well mt-2 p-3">
       <div className="mb-2 flex items-center justify-between">
         <p className="text-ink-100 text-sm font-medium">The order</p>
         <button
