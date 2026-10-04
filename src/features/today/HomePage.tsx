@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { AdherenceCard } from '@/features/train/AdherenceCard'
 import { ForecastCard } from '@/features/train/ForecastCard'
+import { ThenNowCard } from '@/features/train/ThenNowCard'
 import { RipeCard } from '@/features/train/RipeCard'
 import { NoticeStrip } from './NoticeStrip'
 import { arrangeCards } from '@/domain/settings/home-cards'
@@ -168,6 +169,7 @@ const HOME_CARDS: readonly {
   { key: 'last-week', label: 'Last week', node: <LastWeekCard /> },
   { key: 'adherence', label: 'Showing up', node: <AdherenceCard /> },
   { key: 'forecast', label: 'Twelve weeks out', node: <ForecastCard /> },
+  { key: 'then-now', label: 'Then and now', node: <ThenNowCard /> },
   { key: 'lately', label: 'Lately', node: <BodyMapCard /> },
   { key: 'balance', label: 'Balance', node: <BalanceCard /> },
   { key: 'standards', label: 'Strength', node: <StrengthStandards /> },

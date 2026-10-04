@@ -57,6 +57,14 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **Each lift is read then and now** ("Then and now", `ThenNowCard`;
+  `thenAndNow` in `domain/logging/then-now.ts`, tested): the lift's **own**
+  first four weeks against the last four — top set (`topSet`'s rule),
+  sessions a week and volume a week — as a ghost bar behind a solid one,
+  each scaled to the lift itself so a curl and a deadlift both fill their
+  row. Four weeks each side so "a week" means the same in both; a lift
+  whose first month runs into its last is left out rather than compared
+  with itself. Competition lifts lead, then the most trained, five rows.
 - **The records wall and the year share as pictures** (Share on
   `/records` and `/year/:year`; `drawWallCard` in `features/share/
 wall-card.ts`, `drawYearCard` in `year-card.ts`): the wall's tiles,
