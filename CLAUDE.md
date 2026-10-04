@@ -980,13 +980,15 @@ stall.ts`). Three sessions in a row that did not beat **the best top set
   line rather than the last point. **Silent unless the evidence holds
   it** — four sessions over four weeks, a rising line, and inside a year;
   a date two years out is a line drawn past the edge of the data.
-- **The main lift has a warm-up ramp** (`warmupRamp` in
+- **Every barbell compound has a warm-up ramp** (`warmupRamp` in
   `domain/units/ramp.ts`, `BarSection`): the empty bar × 10, then 40 / 60
   / 80% at 5 / 3 / 2, each rounded **down to a load the plates to hand
   make exactly**, with a step that lands on the one before or against
   the working load dropped. Tapping a step loads it on the plate picture;
-  "Work" goes back. Accessories get no ramp — a light working load is
-  its own warm-up.
+  "Work" goes back. It was the main lift's alone, which sent a Pendlay
+  row or a front squat cold under a heavy bar; now the main lift and any
+  compound get one (`ramp` in `SessionPlayer`). Isolation work still gets
+  none — a light working load is its own warm-up.
 - **The plates to hand are a setting** (`settings.plates`, Settings →
   Units). Absent means the standard set; `platesToHand` drops anything
   that is not a plate in the current unit and reads an empty list as the

@@ -666,7 +666,17 @@ export function SessionPlayer({
                 equipment={exercises.find((one) => one.id === entry.exerciseId)?.equipment}
                 load={loadToShow(entry.sets)}
                 units={units}
-                ramp={entry.role === 'strength'}
+                /*
+                 * Every barbell compound gets a ramp, not only the day's
+                 * competition lift: a Pendlay row or a front squat is a
+                 * heavy bar taken cold otherwise. Isolation work at a light
+                 * load is still its own warm-up. (`BarSection` only draws
+                 * a ramp for a bar it can load.)
+                 */
+                ramp={
+                  entry.role === 'strength' ||
+                  exercises.find((one) => one.id === entry.exerciseId)?.isCompound === true
+                }
               />
               <LadderFor entry={entry} exercises={exercises} units={units} />
               {/*

@@ -18,9 +18,10 @@ import { PlateLoader } from './PlateLoader'
  * **Tapping a ramp step loads that step on the picture.** The ramp is a
  * list of loads, and a list of loads is the arithmetic the plate loader
  * exists to take away — so each step can be shown as plates the same
- * way, and the working load is one more chip at the end. Only the main
- * lift gets a ramp: an accessory at a light working load is its own
- * warm-up, and five chips above a curl would be furniture.
+ * way, and the working load is one more chip at the end. The main lift
+ * and every other barbell compound get a ramp; isolation work at a light
+ * working load is its own warm-up, and five chips above a curl would be
+ * furniture.
  */
 export function BarSection({
   equipment,
