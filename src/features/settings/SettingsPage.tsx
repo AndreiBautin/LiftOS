@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { ExportCsv } from './ExportCsv'
+import { ImportOther } from './ImportOther'
 import { ACCENT_HUES, DEFAULT_ACCENT_HUE } from '@/domain/settings/settings'
 import { BuildLine } from '@/features/pwa/BuildLine'
 import { PageHeader } from '@/components/shared/PageHeader'
@@ -345,6 +346,7 @@ export function SettingsPage() {
             </Button>
           </div>
           <ExportCsv />
+          <ImportOther />
 
           <input
             ref={fileInput}

@@ -116,6 +116,23 @@ SessionPage.tsx`, from `sessionDetail`). History rows could be deleted
   finished the minute it started reads as of unknown length rather
   than "0 min"; the demo seed stamped every session that way until this
   page showed it, and now gives each 45–75 minutes.
+- **History imports from Strong or Hevy** (Settings → Backup,
+  `ImportOther`; `readTrainingExport`, `parseCsv` and `matchExercise` in
+  `domain/logging/import-csv.ts`, `importTraining` in `application/
+use-cases/training/import-training.ts`, both tested). The two formats
+  are told apart by their headers; a file in neither is refused with the
+  reason. Before anything is written the screen shows the sessions and
+  dates and **asks about every exercise name** — pre-matched only where
+  the words outside the brackets overlap by two thirds (equipment breaking
+  ties), left out otherwise, every one changeable. That threshold is
+  deliberate: a plain "Squat (Barbell)" could be any of three squats here
+  and is left for the lifter, because a wrong guess files months of sets
+  under the wrong lift. Strong never states its unit, so it is asked;
+  Hevy's is read off the column. Loads are converted, warm-ups stay
+  warm-ups, the prescription is open (their plan is not this one), and a
+  session whose start time is already here is skipped, so a second import
+  of the same file adds nothing. Checked in the preview with a synthetic
+  file put on the input — no file left the machine.
 - **A strength calculator** (`/calculator`, `strengthTable` in
   `domain/strength/calculator.ts`, tested; linked from the records wall
   and the palette): a set in, its estimated max out, what the same
