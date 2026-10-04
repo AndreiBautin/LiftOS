@@ -24,6 +24,7 @@ export function AddExercisePanel({
   onAdd,
   startOpen = false,
   heading = 'Add after this exercise',
+  onClose,
 }: {
   readonly library: readonly Exercise[]
   readonly inSession: ReadonlySet<ExerciseId>
@@ -32,8 +33,15 @@ export function AddExercisePanel({
   /** Open from the start: an empty session has nothing else to show. */
   readonly startOpen?: boolean
   readonly heading?: string
+  /** Opened from elsewhere (the session tools): open at once, and closing hands back. */
+  readonly onClose?: () => void
 }) {
-  const [open, setOpen] = useState(startOpen)
+  const [open, setOpen] = useState(startOpen || onClose !== undefined)
+  const close = () => {
+    setQuery('')
+    if (onClose === undefined) setOpen(false)
+    else onClose()
+  }
   const [query, setQuery] = useState('')
 
   if (!open) {
@@ -75,10 +83,7 @@ export function AddExercisePanel({
         {!startOpen && (
           <button
             type="button"
-            onClick={() => {
-              setOpen(false)
-              setQuery('')
-            }}
+            onClick={close}
             className="text-ink-500 hover:text-ink-300 tap-target px-2 text-sm"
           >
             Cancel
@@ -110,8 +115,7 @@ export function AddExercisePanel({
               disabled={busy}
               onClick={() => {
                 onAdd(one)
-                setOpen(false)
-                setQuery('')
+                close()
               }}
               className="hover:bg-ink-850 tap-target flex w-full items-center justify-between gap-3 rounded-lg px-2 text-left disabled:opacity-50"
             >

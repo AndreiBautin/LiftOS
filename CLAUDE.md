@@ -57,6 +57,15 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **The player's occasional tools are one tray** (`SessionTools`, the
+  ⋯ on the exercise card): Focus, Swap, Pair, Recent sessions, Add an
+  exercise, Change the order. They were three icons in the card's header
+  and two dashed buttons under Next — a toolbox around a set. What a set
+  needs stays on the card. A tool is listed only where it applies, so the
+  tray holds no dead button; add and reorder open under Next as before
+  (`onClose` hands them back to the tray rather than folding). Every
+  keyboard key still works. **The Pair and Swap icons note above is
+  history.**
 - **Every screen is one list** (`SCREENS` in `features/navigation/
 screens.ts`), read by the palette and by the **Everything sheet** — a
   grid button beside Settings on the hero opens every screen as tiles,

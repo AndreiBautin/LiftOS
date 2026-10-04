@@ -1,5 +1,8 @@
 import {
   ArrowLeftRight,
+  ArrowUpDown,
+  History,
+  Plus,
   Link2,
   Unlink2,
   Flag,
@@ -14,6 +17,7 @@ import {
   XCircle,
 } from 'lucide-react'
 import { SwipePager } from './SwipePager'
+import { SessionTools, type SessionTool } from './SessionTools'
 import { RollingNumber } from '@/components/shared/RollingNumber'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -145,6 +149,8 @@ export function SessionPlayer({
   const closePeek = useCallback(() => {
     setPeekAt(undefined)
   }, [])
+  /* Add and reorder, opened from the tools tray and shown under Next. */
+  const [tool, setTool] = useState<'add' | 'reorder' | undefined>(undefined)
   const holdTimer = useRef<number | undefined>(undefined)
   const strip = useRef<HTMLElement>(null)
 
@@ -474,46 +480,70 @@ export function SessionPlayer({
                 <span className="text-ink-500 ml-auto text-xs">
                   {index + 1} of {workout.entries.length}
                 </span>
-                {partnerOf(workout, index) === undefined &&
-                  canPair(entry, workout.entries[index + 1]) && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      disabled={superset.isPending}
-                      aria-label={`Superset with ${nameOf(workout.entries[index + 1]?.exerciseId ?? entry.exerciseId)}`}
-                      onClick={() => {
-                        superset.mutate({ entryIndex: index, pair: true })
-                      }}
-                    >
-                      <Link2 size={14} aria-hidden />
-                      <span className="hidden sm:inline">Pair</span>
-                    </Button>
-                  )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  aria-label="Focus on this set"
-                  onClick={() => {
-                    setFocus(true)
-                  }}
-                >
-                  <Maximize2 size={14} aria-hidden />
-                  <span className="hidden sm:inline">Focus</span>
-                </Button>
-                {entry.sets.some((set) => set.outcome === 'pending') && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    aria-expanded={swapping}
-                    aria-label={swapping ? 'Keep this exercise' : 'Swap this exercise'}
-                    onClick={() => {
-                      setSwappingAt(swapping ? undefined : index)
-                    }}
-                  >
-                    <ArrowLeftRight size={14} aria-hidden />
-                    <span className="hidden sm:inline">{swapping ? 'Keep' : 'Swap'}</span>
-                  </Button>
-                )}
+                <SessionTools
+                  tools={
+                    [
+                      {
+                        id: 'focus',
+                        label: 'Focus',
+                        icon: Maximize2,
+                        run: () => {
+                          setFocus(true)
+                        },
+                      },
+                      ...(entry.sets.some((set) => set.outcome === 'pending')
+                        ? [
+                            {
+                              id: 'swap',
+                              label: swapping ? 'Keep this one' : 'Swap',
+                              icon: ArrowLeftRight,
+                              run: () => {
+                                setSwappingAt(swapping ? undefined : index)
+                              },
+                            },
+                          ]
+                        : []),
+                      ...(partnerOf(workout, index) === undefined &&
+                      canPair(entry, workout.entries[index + 1]) &&
+                      !superset.isPending
+                        ? [
+                            {
+                              id: 'pair',
+                              label: `Pair with ${nameOf(workout.entries[index + 1]?.exerciseId ?? entry.exerciseId)}`,
+                              icon: Link2,
+                              run: () => {
+                                superset.mutate({ entryIndex: index, pair: true })
+                              },
+                            },
+                          ]
+                        : []),
+                      {
+                        id: 'past',
+                        label: 'Recent sessions',
+                        icon: History,
+                        run: () => {
+                          setPeekAt(index)
+                        },
+                      },
+                      {
+                        id: 'add',
+                        label: 'Add an exercise',
+                        icon: Plus,
+                        run: () => {
+                          setTool('add')
+                        },
+                      },
+                      {
+                        id: 'reorder',
+                        label: 'Change the order',
+                        icon: ArrowUpDown,
+                        run: () => {
+                          setTool('reorder')
+                        },
+                      },
+                    ] satisfies SessionTool[]
+                  }
+                />
               </div>
               <h1
                 id="exercise-name"
@@ -709,42 +739,52 @@ export function SessionPlayer({
             )}
           </div>
 
-          <AddExercisePanel
-            library={exercises}
-            inSession={new Set(workout.entries.map((one) => one.exerciseId))}
-            busy={addOne.isPending}
-            onAdd={(exercise) => {
-              addOne.mutate(
-                { afterIndex: stepEnd, exerciseId: exercise.id },
-                {
-                  // Straight to it; `go` would clamp against the session before the add.
-                  onSuccess: () => {
-                    showEntry(stepEnd + 1)
-                    window.scrollTo({ top: 0, behavior: 'smooth' })
+          {tool === 'add' && (
+            <AddExercisePanel
+              onClose={() => {
+                setTool(undefined)
+              }}
+              library={exercises}
+              inSession={new Set(workout.entries.map((one) => one.exerciseId))}
+              busy={addOne.isPending}
+              onAdd={(exercise) => {
+                addOne.mutate(
+                  { afterIndex: stepEnd, exerciseId: exercise.id },
+                  {
+                    // Straight to it; `go` would clamp against the session before the add.
+                    onSuccess: () => {
+                      showEntry(stepEnd + 1)
+                      window.scrollTo({ top: 0, behavior: 'smooth' })
+                    },
                   },
-                },
-              )
-            }}
-          />
+                )
+              }}
+            />
+          )}
 
-          <ReorderPanel
-            workout={workout}
-            current={index}
-            nameOf={nameOf}
-            busy={reorder.isPending}
-            onMove={(at, by) => {
-              reorder.mutate(
-                { at, by },
-                {
-                  // The exercise on screen stays on screen, wherever it moved.
-                  onSuccess: () => {
-                    if (at === index) showEntry(at + by)
-                    else if (at + by === index) showEntry(at)
+          {tool === 'reorder' && (
+            <ReorderPanel
+              onClose={() => {
+                setTool(undefined)
+              }}
+              workout={workout}
+              current={index}
+              nameOf={nameOf}
+              busy={reorder.isPending}
+              onMove={(at, by) => {
+                reorder.mutate(
+                  { at, by },
+                  {
+                    // The exercise on screen stays on screen, wherever it moved.
+                    onSuccess: () => {
+                      if (at === index) showEntry(at + by)
+                      else if (at + by === index) showEntry(at)
+                    },
                   },
-                },
-              )
-            }}
-          />
+                )
+              }}
+            />
+          )}
 
           {/*
         **Finishing is quiet until there is nothing left.** It was a lit,

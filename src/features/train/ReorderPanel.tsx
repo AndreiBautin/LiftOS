@@ -22,14 +22,17 @@ export function ReorderPanel({
   nameOf,
   busy,
   onMove,
+  onClose,
 }: {
   readonly workout: WorkoutLog
   readonly current: number
   readonly nameOf: (id: ExerciseId) => string
   readonly busy: boolean
   readonly onMove: (at: number, by: -1 | 1) => void
+  /** Opened from elsewhere (the session tools): open at once, and Done hands back. */
+  readonly onClose?: () => void
 }) {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(onClose !== undefined)
 
   if (!open) {
     return (
@@ -52,7 +55,8 @@ export function ReorderPanel({
         <button
           type="button"
           onClick={() => {
-            setOpen(false)
+            if (onClose === undefined) setOpen(false)
+            else onClose()
           }}
           className="text-ink-500 hover:text-ink-300 tap-target px-2 text-sm"
         >
