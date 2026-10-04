@@ -8,6 +8,8 @@ import { PageHeader } from '@/components/shared/PageHeader'
 import { PageSkeleton } from '@/components/shared/PageSkeleton'
 import { Card } from '@/components/shared/primitives'
 import { useRecentWorkouts } from '@/features/train/hooks'
+import { SharePicture } from '@/features/share/ShareSession'
+import { drawYearCard } from '@/features/share/year-card'
 import { cn } from '@/lib/cn'
 
 /** The training grid's own bands, so a lit square means the same on both. */
@@ -41,6 +43,24 @@ export function YearPage() {
         subtitle={`${String(squares.sessions)} sessions · ${String(squares.daysTrained)} days trained`}
         action={
           <>
+            {squares.sessions > 0 && (
+              <SharePicture
+                draw={() =>
+                  drawYearCard({
+                    year,
+                    days: squares.days,
+                    today,
+                    sessions: squares.sessions,
+                    weeksTrained: squares.weeksTrained,
+                    bestStreak: squares.bestStreak,
+                    currentStreak: squares.currentStreak,
+                  })
+                }
+                fileName={`liftos-${year}.png`}
+                title={`${year} in training`}
+                alt={`${year}: ${String(squares.sessions)} sessions`}
+              />
+            )}
             <Link
               viewTransition
               to={`/year/${previous}`}

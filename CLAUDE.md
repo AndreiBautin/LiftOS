@@ -57,6 +57,18 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **The records wall and the year share as pictures** (Share on
+  `/records` and `/year/:year`; `drawWallCard` in `features/share/
+wall-card.ts`, `drawYearCard` in `year-card.ts`): the wall's tiles,
+  twelve of them three across, gold-edged where the best is from this
+  week, and the year as twelve small calendars four across, lit in the
+  training grid's bands, days to come left out. **The sheet is
+  `SharePicture` now** — `ShareSession` is it with the session card's
+  drawing — so every picture is shown before it goes anywhere, with
+  Share only where the platform can send a file. The canvas, the ground
+  and the PNG are `shareCanvas`, `paintBackground` and `toPng` in
+  `session-card.ts`. Checked by drawing both in the preview and looking
+  at them; the share sheet itself still cannot be driven there.
 - **A set can carry a niggle** (`LoggedSet.niggle`; `niggles.ts` in
   `domain/logging`, tested): "Flag a niggle" in the set editor asks which
   joint — neck, shoulder, elbow, wrist, lower back, hip, knee, ankle —

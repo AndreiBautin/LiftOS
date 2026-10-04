@@ -51,17 +51,47 @@ export interface ShareCard {
   }[]
 }
 
-const W = 1080
-const H = 1350
-const FONT = "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif"
-const INK_50 = '#f2f4f8'
-const INK_300 = '#aab1bf'
-const INK_500 = '#79808f'
-const INK_800 = '#2b2f38'
-const ACCENT = '#5ccad9'
-const GOLD = '#f0c35a'
+export const W = 1080
+export const H = 1350
+export const FONT = "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif"
+export const INK_50 = '#f2f4f8'
+export const INK_300 = '#aab1bf'
+export const INK_500 = '#79808f'
+export const INK_800 = '#2b2f38'
+export const ACCENT = '#5ccad9'
+export const GOLD = '#f0c35a'
 /** The timeline's four colours as literals, in its order. */
 const CREST_COLOURS = [ACCENT, '#9d8df1', '#e9b54f', '#62c98d'] as const
+
+/** The page's near-black, lit from the top corner — every share image's ground. */
+export function paintBackground(ctx: CanvasRenderingContext2D): void {
+  ctx.fillStyle = '#0d0f13'
+  ctx.fillRect(0, 0, W, H)
+  const glow = ctx.createRadialGradient(W * 0.85, 0, 0, W * 0.85, 0, W)
+  glow.addColorStop(0, 'rgba(92, 202, 217, 0.28)')
+  glow.addColorStop(1, 'rgba(92, 202, 217, 0)')
+  ctx.fillStyle = glow
+  ctx.fillRect(0, 0, W, H)
+}
+
+/** A canvas the size of every share image, and its blob once drawn. */
+export function shareCanvas():
+  { canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D } | undefined {
+  const canvas = document.createElement('canvas')
+  canvas.width = W
+  canvas.height = H
+  const ctx = canvas.getContext('2d')
+  return ctx === null ? undefined : { canvas, ctx }
+}
+
+export function toPng(canvas: HTMLCanvasElement): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (blob === null) reject(new Error('The canvas could not be read.'))
+      else resolve(blob)
+    }, 'image/png')
+  })
+}
 
 export function drawShareCard(card: ShareCard): Promise<Blob> {
   const canvas = document.createElement('canvas')
@@ -70,14 +100,7 @@ export function drawShareCard(card: ShareCard): Promise<Blob> {
   const ctx = canvas.getContext('2d')
   if (ctx === null) return Promise.reject(new Error('No 2D canvas here.'))
 
-  // Background: the page's near-black, lit from the top corner.
-  ctx.fillStyle = '#0d0f13'
-  ctx.fillRect(0, 0, W, H)
-  const glow = ctx.createRadialGradient(W * 0.85, 0, 0, W * 0.85, 0, W)
-  glow.addColorStop(0, 'rgba(92, 202, 217, 0.28)')
-  glow.addColorStop(1, 'rgba(92, 202, 217, 0)')
-  ctx.fillStyle = glow
-  ctx.fillRect(0, 0, W, H)
+  paintBackground(ctx)
 
   const left = 88
   let y = 140
@@ -242,7 +265,7 @@ function drawStaircase(
 }
 
 /** Wraps a heading onto as many lines as it needs; returns the last baseline. */
-function wrap(
+export function wrap(
   ctx: CanvasRenderingContext2D,
   text: string,
   x: number,

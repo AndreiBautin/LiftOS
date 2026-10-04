@@ -20,6 +20,32 @@ import { drawShareCard, type ShareCard } from './session-card'
  * downloads the PNG, which is the honest version of the same thing.
  */
 export function ShareSession({ card }: { readonly card: ShareCard }) {
+  return (
+    <SharePicture
+      draw={() => drawShareCard(card)}
+      fileName={`liftos-${card.date}.png`}
+      title={card.title}
+      alt={`${card.title}, ${String(card.sets)} sets`}
+    />
+  )
+}
+
+/**
+ * Any picture the app can draw, shown before it goes anywhere, then
+ * shared or saved — the session card's sheet, for the records wall and
+ * the year too.
+ */
+export function SharePicture({
+  draw,
+  fileName,
+  title,
+  alt,
+}: {
+  readonly draw: () => Promise<Blob>
+  readonly fileName: string
+  readonly title: string
+  readonly alt: string
+}) {
   const [image, setImage] = useState<{ readonly blob: Blob; readonly url: string } | undefined>(
     undefined,
   )
@@ -33,7 +59,6 @@ export function ShareSession({ card }: { readonly card: ShareCard }) {
     }
   }, [image])
 
-  const fileName = `liftos-${card.date}.png`
   const file =
     image === undefined ? undefined : new File([image.blob], fileName, { type: 'image/png' })
   const canShare =
@@ -50,7 +75,7 @@ export function ShareSession({ card }: { readonly card: ShareCard }) {
         onClick={() => {
           setBusy(true)
           setFailed(false)
-          drawShareCard(card)
+          draw()
             .then((blob) => {
               setImage({ blob, url: URL.createObjectURL(blob) })
             })
@@ -75,7 +100,7 @@ export function ShareSession({ card }: { readonly card: ShareCard }) {
         <div
           role="dialog"
           aria-modal="true"
-          aria-label="Share this session"
+          aria-label={`Share: ${title}`}
           className="bg-ink-950/90 fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 p-4 backdrop-blur-sm"
           onKeyDown={(event) => {
             if (event.key === 'Escape') setImage(undefined)
@@ -83,7 +108,7 @@ export function ShareSession({ card }: { readonly card: ShareCard }) {
         >
           <img
             src={image.url}
-            alt={`${card.title}, ${String(card.sets)} sets`}
+            alt={alt}
             className="max-h-[70vh] w-auto max-w-full rounded-2xl shadow-[0_24px_60px_-20px_rgb(0_0_0/90%)]"
           />
           <div className="flex gap-2">
@@ -91,7 +116,7 @@ export function ShareSession({ card }: { readonly card: ShareCard }) {
               <Button
                 variant="primary"
                 onClick={() => {
-                  navigator.share({ files: [file], title: card.title }).catch(() => {
+                  navigator.share({ files: [file], title }).catch(() => {
                     // Dismissing the share sheet rejects; nothing to say.
                   })
                 }}

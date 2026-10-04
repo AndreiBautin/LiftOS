@@ -12,6 +12,8 @@ import { PageHeader } from '@/components/shared/PageHeader'
 import { PageSkeleton } from '@/components/shared/PageSkeleton'
 import { Card } from '@/components/shared/primitives'
 import { useExercises, useRecentWorkouts } from '@/features/train/hooks'
+import { SharePicture } from '@/features/share/ShareSession'
+import { drawWallCard } from '@/features/share/wall-card'
 import { cn } from '@/lib/cn'
 
 /**
@@ -63,13 +65,33 @@ export function RecordsPage() {
         title="Records"
         subtitle={`${String(bests.length)} exercises · ${String(freshCount)} new this week`}
         action={
-          <Link
-            viewTransition
-            to="/calculator"
-            className="text-accent-400 tap-target flex items-center text-sm hover:underline"
-          >
-            Calculator
-          </Link>
+          <span className="flex items-center gap-3">
+            <Link
+              viewTransition
+              to="/calculator"
+              className="text-accent-400 tap-target flex items-center text-sm hover:underline"
+            >
+              Calculator
+            </Link>
+            {bests.length > 0 && (
+              <SharePicture
+                draw={() =>
+                  drawWallCard({
+                    subtitle: `${String(bests.length)} exercises · ${String(freshCount)} new this week`,
+                    tiles: bests.map(({ best, exercise }) => ({
+                      name: exercise?.name ?? best.exerciseId,
+                      load: formatLoad(best.heaviest.load, settings.units),
+                      detail: `× ${String(best.heaviest.reps)} · ${shortDate(best.heaviest.date, today)}`,
+                      fresh: best.heaviest.date >= fresh,
+                    })),
+                  })
+                }
+                fileName={`liftos-records-${today}.png`}
+                title="Records"
+                alt={`The records wall: ${String(bests.length)} exercises`}
+              />
+            )}
+          </span>
         }
       />
       <div className="mb-3 flex gap-1.5" role="group" aria-label="View">
