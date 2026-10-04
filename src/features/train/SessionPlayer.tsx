@@ -1,4 +1,5 @@
 import { scrollMotion } from '@/lib/motion'
+import type { NiggleRegion } from '@/domain/logging/niggles'
 import {
   ArrowLeftRight,
   ArrowUpDown,
@@ -261,7 +262,12 @@ export function SessionPlayer({
   /** Logs a set of this exercise: the row, its swipe and the keyboard. */
   const logAt = (
     setIndex: number,
-    result: { load?: number | undefined; reps?: number | undefined; notes?: string | undefined },
+    result: {
+      load?: number | undefined
+      reps?: number | undefined
+      notes?: string | undefined
+      niggle?: NiggleRegion | null
+    },
   ) => {
     // Closed and resting on the tap, not on the save: the row is already
     // green (see `useLogSet`).
@@ -304,6 +310,7 @@ export function SessionPlayer({
         ...(result.load !== undefined ? { load: result.load } : {}),
         ...(result.reps !== undefined ? { reps: result.reps } : {}),
         ...(result.notes !== undefined ? { notes: result.notes } : {}),
+        ...(result.niggle !== undefined ? { niggle: result.niggle } : {}),
         outcome: 'completed',
       },
     })

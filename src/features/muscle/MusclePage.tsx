@@ -8,6 +8,7 @@ import { MUSCLE_WEEKS, muscleHistory } from '@/domain/volume/muscle-history'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { PageSkeleton } from '@/components/shared/PageSkeleton'
 import { Card, CardHeading } from '@/components/shared/primitives'
+import { NIGGLE_LABELS, nigglesForMuscle, recentNiggles } from '@/domain/logging/niggles'
 import { useExercises, useRecentWorkouts } from '@/features/train/hooks'
 
 /**
@@ -39,6 +40,7 @@ export function MusclePage() {
   const lookup = (exerciseId: ExerciseId) => library.find((one) => one.id === exerciseId)
   const history = muscleHistory(workouts.data, lookup, muscle, today)
   const most = Math.max(1, ...history.exercises.map((one) => one.sets))
+  const niggles = nigglesForMuscle(recentNiggles(workouts.data, today), muscle)
 
   return (
     <div className="mx-auto max-w-2xl space-y-4 pb-8">
@@ -72,6 +74,27 @@ export function MusclePage() {
         <Tide weeks={history.weeks} today={today} />
       </section>
 
+      {niggles.length > 0 && (
+        <Card className="border-[oklch(0.78_0.15_85_/_0.35)]">
+          <p className="text-sm text-[oklch(0.85_0.12_85)]">
+            {niggles
+              .map(
+                (one) =>
+                  `${NIGGLE_LABELS[one.region]} flagged ${one.count === 1 ? 'once' : one.count === 2 ? 'twice' : `${String(one.count)} times`} in three weeks`,
+              )
+              .join(' · ')}
+          </p>
+          <p className="text-ink-500 mt-1 text-xs">
+            The work this muscle does loads that joint. On{' '}
+            {niggles
+              .flatMap((one) => one.exercises)
+              .filter((one, at, all) => all.indexOf(one) === at)
+              .map((one) => lookup(one)?.name ?? one)
+              .join(', ')}
+            .
+          </p>
+        </Card>
+      )}
       <Card>
         <CardHeading title="What trained it" />
         {history.exercises.length === 0 ? (

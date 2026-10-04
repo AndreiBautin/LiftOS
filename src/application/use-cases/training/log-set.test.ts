@@ -134,3 +134,28 @@ describe('a note on a set', () => {
     expect(withSetResult(workout, request(''), at).entries[0]?.sets[0]?.notes).toBeUndefined()
   })
 })
+
+describe('a niggle on a set', () => {
+  const at = new Date('2026-08-25T10:00:00.000Z')
+  const workout = aWorkout({
+    id: asWorkoutId('today'),
+    status: 'in-progress',
+    entries: [anEntry({ sets: [aSet({ outcome: 'pending', niggle: 'knee' })] })],
+  })
+  const log = (niggle?: 'elbow' | null) =>
+    withSetResult(
+      workout,
+      {
+        entryIndex: 0,
+        setIndex: 0,
+        result: { outcome: 'completed', reps: 5, ...(niggle === undefined ? {} : { niggle }) },
+      },
+      at,
+    ).entries[0]?.sets[0]?.niggle
+
+  it('is kept by a log that says nothing about it, replaced, or removed by null', () => {
+    expect(log()).toBe('knee')
+    expect(log('elbow')).toBe('elbow')
+    expect(log(null)).toBeUndefined()
+  })
+})

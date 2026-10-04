@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
+import { toDayKey } from '@/domain/time/day'
+import { recentNiggles, type NiggleSummary } from '@/domain/logging/niggles'
 import { reorderSession } from '@/application/use-cases/training/reorder-session'
 import { repeatSession } from '@/application/use-cases/training/repeat-session'
 import { addExercise } from '@/application/use-cases/training/add-exercise'
@@ -135,6 +137,14 @@ export function useMuscleBalance() {
 export function useMuscleRecency() {
   const services = useServices()
   return useQuery({ queryKey: ['workouts', 'recency'], queryFn: () => recentMuscles(services) })
+}
+
+/** Joints flagged on sets in the last three weeks; see `niggles`. */
+export function useNiggles(): readonly NiggleSummary[] | undefined {
+  const services = useServices()
+  const workouts = useRecentWorkouts(200)
+  if (workouts.data === undefined) return undefined
+  return recentNiggles(workouts.data, toDayKey(services.clock.now()))
 }
 
 export function useRecentWorkouts(limit = 20) {

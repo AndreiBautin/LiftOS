@@ -1,4 +1,5 @@
 import type { Exercise } from '@/domain/exercises/exercise'
+import type { NiggleRegion } from './niggles'
 import type { MuscleGroup } from '@/domain/exercises/taxonomy'
 import type { CheckInId, ExerciseId, SlotId, WorkoutId } from '@/domain/ids/ids'
 import type { SetPrescription } from '@/domain/programs/prescription'
@@ -60,6 +61,8 @@ export interface LoggedSet {
   readonly isWarmup: boolean
   readonly completedAt?: string
   readonly notes?: string
+  /** The joint the set's note was about, when it was a niggle; see `niggles`. */
+  readonly niggle?: NiggleRegion
 }
 
 export interface LogEntry {

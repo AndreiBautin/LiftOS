@@ -11,6 +11,9 @@ import {
 } from '@/domain/programs/stall'
 import { formatLoad } from '@/domain/units/weight'
 import { Button, Card } from '@/components/shared/primitives'
+import { asExerciseId } from '@/domain/ids/ids'
+
+import { NiggleSwap } from './NiggleSwap'
 
 /**
  * A stalled exercise, said once, with the way out beside it.
@@ -105,6 +108,7 @@ export function StallCard({
           Reset to {formatLoad(target, settings.units)}
         </Button>
       )}
+      <NiggleSwap exerciseId={asExerciseId(exerciseId)} />
     </Card>
   )
 }

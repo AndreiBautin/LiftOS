@@ -1,4 +1,5 @@
 import type { ExerciseId, WorkoutId } from '@/domain/ids/ids'
+import type { NiggleRegion } from '@/domain/logging/niggles'
 import type { LoggedSet, SetOutcome, WorkoutLog } from '@/domain/logging/workout-log'
 import { comparePerformance } from '@/domain/logging/workout-log'
 import type { Clock, WorkoutRepository } from '@/domain/repositories/ports'
@@ -37,6 +38,8 @@ export interface SetResult {
   readonly reps?: number
   readonly outcome: SetOutcome
   readonly notes?: string
+  /** A joint to tag the set with; `null` removes one, absent keeps it. */
+  readonly niggle?: NiggleRegion | null
 }
 
 export interface LogSetRequest {
@@ -114,6 +117,7 @@ function applyResult(set: LoggedSet, result: SetResult, now: Date): LoggedSet {
       isWarmup: set.isWarmup,
       completedAt: now.toISOString(),
       ...(result.notes !== undefined ? { notes: result.notes } : {}),
+      ...(result.niggle != null ? { niggle: result.niggle } : {}),
     }
   }
 
@@ -121,8 +125,10 @@ function applyResult(set: LoggedSet, result: SetResult, now: Date): LoggedSet {
    * A note given replaces the old one, and an empty one removes it; no
    * note given (the one-tap log) keeps whatever the set already had.
    */
-  const { notes: kept, ...rest } = set
+  const { notes: kept, niggle: keptNiggle, ...rest } = set
   const notes = result.notes === undefined ? kept : result.notes === '' ? undefined : result.notes
+  // The same rule for the joint: given replaces, null removes, absent keeps.
+  const niggle = result.niggle === undefined ? keptNiggle : (result.niggle ?? undefined)
   return {
     ...rest,
     ...(result.load !== undefined ? { actualLoad: result.load } : {}),
@@ -130,6 +136,7 @@ function applyResult(set: LoggedSet, result: SetResult, now: Date): LoggedSet {
     outcome: result.outcome,
     completedAt: now.toISOString(),
     ...(notes !== undefined ? { notes } : {}),
+    ...(niggle !== undefined ? { niggle } : {}),
   }
 }
 

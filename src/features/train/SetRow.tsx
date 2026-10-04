@@ -1,4 +1,5 @@
 import { Check, Minus, SkipForward } from 'lucide-react'
+import { NIGGLE_LABELS, NIGGLE_REGIONS, type NiggleRegion } from '@/domain/logging/niggles'
 import { appendDictation } from '@/features/dictation/dictation'
 import { DictateButton } from '@/features/dictation/DictateButton'
 import { useState } from 'react'
@@ -60,6 +61,7 @@ interface Props {
     load?: number | undefined
     reps?: number | undefined
     notes?: string | undefined
+    niggle?: NiggleRegion | null
   }) => void
   readonly onSkip: () => void
   readonly onClear: () => void
@@ -144,10 +146,12 @@ export function SetRow(props: Props) {
    */
   const withNote = (text: string | undefined, note: string | undefined) =>
     note === undefined ? text : `${text === undefined ? '' : `${text} · `}“${note}”`
+  const flagged = (text: string | undefined) =>
+    set.niggle === undefined ? text : `${text ?? ''} · ${NIGGLE_LABELS[set.niggle]} niggle`
   const detail = done
-    ? withNote(set.prescription.label ?? 'Logged', set.notes)
+    ? flagged(withNote(set.prescription.label ?? 'Logged', set.notes))
     : skipped
-      ? withNote('Skipped', set.notes)
+      ? flagged(withNote('Skipped', set.notes))
       : previous != null && (previous.load !== undefined || props.bodyweight === true)
         ? withNote(
             `Last ${loadText(previous.load)} × ${String(previous.reps ?? '—')}`,
@@ -286,6 +290,8 @@ function SetEditorPanel({
   )
   const [reps, setReps] = useState(() => String(set.actualReps ?? set.plannedReps ?? ''))
   const [note, setNote] = useState(() => set.notes ?? '')
+  const [niggle, setNiggle] = useState<NiggleRegion | undefined>(() => set.niggle)
+  const [askingJoint, setAskingJoint] = useState(() => set.niggle !== undefined)
   const { settings } = useSettings()
 
   const done = set.outcome === 'completed' && set.completedAt !== undefined
@@ -374,6 +380,46 @@ function SetEditorPanel({
         />
       </div>
 
+      {/*
+        A niggle is a note about a joint: tagged here, it reaches the body
+        map, the muscle page and a stalled lift's swap (see the niggles module).
+      */}
+      {askingJoint ? (
+        <fieldset className="mt-2">
+          <legend className="text-ink-500 mb-1.5 text-xs">Which joint was talking?</legend>
+          <div className="flex flex-wrap gap-1.5">
+            {NIGGLE_REGIONS.map((region) => (
+              <button
+                key={region}
+                type="button"
+                aria-pressed={niggle === region}
+                onClick={() => {
+                  setNiggle(niggle === region ? undefined : region)
+                }}
+                className={cn(
+                  'tap-target rounded-full border px-3 text-xs font-medium',
+                  niggle === region
+                    ? 'border-[oklch(0.78_0.15_85)] bg-[oklch(0.78_0.15_85_/_0.15)] text-[oklch(0.85_0.12_85)]'
+                    : 'border-ink-800 text-ink-300',
+                )}
+              >
+                {NIGGLE_LABELS[region]}
+              </button>
+            ))}
+          </div>
+        </fieldset>
+      ) : (
+        <button
+          type="button"
+          onClick={() => {
+            setAskingJoint(true)
+          }}
+          className="text-ink-500 hover:text-ink-300 tap-target mt-1 text-xs"
+        >
+          Flag a niggle
+        </button>
+      )}
+
       <div className="mt-3 flex gap-2">
         <Button
           variant="primary"
@@ -388,6 +434,7 @@ function SetEditorPanel({
               ...(loadValue !== undefined ? { load: loadValue } : {}),
               ...(repsValue !== undefined ? { reps: repsValue } : {}),
               notes: note.trim(),
+              niggle: niggle ?? null,
             })
           }}
         >

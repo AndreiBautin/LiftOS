@@ -5,9 +5,10 @@ import { useState, type ReactElement } from 'react'
 import { Card, CardHeading } from '@/components/shared/primitives'
 import { MUSCLE_GROUP_LABELS, type MuscleGroup } from '@/domain/exercises/taxonomy'
 import { RECENCY_DAYS, type Freshness, type MuscleRecency } from '@/domain/volume/recency'
+import { NIGGLE_LABELS, type NiggleRegion, type NiggleSummary } from '@/domain/logging/niggles'
 import { cn } from '@/lib/cn'
 
-import { useMuscleRecency } from './hooks'
+import { useMuscleRecency, useNiggles } from './hooks'
 
 /**
  * Two figures, front and back, each muscle lit by how lately it worked
@@ -26,6 +27,7 @@ import { useMuscleRecency } from './hooks'
  */
 export function BodyMapCard() {
   const recency = useMuscleRecency()
+  const niggles = useNiggles() ?? []
   const [chosen, setChosen] = useState<MuscleGroup | undefined>(undefined)
 
   if (recency.data === undefined) return null
@@ -97,6 +99,7 @@ export function BodyMapCard() {
           {region('core', [block(39, 53, 22, 29, 5)], 'co')}
           {region('quads', [block(37, 92, 12, 34, 6), block(51, 92, 12, 34, 6)], 'qu')}
           {region('calves', [block(38.5, 130, 9, 34, 4.5), block(52.5, 130, 9, 34, 4.5)], 'cf')}
+          <Niggles niggles={niggles} at={FRONT_JOINTS} />
         </Figure>
         <Figure x={115} label="Back">
           {region('traps', [<polygon key="t" points="42,27 58,27 67,36 50,46 33,36" />], 'tr')}
@@ -120,6 +123,7 @@ export function BodyMapCard() {
             'ha',
           )}
           {region('calves', [block(38.5, 130, 9, 34, 4.5), block(52.5, 130, 9, 34, 4.5)], 'cf')}
+          <Niggles niggles={niggles} at={BACK_JOINTS} />
         </Figure>
       </svg>
 
@@ -133,7 +137,93 @@ export function BodyMapCard() {
           </li>
         ))}
       </ul>
+      {niggles.length > 0 && (
+        <p className="border-ink-800 text-ink-300 mt-3 border-t pt-3 text-xs">
+          <span className="font-medium text-[oklch(0.85_0.12_85)]">Niggles lately</span>{' '}
+          {niggles
+            .map(
+              (one) =>
+                `${NIGGLE_LABELS[one.region]} ×${String(one.count)}${one.note === undefined ? '' : ` — “${one.note}”`}`,
+            )
+            .join(' · ')}
+        </p>
+      )}
     </Card>
+  )
+}
+
+/** Where each joint sits on the figures, in a figure's own units. */
+type Joints = Partial<Record<NiggleRegion, readonly (readonly [number, number])[]>>
+const FRONT_JOINTS: Joints = {
+  shoulder: [
+    [31, 36],
+    [69, 36],
+  ],
+  elbow: [
+    [25, 69],
+    [75, 69],
+  ],
+  wrist: [
+    [22.5, 93],
+    [77.5, 93],
+  ],
+  hip: [
+    [40, 89],
+    [60, 89],
+  ],
+  knee: [
+    [43, 128],
+    [57, 128],
+  ],
+  ankle: [
+    [43, 165],
+    [57, 165],
+  ],
+}
+const BACK_JOINTS: Joints = {
+  neck: [[50, 27.5]],
+  'lower-back': [[50, 79]],
+  shoulder: [
+    [31, 36],
+    [69, 36],
+  ],
+  elbow: [
+    [25, 69],
+    [75, 69],
+  ],
+}
+
+/**
+ * A niggle drawn on the figure: an amber ring at the joint, still, never
+ * pulsing — the motion rule, and a joint that throbs on screen is the
+ * last thing somebody with a sore one needs. Side is not recorded, so a
+ * paired joint is marked on both sides.
+ */
+function Niggles({
+  niggles,
+  at,
+}: {
+  readonly niggles: readonly NiggleSummary[]
+  readonly at: Joints
+}) {
+  return (
+    <g aria-hidden className="pointer-events-none">
+      {niggles.flatMap((one) =>
+        (at[one.region] ?? []).map(([cx, cy]) => (
+          <g key={`${one.region}-${String(cx)}`}>
+            <circle
+              cx={cx}
+              cy={cy}
+              r={4.2}
+              fill="none"
+              stroke="oklch(0.82 0.15 85)"
+              strokeWidth={1.4}
+            />
+            <circle cx={cx} cy={cy} r={1.4} fill="oklch(0.82 0.15 85)" />
+          </g>
+        )),
+      )}
+    </g>
   )
 }
 

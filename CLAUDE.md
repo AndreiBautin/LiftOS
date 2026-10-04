@@ -57,6 +57,23 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **A set can carry a niggle** (`LoggedSet.niggle`; `niggles.ts` in
+  `domain/logging`, tested): "Flag a niggle" in the set editor asks which
+  joint — neck, shoulder, elbow, wrist, lower back, hip, knee, ankle —
+  and the row reads "Logged · Knee niggle". **Joints, not muscles**,
+  because that is how it is said and what aches is rarely the muscle a
+  lift is for; `NIGGLE_MUSCLES` maps each joint to the muscles whose work
+  loads it. Three weeks of them (`recentNiggles`) show as still amber
+  rings on the body map (both sides — side is not recorded) with a line
+  naming them, as a card on each muscle page the joint reaches, and
+  under a **stalled** lift that had one, as alternatives for the same
+  muscle — a swap **for the next session only** through the session
+  draft when that session holds the lift, links otherwise. It records
+  and reports; it diagnoses nothing. `SetResult.niggle` follows the
+  note's rule: given replaces, `null` removes, absent keeps (tested).
+  Checked by tagging a set in a real editor and reading it back from
+  IndexedDB; **the swap buttons were not pressed** — the demo's stalled
+  lift in tomorrow's session (lateral raise) has no alternative.
 - **The report ends its hero on three plain lines** (`Debrief`;
   `debrief` in `domain/logging/debrief.ts`, tested): what moved past last
   time, what matched or came in under, and what the bar does next time —
