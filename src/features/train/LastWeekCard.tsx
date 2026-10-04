@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { CalendarRange, Star } from 'lucide-react'
+import { CalendarRange, Play, Star } from 'lucide-react'
 
 import { useServices, useSettings } from '@/app/context'
 import { weekRecap } from '@/domain/logging/recap'
-import { toDayKey } from '@/domain/time/day'
+import { mondayOf, shiftDay, toDayKey } from '@/domain/time/day'
 import { Card, CardHeading } from '@/components/shared/primitives'
 import { cn } from '@/lib/cn'
 
@@ -44,9 +44,19 @@ export function LastWeekCard() {
         icon={<CalendarRange size={16} aria-hidden />}
         title="Last week"
         action={
-          <Link viewTransition to="/month" className="text-accent-400 text-xs hover:underline">
-            The month →
-          </Link>
+          <span className="flex items-center gap-3">
+            {/* The week as a story: last Monday names it. */}
+            <Link
+              viewTransition
+              to={`/wrapped/${shiftDay(mondayOf(today), -7)}`}
+              className="text-accent-400 flex items-center gap-1 text-xs hover:underline"
+            >
+              <Play size={12} aria-hidden /> Play
+            </Link>
+            <Link viewTransition to="/month" className="text-accent-400 text-xs hover:underline">
+              The month →
+            </Link>
+          </span>
         }
       />
 

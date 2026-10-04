@@ -57,6 +57,11 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **A week plays as a story too** (`/wrapped/YYYY-MM-DD`, any day of it,
+  read from its Monday; `periodOf`, tested — a rolled-over date like
+  February 30th is refused). **Play** on the Last week card opens last
+  week's, matching the card's own figures; inside a single week the
+  "biggest week" card is skipped, being the week itself.
 - **Dumbbells are drawn too** (`DumbbellPair`, `BeltLoad` in
   `features/train/Dumbbells.tsx`, chosen in `BarSection`): a dumbbell
   exercise shows the pair side by side — hex heads sized by the weight, a

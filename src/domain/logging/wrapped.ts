@@ -4,15 +4,25 @@ import { mondayOf, parseDay, shiftDay } from '@/domain/time/day'
 import { blockReport, type BlockLift } from './block'
 import { totalWorkingSets, workingSets, type WorkoutLog } from './workout-log'
 
-/** A stretch of time to tell the story of: a month (`YYYY-MM`) or a year (`YYYY`). */
+/**
+ * A stretch of time to tell the story of: a week (any day of it,
+ * `YYYY-MM-DD`, read from its Monday), a month (`YYYY-MM`) or a year
+ * (`YYYY`).
+ */
 export interface WrappedPeriod {
   readonly start: string
   readonly end: string
 }
 
-/** Reads `2026-09` or `2026` as the days it covers; anything else is undefined. */
+/** Reads `2026-09-28`, `2026-09` or `2026` as the days it covers; anything else is undefined. */
 export function periodOf(key: string): WrappedPeriod | undefined {
   if (/^\d{4}$/.test(key)) return { start: `${key}-01-01`, end: `${key}-12-31` }
+  if (/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(key)) {
+    // A date that rolls over (February 30th) is not a day.
+    if (parseDay(key).getUTCDate() !== Number(key.slice(8))) return undefined
+    const monday = mondayOf(key)
+    return { start: monday, end: shiftDay(monday, 6) }
+  }
   if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(key)) return undefined
   const [year = 0, month = 1] = key.split('-').map(Number)
   const next =

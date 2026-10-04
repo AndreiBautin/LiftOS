@@ -283,7 +283,8 @@ function cardsFor(
       ),
     })
   }
-  if (story.busiestWeek !== undefined) {
+  // Inside a single week the biggest week is the week itself.
+  if (story.busiestWeek !== undefined && key.length !== 10) {
     cards.push({
       key: 'week',
       hue: 290,
@@ -374,6 +375,7 @@ function Big({
 
 function periodLabel(key: string): string {
   if (key.length === 4) return key
+  if (key.length === 10) return `Week of ${dayLabel(key)}`
   return new Date(`${key}-01T00:00:00`).toLocaleDateString(undefined, { month: 'long' })
 }
 

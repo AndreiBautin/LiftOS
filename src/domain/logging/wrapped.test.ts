@@ -15,6 +15,13 @@ describe('the period a story covers', () => {
     expect(periodOf('2026-12')).toEqual({ start: '2026-12-01', end: '2026-12-31' })
   })
 
+  /* Any day names its week, read Monday to Sunday. */
+  it('reads a day as the week it falls in', () => {
+    expect(periodOf('2026-09-28')).toEqual({ start: '2026-09-28', end: '2026-10-04' })
+    expect(periodOf('2026-10-01')).toEqual({ start: '2026-09-28', end: '2026-10-04' })
+    expect(periodOf('2026-02-30')).toBeUndefined()
+  })
+
   it('reads a year whole, and refuses anything else', () => {
     expect(periodOf('2026')).toEqual({ start: '2026-01-01', end: '2026-12-31' })
     expect(periodOf('2026-13')).toBeUndefined()
