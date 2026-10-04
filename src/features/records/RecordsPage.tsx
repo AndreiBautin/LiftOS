@@ -1,5 +1,6 @@
 import { Star } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { RecordTimeline } from './RecordTimeline'
+import { Link, useSearchParams } from 'react-router-dom'
 
 import { useServices, useSettings } from '@/app/context'
 import { bestsByExercise } from '@/domain/logging/bests'
@@ -36,6 +37,8 @@ export function RecordsPage() {
   const today = toDayKey(useServices().clock.now())
   const workouts = useRecentWorkouts(1000)
   const exercises = useExercises()
+  const [params, setParams] = useSearchParams()
+  const view = params.get('view') === 'timeline' ? 'timeline' : 'wall'
 
   if (workouts.data === undefined || exercises.data === undefined) {
     return <PageHeader title="Records" subtitle="Loading…" />
@@ -68,7 +71,30 @@ export function RecordsPage() {
           </Link>
         }
       />
-      {bests.length === 0 ? (
+      <div className="mb-3 flex gap-1.5" role="group" aria-label="View">
+        {(['wall', 'timeline'] as const).map((one) => (
+          <button
+            key={one}
+            type="button"
+            aria-pressed={view === one}
+            onClick={() => {
+              setParams(one === 'wall' ? {} : { view: one }, { replace: true })
+            }}
+            className={cn(
+              'tap-target rounded-full border px-4 text-xs font-medium',
+              view === one
+                ? 'border-accent-500/60 bg-accent-500/15 text-accent-400'
+                : 'border-ink-800 text-ink-300',
+            )}
+          >
+            {one === 'wall' ? 'Wall' : 'Timeline'}
+          </button>
+        ))}
+      </div>
+
+      {view === 'timeline' ? (
+        <RecordTimeline logs={workouts.data} library={library} units={settings.units} />
+      ) : bests.length === 0 ? (
         <Card>
           <p className="text-ink-300 text-sm">Finish a session and its bests will hang here.</p>
         </Card>

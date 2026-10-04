@@ -116,6 +116,13 @@ SessionPage.tsx`, from `sessionDetail`). History rows could be deleted
   finished the minute it started reads as of unknown length rather
   than "0 min"; the demo seed stamped every session that way until this
   page showed it, and now gives each 45–75 minutes.
+- **The records wall has a timeline view** (`?view=timeline`,
+  `RecordTimeline`; `recordTimeline` in `domain/logging/record-timeline.ts`,
+  tested): every record in the order it was set on a gold spine, a month
+  at a time, newest brightest, each linking to its exercise and session.
+  **The wall says where you stand; this says how you got there** — a run
+  of records in one month and a quiet one after is the shape of a block.
+  Read through the same `sessionRecords` as the session page and report.
 - **A card says when you train** (`TrainingTimesCard`, "When you train";
   `trainingTimes` in `domain/logging/training-times.ts`, tested): a dot
   for each weekday and part of the day, as large as the sessions started
