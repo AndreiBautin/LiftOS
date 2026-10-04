@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
+import { reorderSession } from '@/application/use-cases/training/reorder-session'
 import { repeatSession } from '@/application/use-cases/training/repeat-session'
 import { addExercise } from '@/application/use-cases/training/add-exercise'
 import { pairSuperset, unpairSuperset } from '@/application/use-cases/training/superset'
@@ -260,6 +261,23 @@ export function useSuperset(workoutId: WorkoutId | undefined) {
     onSuccess: (updated) => {
       client.setQueryData(keys.activeWorkout, updated)
       void client.invalidateQueries({ queryKey: keys.activeWorkout })
+    },
+  })
+}
+
+export function useReorderSession(workoutId: WorkoutId | undefined) {
+  const services = useServices()
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (input: { at: number; by: -1 | 1 }) => {
+      if (workoutId === undefined) throw new Error('No workout is open.')
+      return reorderSession({ workoutId, ...input }, services)
+    },
+    onSuccess: (updated) => {
+      client.setQueryData(keys.activeWorkout, updated)
+    },
+    onError: (error) => {
+      logger.warn('exercise.reorder-failed', { message: error.message })
     },
   })
 }

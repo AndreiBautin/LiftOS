@@ -39,6 +39,7 @@ import { cn } from '@/lib/cn'
 
 import {
   useAddExercise,
+  useReorderSession,
   useClearSet,
   useExerciseHistory,
   useLogSet,
@@ -58,6 +59,7 @@ import { FocusView } from './FocusView'
 import { ExercisePeek } from './ExercisePeek'
 import { AddExercisePanel } from './AddExercisePanel'
 import { SetClock } from './SetClock'
+import { ReorderPanel } from './ReorderPanel'
 import { primeRestSounds } from './rest-sounds'
 import { SessionMap } from './SessionMap'
 import { SetRow } from './SetRow'
@@ -162,6 +164,7 @@ export function SessionPlayer({
   }, [index])
   const clearSet = useClearSet(workout.id)
   const addOne = useAddExercise(workout.id)
+  const reorder = useReorderSession(workout.id)
 
   useKeepAwake(keepAwake)
 
@@ -611,7 +614,12 @@ export function SessionPlayer({
                 ramp={entry.role === 'strength'}
               />
               <LadderFor entry={entry} exercises={exercises} units={units} />
-              <SetClock key={index} />
+              {/*
+                Keyed apart from the bar's `index` key: two siblings sharing a
+                key left the last exercise's bar picture behind on every page
+                turn — React keeps one and orphans the other.
+              */}
+              <SetClock key={`clock-${String(index)}`} />
 
               <div className="mt-4 space-y-2">
                 {entry.sets.map((set, setIndex) => (
@@ -713,6 +721,25 @@ export function SessionPlayer({
                   onSuccess: () => {
                     showEntry(stepEnd + 1)
                     window.scrollTo({ top: 0, behavior: 'smooth' })
+                  },
+                },
+              )
+            }}
+          />
+
+          <ReorderPanel
+            workout={workout}
+            current={index}
+            nameOf={nameOf}
+            busy={reorder.isPending}
+            onMove={(at, by) => {
+              reorder.mutate(
+                { at, by },
+                {
+                  // The exercise on screen stays on screen, wherever it moved.
+                  onSuccess: () => {
+                    if (at === index) showEntry(at + by)
+                    else if (at + by === index) showEntry(at)
                   },
                 },
               )

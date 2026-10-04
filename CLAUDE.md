@@ -116,6 +116,20 @@ SessionPage.tsx`, from `sessionDetail`). History rows could be deleted
   finished the minute it started reads as of unknown length rather
   than "0 min"; the demo seed stamped every session that way until this
   page showed it, and now gives each 45–75 minutes.
+- **An open session can be reordered** (`ReorderPanel` at the foot of
+  the player, "Change the order"; `moveEntry` in `domain/logging/
+reorder.ts` and `reorderSession`, tested): up and down per exercise,
+  buttons not a drag, the exercise on screen staying on screen wherever it
+  moves. Warm-ups stay at the top (an exercise above them is lifted cold)
+  and a superset pair does not move or get split — a button is offered
+  only where the move is allowed, and the pair wears a link mark.
+- **Two siblings must never share a React key, and one shipped.** The set
+  clock was given `key={index}` beside the bar picture's `key={index}`,
+  and React orphaned the old bar on every page turn — Pendlay Row's
+  plates left on the Bench card, one more stale picture per exercise
+  visited. Live from `349cf1b` until found while checking the reorder; the
+  console had been saying "two children with the same key" the whole time.
+  **Read the console when verifying a player change**, not only the DOM.
 - **A past session can be run again, and an open session can be built
   from nothing.** Repeat on the session page (`repeatSession` in
   `application/use-cases/training/repeat-session.ts`, tested) opens the
