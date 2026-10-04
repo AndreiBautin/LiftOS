@@ -116,6 +116,15 @@ SessionPage.tsx`, from `sessionDetail`). History rows could be deleted
   finished the minute it started reads as of unknown length rather
   than "0 min"; the demo seed stamped every session that way until this
   page showed it, and now gives each 45–75 minutes.
+- **Every muscle has a page** (`/muscle/:id`, `muscleHistory` in
+  `domain/volume/muscle-history.ts`, tested; reached from the body map's
+  readout — "Open" beside a chosen muscle — and the palette). Twelve
+  calendar weeks as a filled curve (a tide) with the busiest week marked,
+  sets, a weekly average, its share of all sets, when it last worked, and
+  the exercises that paid it, each with a bar of its part. **Counted by
+  `loggedVolume` one entry at a time**, the rule the radar, the balance
+  and the body map use, so a set pays only the muscle its exercise is
+  for: the chest page lists the bench, the triceps page does not.
 - **The exercise name in the player opens its recent past**
   (`ExercisePeek`): a tap or a 450 ms hold raises a sheet with the last
   six top sets as a sparkline, every point labelled, the best set in gold

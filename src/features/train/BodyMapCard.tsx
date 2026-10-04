@@ -1,4 +1,5 @@
 import { PersonStanding } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { useState, type ReactElement } from 'react'
 
 import { Card, CardHeading } from '@/components/shared/primitives'
@@ -71,7 +72,14 @@ export function BodyMapCard() {
         ) : (
           <>
             <span className="text-ink-50 font-semibold">{MUSCLE_GROUP_LABELS[chosen]}</span>
-            <span className="text-ink-500"> · {describe(data[chosen])}</span>
+            <span className="text-ink-500"> · {describe(data[chosen])} · </span>
+            <Link
+              viewTransition
+              to={`/muscle/${chosen}`}
+              className="text-accent-400 font-medium hover:underline"
+            >
+              Open
+            </Link>
           </>
         )}
       </p>

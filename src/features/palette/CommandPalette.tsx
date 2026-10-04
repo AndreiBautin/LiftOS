@@ -1,4 +1,5 @@
 import { Search } from 'lucide-react'
+import { MUSCLE_GROUP_LABELS, type MuscleGroup } from '@/domain/exercises/taxonomy'
 import { useSettings } from '@/app/context'
 import { platesToHand } from '@/domain/units/plates'
 import { PlateLoader } from '@/features/train/PlateLoader'
@@ -103,7 +104,14 @@ function Palette({ onClose }: { readonly onClose: () => void }) {
         keywords: `session ${log.date} ${shortDate(log.date)}`,
         to: `/session/${log.id}`,
       }))
-    return [...PAGES, ...exerciseItems, ...sessionItems]
+    const muscleItems = (Object.keys(MUSCLE_GROUP_LABELS) as MuscleGroup[]).map((muscle) => ({
+      id: `muscle:${muscle}`,
+      label: MUSCLE_GROUP_LABELS[muscle],
+      kind: 'Muscle',
+      keywords: 'muscle sets',
+      to: `/muscle/${muscle}`,
+    }))
+    return [...PAGES, ...muscleItems, ...exerciseItems, ...sessionItems]
   }, [exercises.data, workouts.data])
 
   const shown = rankItems(items, query)
