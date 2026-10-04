@@ -185,6 +185,16 @@ export function SessionPlayer({
 
   const outstanding = remainingSets(workout)
   const loggedSets = totalWorkingSets(workout)
+  /*
+   * **Nothing performed is nothing to file.** Finishing a session with no
+   * set done — warm-ups included — wrote a blank record into the history
+   * (0 sets, the minutes it sat open), and on an open session it was the
+   * only way out. It discards instead, through the abandon path, which
+   * deletes a session with nothing logged.
+   */
+  const anythingDone = workout.entries.some((one) =>
+    one.sets.some((set) => set.outcome === 'completed'),
+  )
 
   if (entry === undefined) {
     return (
@@ -206,8 +216,9 @@ export function SessionPlayer({
             addOne.mutate({ afterIndex: -1, exerciseId: exercise.id })
           }}
         />
-        <Button variant="ghost" full className="mt-3" onClick={onFinish}>
-          Finish with nothing logged
+        <Button variant="ghost" full className="mt-3" onClick={onAbandon}>
+          <XCircle size={16} aria-hidden />
+          Discard this session
         </Button>
       </Card>
     )
@@ -812,14 +823,20 @@ export function SessionPlayer({
             full
             className="mt-6"
             onClick={() => {
+              if (!anythingDone) {
+                onAbandon()
+                return
+              }
               if (outstanding === 0) haptic('finished')
               onFinish()
             }}
           >
             <CheckCircle2 size={outstanding === 0 ? 20 : 16} aria-hidden />
-            {outstanding === 0
-              ? 'Finish session'
-              : `Finish early · ${String(outstanding)} sets left`}
+            {!anythingDone
+              ? 'Discard — nothing logged'
+              : outstanding === 0
+                ? 'Finish session'
+                : `Finish early · ${String(outstanding)} sets left`}
           </Button>
 
           {/*

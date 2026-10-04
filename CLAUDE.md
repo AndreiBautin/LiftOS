@@ -57,6 +57,14 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **A session with nothing done cannot be filed** (`anythingDone` in
+  `SessionPlayer`). An empty open session's only exit was "Finish with
+  nothing logged", which filed a blank record — reported with a
+  screenshot of a 0-set, 247-minute "Open session" in the history. Both
+  that button and the main Finish now read **Discard** when no set has
+  been completed (warm-ups count as something) and go through the
+  abandon path, which deletes a session with nothing logged. A blank
+  record already filed is removed from the history list like any other.
 - **The line charts speak one language**: a line draws itself in once
   (`.line-draw`, `pathLength=1`), a gradient wash fades in under it
   (`.area-fade`), and its end point lands after (`.line-end`), staggered
