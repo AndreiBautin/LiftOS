@@ -38,6 +38,13 @@ const PAGES: readonly PaletteItem[] = [
     keywords: 'one rep max e1rm percent',
     to: '/calculator',
   },
+  {
+    id: 'compare',
+    label: 'Compare exercises',
+    kind: 'Page',
+    keywords: 'versus two lifts progress',
+    to: '/compare',
+  },
   { id: 'month', label: 'This month', kind: 'Page', keywords: 'recap month', to: '/month' },
   {
     id: 'settings',

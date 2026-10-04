@@ -116,6 +116,15 @@ SessionPage.tsx`, from `sessionDetail`). History rows could be deleted
   finished the minute it started reads as of unknown length rather
   than "0 min"; the demo seed stamped every session that way until this
   page showed it, and now gives each 45–75 minutes.
+- **Two exercises can be compared** (`/compare?a=&b=`, `relativeSeries`
+  in `domain/strength/relative.ts`, tested; Compare on an exercise page
+  and in the palette): each line read against its own first session, so
+  a curl from 25 to 35 and a squat from 298 to 356 share one axis as +40%
+  and +19.5% — which moved further, not which is heavier. Plotted is the
+  session's estimated max where the reps allow one, else its top bar
+  (reps for the body alone); a version-split exercise uses its longest
+  series. The pickers list only exercises with history, and the pair is
+  in the address.
 - **The coming sessions export to a calendar** (Calendar on the Program
   page's "Next four weeks", `CalendarExport`; `calendarFile` in
   `domain/programs/calendar.ts`, tested): a start time and a length, then
