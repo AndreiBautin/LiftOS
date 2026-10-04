@@ -57,6 +57,16 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **The notices are one strip that swipes** (`NoticeStrip` on Today):
+  the sample note, what's new and the install offer sit side by side
+  under scroll snap rather than stacked above the hero. Each notice
+  still decides for itself whether to show; a slide that renders nothing
+  collapses (`empty:hidden`) and a dot is drawn only for what is there,
+  so which slides show is read off the DOM. **The strip takes the height
+  of the notice on screen**, measured: a flex row is as tall as its
+  tallest slide, and a short note sat over a blank the height of the
+  release notes. In the agent's hidden pane the height transition stays
+  on its first frame; the inline height is the value to read.
 - **The page opens on a hero, and the week is a radar.** Asked for as
   _"the 'this week' graph is plain, clunky, and takes up most of the
   screen"_ and _"I don't like the plain LiftOS header in lieu of a

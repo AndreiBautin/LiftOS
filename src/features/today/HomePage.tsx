@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { NoticeStrip } from './NoticeStrip'
 import { arrangeCards } from '@/domain/settings/home-cards'
 import { ArrangeCards } from './ArrangeCards'
 import { InstallCard } from '@/features/pwa/InstallCard'
@@ -126,10 +127,13 @@ export function HomePage() {
 
   return (
     <div className="space-y-6">
-      <SampleNotice />
       <FirstRunSetup />
-      <WhatsNew />
-      <InstallCard />
+      {/* One strip for the notices, so the hero is not pushed under a stack of them. */}
+      <NoticeStrip>
+        <SampleNotice />
+        <WhatsNew />
+        <InstallCard />
+      </NoticeStrip>
       <HeroBanner />
       <DeloadSuggestion />
       <Masonry
