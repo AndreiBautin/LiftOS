@@ -67,6 +67,7 @@ export function SyncSection() {
 
   return (
     <Section
+      id="sync"
       title="Sync across devices"
       description="Through a private GitHub repository of your own — free, and nothing of ours in between."
     >

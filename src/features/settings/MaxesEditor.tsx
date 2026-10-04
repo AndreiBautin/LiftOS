@@ -30,6 +30,7 @@ interface Props {
 export function MaxesEditor({ settings, onChange }: Props) {
   return (
     <Section
+      id="maxes"
       title="Current maxes"
       description="Where a lift starts before it has any history. After the first session the bar is carried forward from what you actually lifted, so these only matter once each."
     >

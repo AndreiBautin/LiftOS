@@ -42,15 +42,18 @@ export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
 }
 
 interface SectionProps {
+  /** An anchor, for a page that jumps between its sections. */
+  readonly id?: string | undefined
   readonly title: string
   readonly description?: string | undefined
   readonly action?: ReactNode
   readonly children: ReactNode
 }
 
-export function Section({ title, description, action, children }: SectionProps) {
+export function Section({ id, title, description, action, children }: SectionProps) {
   return (
-    <section className="mb-8">
+    // The scroll margin clears a sticky bar a jump lands under.
+    <section id={id} className="mb-8 scroll-mt-20">
       <div className="mb-3 flex items-end justify-between gap-3">
         {/*
           A lit rule beside the heading, so a section reads as a panel

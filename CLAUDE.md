@@ -57,6 +57,15 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **Settings has a sticky row of section chips** (`SectionChips`):
+  Look, Units, Session, Maxes, Sync, Data, the one in view lit — the
+  last section whose top has passed a third of the way down, or the last
+  at the foot of the page. A press scrolls there. `Section` takes an
+  `id` and a scroll margin for this. **Add a section, add its chip.**
+  Unverified by watching: the agent's hidden pane fires no scroll events
+  (they ride rendering frames) and does not advance a smooth scroll, so
+  the lit chip was checked by dispatching `scroll` by hand after each
+  jump.
 - **A page with nothing to count says so in a sentence** — the block
   report, the year, the balance card and the body map were checked on an
   emptied demo (`sampleData: 'cleared'`, database deleted) and drew rows

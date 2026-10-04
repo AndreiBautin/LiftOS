@@ -17,6 +17,8 @@ import { Badge, Button, Card, Section } from '@/components/shared/primitives'
 import { useBackup } from '@/features/backup/useBackup'
 import { useSampleData } from '@/features/backup/useSampleData'
 import { SyncSection } from '@/features/sync/SyncSection'
+
+import { SectionChips } from './SectionChips'
 import { PLATES, platesToHand } from '@/domain/units/plates'
 import { syncStore } from '@/features/sync/sync-store'
 import { MaxesEditor } from './MaxesEditor'
@@ -34,6 +36,16 @@ import {
  * "clear cookies" in most browsers means exactly that — and they need to
  * be told before it happens, not after.
  */
+/** The page's sections, in order, for the chips at the top. */
+const SECTIONS = [
+  { id: 'look', label: 'Look' },
+  { id: 'units', label: 'Units' },
+  { id: 'session', label: 'Session' },
+  { id: 'maxes', label: 'Maxes' },
+  { id: 'sync', label: 'Sync' },
+  { id: 'data', label: 'Data' },
+] as const
+
 export function SettingsPage() {
   const { settings, update } = useSettings()
 
@@ -70,8 +82,9 @@ export function SettingsPage() {
   return (
     <div>
       <PageHeader title="Settings" />
+      <SectionChips sections={SECTIONS} />
 
-      <Section title="Look">
+      <Section id="look" title="Look">
         <Card>
           <p className="text-ink-300 mb-3 text-sm">Accent</p>
           <div className="flex flex-wrap gap-3" role="radiogroup" aria-label="Accent colour">
@@ -149,7 +162,7 @@ export function SettingsPage() {
         </Card>
       </Section>
 
-      <Section title="Units">
+      <Section id="units" title="Units">
         <Card className="space-y-4">
           <div className="flex gap-2">
             {(['lb', 'kg'] as const).map((unit) => (
@@ -206,7 +219,7 @@ export function SettingsPage() {
         see `rp-splits.ts` for why the other three were already worse
         than the one that shipped.
       */}
-      <Section title="During a session">
+      <Section id="session" title="During a session">
         <Card className="space-y-3">
           <Toggle
             label="Rest timer"
@@ -251,6 +264,7 @@ export function SettingsPage() {
       <SyncSection />
 
       <Section
+        id="data"
         title="Your data"
         description={
           syncing
