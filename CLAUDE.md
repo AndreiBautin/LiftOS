@@ -116,6 +116,14 @@ SessionPage.tsx`, from `sessionDetail`). History rows could be deleted
   finished the minute it started reads as of unknown length rather
   than "0 min"; the demo seed stamped every session that way until this
   page showed it, and now gives each 45–75 minutes.
+- **A set can be timed, to a tempo** (`SetClock` under the ladder,
+  `tempoAt` in `domain/programs/tempo.ts`, tested): Start, lift, Stop. With
+  2-0-1, 3-1-1 or 4-0-2 chosen it calls each part of every rep — Lower 3,
+  Hold 1, Lift 1 — and the rep it is on, ticking on each change when rest
+  sounds are on (the same synthesised tick, primed on the Start tap). A
+  part of nought seconds is skipped rather than flashed. **It records
+  nothing**: time under the bar is a reading for the lifter, not a field
+  every set should ask for. Keyed by the exercise, so paging on resets it.
 - **An exercise can be added mid-session** (`addExercise` in
   `application/use-cases/training/add-exercise.ts`, tested;
   `AddExercisePanel` folded at the foot of the player). It goes after the

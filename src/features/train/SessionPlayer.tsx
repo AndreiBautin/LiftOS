@@ -57,6 +57,7 @@ import { RestTimer } from './RestTimer'
 import { FocusView } from './FocusView'
 import { ExercisePeek } from './ExercisePeek'
 import { AddExercisePanel } from './AddExercisePanel'
+import { SetClock } from './SetClock'
 import { primeRestSounds } from './rest-sounds'
 import { SessionMap } from './SessionMap'
 import { SetRow } from './SetRow'
@@ -597,6 +598,7 @@ export function SessionPlayer({
                 ramp={entry.role === 'strength'}
               />
               <LadderFor entry={entry} exercises={exercises} units={units} />
+              <SetClock key={index} />
 
               <div className="mt-4 space-y-2">
                 {entry.sets.map((set, setIndex) => (
