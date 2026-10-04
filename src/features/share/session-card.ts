@@ -31,6 +31,10 @@ export interface ShareCard {
   readonly heft?: string | undefined
   /** The heading over the list; "New records" by default. */
   readonly recordsHeading?: string | undefined
+  /** The three figures' names, when they are not sets, volume and minutes. */
+  readonly statLabels?: readonly [string, string, string]
+  /** A step line of top-set loads, oldest first — an exercise's card draws its climb. */
+  readonly staircase?: readonly number[]
   readonly records: readonly {
     readonly name: string
     readonly detail: string
@@ -83,13 +87,11 @@ export function drawShareCard(card: ShareCard): Promise<Blob> {
 
   // Three numbers, the report's own.
   y += 110
+  const labels = card.statLabels ?? ['Sets', 'Volume', card.timeLabel ?? 'Minutes']
   const stats: readonly (readonly [string, string])[] = [
-    ['SETS', String(card.sets)],
-    ['VOLUME', card.volume],
-    [
-      (card.timeLabel ?? 'Minutes').toUpperCase(),
-      card.minutes === undefined ? '—' : String(card.minutes),
-    ],
+    [labels[0].toUpperCase(), String(card.sets)],
+    [labels[1].toUpperCase(), card.volume],
+    [labels[2].toUpperCase(), card.minutes === undefined ? '—' : String(card.minutes)],
   ]
   const column = (W - left * 2) / stats.length
   stats.forEach(([label, value], at) => {
@@ -102,6 +104,12 @@ export function drawShareCard(card: ShareCard): Promise<Blob> {
     ctx.fillText(value, x, y + 72, column - 32)
   })
   y += 120
+
+  if (card.staircase !== undefined && card.staircase.length > 1) {
+    y += 80
+    drawStaircase(ctx, card.staircase, left, y, W - left * 2, 440)
+    y += 440
+  }
 
   if (card.heft !== undefined) {
     y += 64
@@ -156,6 +164,65 @@ export function drawShareCard(card: ShareCard): Promise<Blob> {
       else resolve(blob)
     }, 'image/png')
   })
+}
+
+/**
+ * The climb, as steps: each load held flat until the next, a soft fill
+ * under it, the last step in gold with its number — the exercise page's
+ * staircase, drawn for a picture.
+ */
+function drawStaircase(
+  ctx: CanvasRenderingContext2D,
+  loads: readonly number[],
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+): void {
+  const low = Math.min(...loads)
+  const high = Math.max(...loads)
+  const span = Math.max(1, high - low)
+  const step = width / loads.length
+  const at = (load: number) => y + height - 40 - ((load - low) / span) * (height - 80)
+  ctx.beginPath()
+  loads.forEach((load, index) => {
+    const left = x + step * index
+    if (index === 0) ctx.moveTo(left, at(load))
+    else ctx.lineTo(left, at(load))
+    ctx.lineTo(left + step, at(load))
+  })
+  const line = new Path2D()
+  loads.forEach((load, index) => {
+    const left = x + step * index
+    if (index === 0) line.moveTo(left, at(load))
+    else line.lineTo(left, at(load))
+    line.lineTo(left + step, at(load))
+  })
+  ctx.lineTo(x + width, y + height)
+  ctx.lineTo(x, y + height)
+  ctx.closePath()
+  const fill = ctx.createLinearGradient(0, y, 0, y + height)
+  fill.addColorStop(0, 'rgba(92, 202, 217, 0.32)')
+  fill.addColorStop(1, 'rgba(92, 202, 217, 0)')
+  ctx.fillStyle = fill
+  ctx.fill()
+  ctx.strokeStyle = ACCENT
+  ctx.lineWidth = 6
+  ctx.lineJoin = 'round'
+  ctx.stroke(line)
+
+  const last = loads.at(-1) ?? high
+  ctx.fillStyle = GOLD
+  ctx.beginPath()
+  ctx.arc(x + width - step / 2, at(last), 12, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.font = `700 40px ${FONT}`
+  ctx.textAlign = 'right'
+  ctx.fillText(String(last), x + width, at(last) - 28)
+  ctx.textAlign = 'left'
+  ctx.fillStyle = INK_500
+  ctx.font = `400 28px ${FONT}`
+  ctx.fillText(String(loads[0] ?? low), x, at(loads[0] ?? low) - 22)
 }
 
 /** Wraps a heading onto as many lines as it needs; returns the last baseline. */

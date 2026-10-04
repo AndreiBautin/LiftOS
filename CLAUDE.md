@@ -116,6 +116,14 @@ SessionPage.tsx`, from `sessionDetail`). History rows could be deleted
   finished the minute it started reads as of unknown length rather
   than "0 min"; the demo seed stamped every session that way until this
   page showed it, and now gives each 45–75 minutes.
+- **An exercise's progress shares as a picture** (Share on the exercise
+  page, from two sessions up): the session card's renderer with its three
+  figures relabelled (`statLabels` — sessions, best set, estimated max)
+  and a **staircase** drawn on the canvas (`staircase`, the last sixteen
+  top sets, the last step gold with its number) — the exercise page's own
+  picture of double progression. A bodyweight movement on the body alone
+  climbs by reps. Shown before it goes anywhere, Save and Share as for a
+  session.
 - **Notes can be dictated** (`DictateButton` and `appendDictation` in
   `features/dictation`, tested): a microphone beside the set note and the
   session note, present only where the browser has a speech recogniser —

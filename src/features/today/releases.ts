@@ -1,6 +1,16 @@
 /** Release notes, newest first; `WhatsNew` shows the first once. */
 export const RELEASES: readonly { readonly id: string; readonly items: readonly string[] }[] = [
   {
+    id: '2026-10-05',
+    items: [
+      'Add an exercise mid-session, planned from its own history.',
+      'An open session follows you as a pill on every other screen.',
+      'Time a set and follow a tempo; dictate notes with the mic.',
+      'Import your history from Strong or Hevy (Settings → Backup).',
+      'Muscle pages, a strength calculator, and shareable exercise progress.',
+    ],
+  },
+  {
     id: '2026-10-04',
     items: [
       'Focus: one set on the whole screen, with a big rest countdown — the button on the exercise card.',

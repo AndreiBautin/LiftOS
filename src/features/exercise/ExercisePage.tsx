@@ -1,4 +1,5 @@
 import { History } from 'lucide-react'
+import { ShareSession } from '@/features/share/ShareSession'
 import { CueCard } from './CueCard'
 import { NotesCard } from './NotesCard'
 import { MorphText } from '@/components/shared/MorphText'
@@ -72,6 +73,32 @@ export function ExercisePage() {
       <PageHeader
         title={title}
         morph={morphName('exercise', exerciseId)}
+        action={
+          shown.sessions.length > 1 ? (
+            <ShareSession
+              card={{
+                eyebrow: 'Exercise progress',
+                title,
+                date: latest?.date ?? first?.date ?? '',
+                dateLine: `${String(shown.sessions.length)} sessions since ${first === undefined ? '' : monthYear(first.date)}`,
+                sets: shown.sessions.length,
+                volume: describe(shown.best, settings.units, bodyweight),
+                minutes:
+                  estimate?.estimate === undefined ? undefined : Math.round(estimate.estimate),
+                statLabels: ['Sessions', 'Best set', bodyweight ? 'Top reps' : 'Est. max'],
+                // The climb: the top set's bar each session, or its reps on the body alone.
+                staircase: shown.sessions
+                  .slice(-16)
+                  .map((one) =>
+                    bodyweight && (one.top.load ?? 0) === 0
+                      ? (one.top.reps ?? 0)
+                      : (one.top.load ?? 0),
+                  ),
+                records: [],
+              }}
+            />
+          ) : undefined
+        }
         subtitle={`${String(shown.sessions.length)} ${shown.sessions.length === 1 ? 'session' : 'sessions'}${
           first === undefined ? '' : ` since ${monthYear(first.date)}`
         }`}
