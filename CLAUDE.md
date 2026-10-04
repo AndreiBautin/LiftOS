@@ -57,6 +57,16 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **Every screen is one list** (`SCREENS` in `features/navigation/
+screens.ts`), read by the palette and by the **Everything sheet** — a
+  grid button beside Settings on the hero opens every screen as tiles,
+  grouped Train, Progress, Look back, App. The page has no navigation,
+  so the year, the calculator and the comparison were reachable only by
+  somebody who knew the card that linked them or knew ⌘K. **Add a screen
+  here, not in the palette**, or the two drift. A screen that needs a
+  record (a session, an exercise, a muscle) is reached from the record
+  and is not listed. The sheet is portalled to `body`: rendered inside
+  the hero, the cards after it painted over it.
 - **The notices are one strip that swipes** (`NoticeStrip` on Today):
   the sample note, what's new and the install offer sit side by side
   under scroll snap rather than stacked above the hero. Each notice

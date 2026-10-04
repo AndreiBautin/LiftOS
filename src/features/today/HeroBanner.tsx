@@ -1,8 +1,10 @@
-import { CheckCircle2, Dumbbell, Play, Plus, Settings } from 'lucide-react'
+import { CheckCircle2, Dumbbell, LayoutGrid, Play, Plus, Settings } from 'lucide-react'
+import { useCallback, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 
 import { useServices, useSettings } from '@/app/context'
+import { EverythingSheet } from '@/features/navigation/EverythingSheet'
 import { Badge, Button } from '@/components/shared/primitives'
 import { buttonStyles } from '@/components/shared/styles'
 import { strengthStandings } from '@/domain/strength/standards'
@@ -30,6 +32,10 @@ export function HeroBanner() {
   const { day, week, program, when, doneToday, restDay } = useNextSession()
   const summary = useWeekSummary()
   const startWorkout = useStartWorkout()
+  const [everything, setEverything] = useState(false)
+  const closeEverything = useCallback(() => {
+    setEverything(false)
+  }, [])
 
   const { total } = strengthStandings({
     estimatedMaxes: settings.estimatedMaxes,
@@ -71,15 +77,29 @@ export function HeroBanner() {
             <p className="text-ink-500 text-xs">{today}</p>
           </div>
         </div>
-        <Link
-          viewTransition
-          to="/settings"
-          aria-label="Settings"
-          className={buttonStyles({ variant: 'ghost', size: 'sm' })}
-        >
-          <Settings size={18} aria-hidden />
-        </Link>
+        <div className="flex items-center">
+          <button
+            type="button"
+            aria-label="Everything"
+            aria-haspopup="dialog"
+            onClick={() => {
+              setEverything(true)
+            }}
+            className={buttonStyles({ variant: 'ghost', size: 'sm' })}
+          >
+            <LayoutGrid size={18} aria-hidden />
+          </button>
+          <Link
+            viewTransition
+            to="/settings"
+            aria-label="Settings"
+            className={buttonStyles({ variant: 'ghost', size: 'sm' })}
+          >
+            <Settings size={18} aria-hidden />
+          </Link>
+        </div>
       </header>
+      {everything && <EverythingSheet onClose={closeEverything} />}
 
       <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
         <div className="min-w-0">

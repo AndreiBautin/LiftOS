@@ -1,6 +1,7 @@
 import { Search } from 'lucide-react'
 import { MUSCLE_GROUP_LABELS, type MuscleGroup } from '@/domain/exercises/taxonomy'
-import { useSettings } from '@/app/context'
+import { useServices, useSettings } from '@/app/context'
+import { toDayKey } from '@/domain/time/day'
 import { platesToHand } from '@/domain/units/plates'
 import { PlateLoader } from '@/features/train/PlateLoader'
 import { useEffect, useMemo, useState } from 'react'
@@ -11,50 +12,9 @@ import { useExercises, useRecentWorkouts } from '@/features/train/hooks'
 import { isTypingIn } from '@/features/train/keyboard'
 import { cn } from '@/lib/cn'
 
-import { rankItems, type PaletteItem } from './rank'
+import { SCREENS, screenPath } from '@/features/navigation/screens'
 
-const PAGES: readonly PaletteItem[] = [
-  { id: 'today', label: 'Today', kind: 'Page', keywords: 'home dashboard', to: '/today' },
-  { id: 'program', label: 'Program', kind: 'Page', keywords: 'week plan deload', to: '/program' },
-  { id: 'records', label: 'Records', kind: 'Page', keywords: 'bests prs', to: '/records' },
-  {
-    id: 'exercises',
-    label: 'Exercises',
-    kind: 'Page',
-    keywords: 'library catalogue swap',
-    to: '/exercises',
-  },
-  {
-    id: 'block',
-    label: 'Block report',
-    kind: 'Page',
-    keywords: 'block deload cycle',
-    to: '/block',
-  },
-  {
-    id: 'calculator',
-    label: 'Calculator',
-    kind: 'Page',
-    keywords: 'one rep max e1rm percent',
-    to: '/calculator',
-  },
-  {
-    id: 'compare',
-    label: 'Compare exercises',
-    kind: 'Page',
-    keywords: 'versus two lifts progress',
-    to: '/compare',
-  },
-  { id: 'year', label: 'The year', kind: 'Page', keywords: 'year calendar streak', to: '/year' },
-  { id: 'month', label: 'This month', kind: 'Page', keywords: 'recap month', to: '/month' },
-  {
-    id: 'settings',
-    label: 'Settings',
-    kind: 'Page',
-    keywords: 'units plates accent',
-    to: '/settings',
-  },
-]
+import { rankItems, type PaletteItem } from './rank'
 
 /**
  * Anywhere in the app, ⌘K (Ctrl+K) or / opens a box that goes to any page,
@@ -96,12 +56,20 @@ export function CommandPalette() {
 function Palette({ onClose }: { readonly onClose: () => void }) {
   const navigate = useNavigate()
   const { settings } = useSettings()
+  const today = toDayKey(useServices().clock.now())
   const exercises = useExercises()
   const workouts = useRecentWorkouts(30)
   const [query, setQuery] = useState('')
   const [chosen, setChosen] = useState(0)
 
   const items = useMemo((): readonly PaletteItem[] => {
+    const pageItems = SCREENS.map((screen) => ({
+      id: screen.id,
+      label: screen.label,
+      kind: 'Page',
+      keywords: screen.keywords,
+      to: screenPath(screen, today),
+    }))
     const exerciseItems = (exercises.data ?? [])
       .filter((exercise) => !exercise.isArchived)
       .map((exercise) => ({
@@ -126,8 +94,8 @@ function Palette({ onClose }: { readonly onClose: () => void }) {
       keywords: 'muscle sets',
       to: `/muscle/${muscle}`,
     }))
-    return [...PAGES, ...muscleItems, ...exerciseItems, ...sessionItems]
-  }, [exercises.data, workouts.data])
+    return [...pageItems, ...muscleItems, ...exerciseItems, ...sessionItems]
+  }, [exercises.data, workouts.data, today])
 
   const shown = rankItems(items, query)
   /*
