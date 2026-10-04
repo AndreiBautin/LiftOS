@@ -57,6 +57,18 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **The report ends its hero on three plain lines** (`Debrief`;
+  `debrief` in `domain/logging/debrief.ts`, tested): what moved past last
+  time, what matched or came in under, and what the bar does next time —
+  up a step, the same bar again after a short set, or (most sessions) the
+  same bar and a rep more. **Every judgement is one another screen
+  makes**: moved and held are `versusLast` on top sets against
+  `previousTopSet`, next time is `ladderState`, so the debrief cannot call
+  a lift moved that the list beneath calls matched. A first session of an
+  exercise is left out of the first two lines. Checked by driving a
+  session to the report; its hero figures read mid-count there, which is
+  `useCountUp` in the hidden pane, not the stored session (16 sets, read
+  back from IndexedDB).
 - **The competition lifts forecast twelve weeks out** ("Twelve weeks
   out", `ForecastCard`; `forecastLift` and `forecastTotal` in
   `domain/strength/forecast.ts`, tested): each lift's last twelve weeks as

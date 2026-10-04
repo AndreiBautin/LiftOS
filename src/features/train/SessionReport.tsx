@@ -12,7 +12,8 @@ import { useSettings } from '@/app/context'
 import { RecordChip } from './RecordChip'
 import { SessionStats } from './SessionStats'
 import { SessionTimeline } from './SessionTimeline'
-import { useExercises } from './hooks'
+import { Debrief } from './Debrief'
+import { useExercises, useRecentWorkouts } from './hooks'
 import { sessionCrest } from '@/domain/logging/crest'
 import { SessionCrest } from '@/features/history/SessionCrest'
 
@@ -128,6 +129,7 @@ function ApplyEstimates({ progress }: { readonly progress: WorkoutReport['progre
  */
 export function SessionReport({ report, units, onDismiss }: Props) {
   const exercises = useExercises()
+  const history = useRecentWorkouts(500)
   const crest = sessionCrest(
     report.workout,
     new Set(report.records.map((record) => record.exerciseId)),
@@ -179,6 +181,14 @@ export function SessionReport({ report, units, onDismiss }: Props) {
           minutes={report.durationMinutes}
           units={units}
         />
+        {history.data !== undefined && (
+          <Debrief
+            workout={report.workout}
+            history={history.data}
+            library={exercises.data ?? []}
+            units={units}
+          />
+        )}
       </section>
 
       {/*
