@@ -57,6 +57,17 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **Sync says how it is doing** (`SyncBadge` under the hero's header,
+  `agoLabel` in `domain/time/ago.ts`, both tested — the badge through a
+  pure `SyncBadgeView`): a green cloud and "4m" since the last round, an
+  accent "Syncing", or **"Sync failed" in words** with the reason in its
+  name — finding out from data missing on the other device was the
+  alternative. A press asks for a round now. **Drawn only when a
+  repository is connected**, on a row of its own: the header has about
+  130 px beside the wordmark at 375, less than "Sync failed" with an icon.
+  **Not seen in the preview** — the demo never syncs, and pointing it at
+  GitHub with a made-up token would have sent a request for nothing; the
+  three states are a component test instead.
 - **A week plays as a story too** (`/wrapped/YYYY-MM-DD`, any day of it,
   read from its Monday; `periodOf`, tested — a rolled-over date like
   February 30th is refused). **Play** on the Last week card opens last

@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom'
 
 import { useServices, useSettings } from '@/app/context'
 import { EverythingSheet } from '@/features/navigation/EverythingSheet'
+import { SyncBadge } from '@/features/sync/SyncBadge'
 import { RestedFor } from './RestedFor'
 import { Button } from '@/components/shared/primitives'
 import { buttonStyles } from '@/components/shared/styles'
@@ -128,6 +129,14 @@ export function HeroBanner() {
           </Link>
         </div>
       </header>
+      {/*
+        Sync's status on a row of its own: the header has about 130 px free
+        beside the wordmark at 375, and "Sync failed" with an icon is more
+        than that. Drawn only when a repository is connected.
+      */}
+      <div className="-mt-4 mb-2 flex justify-end empty:hidden">
+        <SyncBadge />
+      </div>
       {everything && <EverythingSheet onClose={closeEverything} />}
 
       <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
