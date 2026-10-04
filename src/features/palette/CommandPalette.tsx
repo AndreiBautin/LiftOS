@@ -2,7 +2,7 @@ import { Search } from 'lucide-react'
 import { MUSCLE_GROUP_LABELS, type MuscleGroup } from '@/domain/exercises/taxonomy'
 import { useServices, useSettings } from '@/app/context'
 import { toDayKey } from '@/domain/time/day'
-import { platesToHand } from '@/domain/units/plates'
+import { nearestLoadable, platesToHand } from '@/domain/units/plates'
 import { PlateLoader } from '@/features/train/PlateLoader'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -169,6 +169,35 @@ function Palette({ onClose }: { readonly onClose: () => void }) {
               unit={settings.units}
               available={platesToHand(settings.plates, settings.units)}
             />
+            {(() => {
+              // A load the plates cannot make offers the nearest that they can.
+              const near = nearestLoadable(
+                plateLoad,
+                settings.units,
+                'barbell',
+                platesToHand(settings.plates, settings.units),
+              )
+              const options = [near?.below, near?.above].filter(
+                (value): value is number => value !== undefined,
+              )
+              return options.length === 0 ? null : (
+                <p className="mt-1 flex items-center gap-2 text-xs">
+                  <span className="text-ink-500">The plates make</span>
+                  {options.map((value) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => {
+                        setQuery(String(value))
+                      }}
+                      className="border-ink-700 text-ink-100 hover:border-accent-500 tap-target numeric rounded-full border px-3 font-medium"
+                    >
+                      {value}
+                    </button>
+                  ))}
+                </p>
+              )
+            })()}
           </div>
         )}
         <ul id="palette-results" role="listbox" className="max-h-[50vh] overflow-y-auto p-2">

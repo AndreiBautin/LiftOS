@@ -69,7 +69,55 @@ export function platesFor(
     }
   }
 
+  /*
+   * **Greedy first, then exact.** Heaviest-first is right for a standard
+   * set and wrong for some gyms: with no 5s, 95 a side greedily reads as
+   * 45 + 45 and 5 left over, when 45 + 25 + 25 makes it. So a leftover
+   * asks for the fewest plates that make the side exactly, and only a
+   * load nothing can make keeps its leftover.
+   */
+  if (side > 0) {
+    const exact = exactSide(Math.round(((load - bar) / 2) * 100), available)
+    if (exact !== undefined) return { bar, perSide: exact, leftover: 0 }
+  }
+
   return { bar, perSide, leftover: side / 100 }
+}
+
+const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b))
+
+/**
+ * The fewest plates making one side exactly, heaviest first; undefined
+ * when none do. Counted in the plates' common divisor, so 95 lb a side
+ * from 45 / 35 / 25 / 10 is nineteen steps of five rather than nine
+ * thousand hundredths.
+ */
+function exactSide(hundredths: number, available: readonly number[]): number[] | undefined {
+  const plates = available.map((plate) => Math.round(plate * 100)).filter((plate) => plate > 0)
+  const unit = plates.reduce(gcd, 0)
+  if (unit === 0 || hundredths % unit !== 0) return undefined
+  const target = hundredths / unit
+  const steps = plates.map((plate) => plate / unit)
+  // fewest[n]: the fewest plates making n steps, and the last plate used.
+  const fewest: { count: number; plate: number }[] = [{ count: 0, plate: 0 }]
+  for (let n = 1; n <= target; n += 1) {
+    let best: { count: number; plate: number } | undefined
+    for (const [at, step] of steps.entries()) {
+      const before = n >= step ? fewest[n - step] : undefined
+      if (before === undefined || before.count === Infinity) continue
+      if (best === undefined || before.count + 1 < best.count)
+        best = { count: before.count + 1, plate: at }
+    }
+    fewest.push(best ?? { count: Infinity, plate: 0 })
+  }
+  if ((fewest[target]?.count ?? Infinity) === Infinity) return undefined
+  const used: number[] = []
+  for (let n = target; n > 0;) {
+    const at = fewest[n]?.plate ?? 0
+    used.push((plates[at] ?? 0) / 100)
+    n -= steps[at] ?? n
+  }
+  return used.toSorted((a, b) => b - a)
 }
 
 /**
@@ -85,4 +133,43 @@ export function platesToHand(
 ): readonly number[] {
   const known = (stored ?? []).filter((plate) => PLATES[unit].includes(plate))
   return known.length === 0 ? PLATES[unit] : PLATES[unit].filter((plate) => known.includes(plate))
+}
+
+/**
+ * The nearest loads the plates make, either side of one they cannot.
+ *
+ * **Loadable means what the picture draws**: `platesFor` with nothing
+ * left over, so a load offered here is one the plate loader will show
+ * clean rather than with a "+2" beside it. Searched in half-unit steps,
+ * which no plate set divides more finely than; bounded, so a set of
+ * plates that can make nothing nearby offers nothing rather than
+ * searching forever. Below the bar there is nothing below, and the bar
+ * is the nearest above. Undefined when the load already loads clean.
+ */
+export function nearestLoadable(
+  load: number,
+  unit: WeightUnit,
+  kind: BarKind = 'barbell',
+  available: readonly number[] = PLATES[unit],
+): { readonly below?: number; readonly above?: number } | undefined {
+  if (!Number.isFinite(load) || load <= 0) return undefined
+  const bar = BAR_WEIGHT[kind][unit]
+  const clean = (total: number) => platesFor(total, unit, kind, available)?.leftover === 0
+  if (load < bar) return { above: bar }
+  if (clean(load)) return undefined
+  const STEP = 0.5
+  const REACH = 400
+  const start = Math.round(load / STEP) * STEP
+  let below: number | undefined
+  let above: number | undefined
+  for (let at = 0; at <= REACH && (below === undefined || above === undefined); at += 1) {
+    const down = start - at * STEP
+    const up = start + at * STEP
+    if (below === undefined && down < load && down >= bar && clean(down)) below = down
+    if (above === undefined && up > load && clean(up)) above = up
+  }
+  return {
+    ...(below === undefined ? {} : { below }),
+    ...(above === undefined ? {} : { above }),
+  }
 }

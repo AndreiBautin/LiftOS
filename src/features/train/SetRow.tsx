@@ -1,4 +1,5 @@
 import { Check, Minus, SkipForward } from 'lucide-react'
+import { nearestLoadable, platesToHand, type BarKind } from '@/domain/units/plates'
 import { NIGGLE_LABELS, NIGGLE_REGIONS, type NiggleRegion } from '@/domain/logging/niggles'
 import { appendDictation } from '@/features/dictation/dictation'
 import { DictateButton } from '@/features/dictation/DictateButton'
@@ -49,6 +50,8 @@ interface Props {
   /** The entry sub-category, so a back-off compares against back-offs. */
   readonly variant?: string | undefined
   readonly units: WeightUnit
+  /** The bar the exercise is loaded on, when it is one; offers loads the plates make. */
+  readonly bar?: BarKind | undefined
   /**
    * The exercise is bodyweight: a load is what is *added*, and none means
    * the body alone. Read as "BW" rather than "0 lb", and logged with no
@@ -276,6 +279,7 @@ function SetEditorPanel({
   entryIndex,
   units,
   bodyweight,
+  bar,
   onLog,
   onSkip,
   onClear,
@@ -356,6 +360,7 @@ function SetEditorPanel({
         hint={previousLoad === undefined ? undefined : String(previousLoad)}
         unit={units}
       />
+      {bar !== undefined && <Loadable load={asNumber(load)} bar={bar} onPick={setLoad} />}
 
       <label htmlFor={`note-${String(entryIndex)}-${String(index)}`} className="sr-only">
         Note on this set
@@ -480,4 +485,49 @@ function SetSweep({ completedAt }: { readonly completedAt: string | undefined })
       clock.now().getTime() - Date.parse(completedAt) <= SWEEP_FRESH_MS,
   )
   return live ? <span className="set-sweep" aria-hidden /> : null
+}
+
+/**
+ * Under the weight: when the plates to hand cannot make it, the nearest
+ * loads they can, either side, one tap each (`nearestLoadable`). Silent
+ * when the load is clean, so it appears exactly when the bar picture would
+ * show a leftover.
+ */
+function Loadable({
+  load,
+  bar,
+  onPick,
+}: {
+  readonly load: number | undefined
+  readonly bar: BarKind
+  readonly onPick: (value: string) => void
+}) {
+  const { settings } = useSettings()
+  if (load === undefined) return null
+  const near = nearestLoadable(
+    load,
+    settings.units,
+    bar,
+    platesToHand(settings.plates, settings.units),
+  )
+  if (near === undefined || (near.below === undefined && near.above === undefined)) return null
+  return (
+    <p className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+      <span className="text-ink-500">The plates make</span>
+      {[near.below, near.above].map((value) =>
+        value === undefined ? null : (
+          <button
+            key={value}
+            type="button"
+            onClick={() => {
+              onPick(String(value))
+            }}
+            className="border-ink-700 text-ink-100 hover:border-accent-500 tap-target numeric rounded-full border px-3 font-medium"
+          >
+            {formatLoad(value, settings.units)}
+          </button>
+        ),
+      )}
+    </p>
+  )
 }

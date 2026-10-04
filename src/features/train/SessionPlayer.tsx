@@ -252,6 +252,10 @@ export function SessionPlayer({
 
   const bodyweightHere =
     exercises.find((one) => one.id === entry.exerciseId)?.loadBasis === 'bodyweight'
+  const equipmentHere = exercises.find((one) => one.id === entry.exerciseId)?.equipment
+  // The bar the loads go on, so the editor can offer loads the plates make.
+  const barHere =
+    equipmentHere === 'barbell' ? 'barbell' : equipmentHere === 'ez-bar' ? 'ez-bar' : undefined
 
   /** Turns to an entry without scrolling: a superset alternates in place. */
   const showEntry = (to: number) => {
@@ -711,6 +715,7 @@ export function SessionPlayer({
                       .map((one) => ({ load: one.actualLoad, reps: one.actualReps }))}
                     units={units}
                     bodyweight={bodyweightHere}
+                    bar={barHere}
                     isOpen={openSet === setIndex}
                     onOpen={() => {
                       setOpenSet(setIndex)

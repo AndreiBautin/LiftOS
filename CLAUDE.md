@@ -57,6 +57,18 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **A load the plates cannot make offers the nearest they can**
+  (`nearestLoadable` in `domain/units/plates.ts`, tested): under the
+  weight in the set editor for a barbell or EZ-bar exercise, and under
+  the palette's bar picture, "The plates make 225 lb · 230 lb", a tap
+  each. Loadable means what `platesFor` draws with nothing over, so a
+  tapped load always draws clean. **Building it found `platesFor`
+  greedy**: with no 5s it read 95 a side as 45 + 45 and five over, when
+  45 + 25 + 25 makes it; a leftover now asks for the fewest plates that
+  make the side exactly (counted in the plates' common divisor), and
+  only a load nothing can make keeps its leftover. Checked in the preview:
+  217 offered 215 and 220 and a tap set 215; the palette's 227 offered
+  225 and 230.
 - **Each lift is read then and now** ("Then and now", `ThenNowCard`;
   `thenAndNow` in `domain/logging/then-now.ts`, tested): the lift's **own**
   first four weeks against the last four — top set (`topSet`'s rule),
