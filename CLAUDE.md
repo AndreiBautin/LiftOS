@@ -57,6 +57,14 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **History can be read as a wall of crests** (List / Crests on the
+  history card, `CrestWall`): every session's crest a month at a time,
+  each opening its session, abandoned ones faded. Search and the day
+  chips filter the wall as they do the list; the list's fold of eight
+  does not apply, because crests are small. **Drawn still** (`still` on
+  `SessionCrest`) — eighty crests drawing in at once was noise; one
+  crest on a session page still draws itself. The view is not
+  remembered: it is a way of looking, opened on purpose.
 - **A deload can be skipped from the hero** ("Skip the deload" beside
   the week's name, asked for as _"I'm not feeling the need for a deload —
   can you skip this one"_): the same `jumpToWeek` the Program page's

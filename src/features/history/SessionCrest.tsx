@@ -19,10 +19,13 @@ export function SessionCrest({
   crest,
   library,
   className,
+  still = false,
 }: {
   readonly crest: Crest
   readonly library: readonly Exercise[]
   readonly className?: string
+  /** Drawn finished, for a wall of them: a hundred drawing in at once is noise. */
+  readonly still?: boolean
 }) {
   if (crest.segments.length === 0) return null
   const lead = crest.segments.reduce((best, one) => (one.sets > best.sets ? one : best))
@@ -59,7 +62,7 @@ export function SessionCrest({
           return (
             <path
               key={`${segment.exerciseId}-${String(at)}`}
-              className="crest-arc"
+              className={still ? undefined : 'crest-arc'}
               style={{ animationDelay: `${String(at * 120)}ms` }}
               d={single ? ringPath(42) : arcPath(42, start + GAP / 2, to - GAP / 2)}
               pathLength={1}
@@ -97,7 +100,7 @@ export function SessionCrest({
             return (
               <circle
                 key={`${segment.exerciseId}-record`}
-                className="crest-stud"
+                className={still ? undefined : 'crest-stud'}
                 cx={x}
                 cy={y}
                 r="3.6"

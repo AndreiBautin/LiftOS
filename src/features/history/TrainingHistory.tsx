@@ -19,6 +19,7 @@ import type { WorkoutLog } from '@/domain/logging/workout-log'
 import { remainingSets, totalTonnage, totalWorkingSets } from '@/domain/logging/workout-log'
 import type { WeightUnit } from '@/domain/units/weight'
 import { Badge, Button, Card, CardHeading, Empty } from '@/components/shared/primitives'
+import { CrestWall } from './CrestWall'
 import { splitDayLabel } from '@/features/train/useNextSession'
 import { cn } from '@/lib/cn'
 import { Link } from 'react-router-dom'
@@ -58,6 +59,8 @@ export function TrainingHistory() {
   }, [])
   const reopenWorkout = useReopenWorkout()
   const [showAll, setShowAll] = useState(false)
+  /** The list, or every session as its crest (`CrestWall`). */
+  const [view, setView] = useState<'list' | 'crests'>('list')
   const [filter, setFilter] = useState<HistoryFilter>(NO_FILTER)
   const exercises = useExercises()
 
@@ -159,6 +162,26 @@ export function TrainingHistory() {
         }
       />
       <HistoryFilters filter={filter} days={days} onChange={setFilter} />
+      <div className="mb-3 flex gap-1.5" role="group" aria-label="Show sessions as">
+        {(['list', 'crests'] as const).map((one) => (
+          <button
+            key={one}
+            type="button"
+            aria-pressed={view === one}
+            onClick={() => {
+              setView(one)
+            }}
+            className={cn(
+              'tap-target rounded-full border px-3.5 text-sm',
+              view === one
+                ? 'border-accent-500/50 bg-accent-500/15 text-accent-400'
+                : 'text-ink-300 border-white/10',
+            )}
+          >
+            {one === 'list' ? 'List' : 'Crests'}
+          </button>
+        ))}
+      </div>
       {matches.length === 0 && (
         <p className="text-ink-500 py-4 text-center text-sm">
           Nothing matches.{' '}
@@ -173,49 +196,56 @@ export function TrainingHistory() {
           </button>
         </p>
       )}
-      <ul className="-mx-2 space-y-1">
-        {shown.map((workout) => (
-          <li key={workout.id}>
-            <SessionRow
-              workout={workout}
-              records={records.get(workout.id)?.length ?? 0}
-              units={settings.units}
-              confirming={confirming === workout.id}
-              pending={deleteWorkout.isPending}
-              onAskDelete={() => {
-                setConfirming(workout.id)
-              }}
-              onCancel={() => {
-                setConfirming(undefined)
-              }}
-              onConfirm={() => {
-                deleteWorkout.mutate(workout.id, {
-                  onSuccess: (result) => {
-                    setConfirming(undefined)
-                    if (result.kind === 'deleted') {
-                      setDeleted({ workout: result.workout, stamp: services.clock.now().getTime() })
-                    }
-                  },
-                })
-              }}
-              // Only the newest session can be reopened — rolling the
-              // program back past a session already trained would have the
-              // lifter repeat days and file logs out of order. The use-case
-              // refuses it too; this stops the button appearing where it
-              // would.
-              canReopen={workout.id === sessions[0]?.id}
-              onReopen={() => {
-                reopenWorkout.mutate(workout.id, {
-                  onSuccess: (result) => {
-                    if (result.kind === 'reopened') window.scrollTo({ top: 0 })
-                  },
-                })
-              }}
-            />
-          </li>
-        ))}
-      </ul>
-      {!filtering && sessions.length > RECENT && (
+      {view === 'crests' ? (
+        <CrestWall sessions={matches} records={records} library={exercises.data ?? []} />
+      ) : (
+        <ul className="-mx-2 space-y-1">
+          {shown.map((workout) => (
+            <li key={workout.id}>
+              <SessionRow
+                workout={workout}
+                records={records.get(workout.id)?.length ?? 0}
+                units={settings.units}
+                confirming={confirming === workout.id}
+                pending={deleteWorkout.isPending}
+                onAskDelete={() => {
+                  setConfirming(workout.id)
+                }}
+                onCancel={() => {
+                  setConfirming(undefined)
+                }}
+                onConfirm={() => {
+                  deleteWorkout.mutate(workout.id, {
+                    onSuccess: (result) => {
+                      setConfirming(undefined)
+                      if (result.kind === 'deleted') {
+                        setDeleted({
+                          workout: result.workout,
+                          stamp: services.clock.now().getTime(),
+                        })
+                      }
+                    },
+                  })
+                }}
+                // Only the newest session can be reopened — rolling the
+                // program back past a session already trained would have the
+                // lifter repeat days and file logs out of order. The use-case
+                // refuses it too; this stops the button appearing where it
+                // would.
+                canReopen={workout.id === sessions[0]?.id}
+                onReopen={() => {
+                  reopenWorkout.mutate(workout.id, {
+                    onSuccess: (result) => {
+                      if (result.kind === 'reopened') window.scrollTo({ top: 0 })
+                    },
+                  })
+                }}
+              />
+            </li>
+          ))}
+        </ul>
+      )}
+      {view === 'list' && !filtering && sessions.length > RECENT && (
         <Button
           variant="ghost"
           full
