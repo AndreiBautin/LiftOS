@@ -116,6 +116,15 @@ SessionPage.tsx`, from `sessionDetail`). History rows could be deleted
   finished the minute it started reads as of unknown length rather
   than "0 min"; the demo seed stamped every session that way until this
   page showed it, and now gives each 45–75 minutes.
+- **An open session follows you** (`SessionPill`, in `AppShell` after
+  `main`): on any screen but the player and the story, a pill at the foot
+  names the session, its sets settled and its clock (through the clock
+  port), and goes back with one press. The app is one page and the
+  player the only place a set is logged, so stepping out to a past
+  session mid-workout used to leave the open one nowhere on screen. A
+  spacer reserves its height so it never covers the last card. **No
+  pulse on it** — one was written and taken out under the motion rule:
+  motion runs once, or slowly one way, never in a loop.
 - **Every muscle has a page** (`/muscle/:id`, `muscleHistory` in
   `domain/volume/muscle-history.ts`, tested; reached from the body map's
   readout — "Open" beside a chosen muscle — and the palette). Twelve
