@@ -116,6 +116,13 @@ SessionPage.tsx`, from `sessionDetail`). History rows could be deleted
   finished the minute it started reads as of unknown length rather
   than "0 min"; the demo seed stamped every session that way until this
   page showed it, and now gives each 45–75 minutes.
+- **The exercise name in the player opens its recent past**
+  (`ExercisePeek`): a tap or a 450 ms hold raises a sheet with the last
+  six top sets as a sparkline, every point labelled, the best set in gold
+  and the lifter's cue, one link from the full exercise page — without
+  leaving the session. The open session is left out, the version (Heavy,
+  Light) picks the series, and paging on closes it (`peekAt`, the swap's
+  pattern). Escape closes it.
 - **The set editor has a weight dial** (`LoadDial`, under the steppers;
   `dialValue` in `domain/units/step.ts`, tested): a ruler with a notch per
   rounding step and a label every five, dragged sideways past a fixed

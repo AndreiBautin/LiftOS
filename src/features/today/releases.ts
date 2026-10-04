@@ -1,6 +1,16 @@
 /** Release notes, newest first; `WhatsNew` shows the first once. */
 export const RELEASES: readonly { readonly id: string; readonly items: readonly string[] }[] = [
   {
+    id: '2026-10-04',
+    items: [
+      'Focus: one set on the whole screen, with a big rest countdown — the button on the exercise card.',
+      'Drag the new weight dial in the set editor to jump straight to a load.',
+      'Tap or hold an exercise name mid-session to see its last six sessions.',
+      'Rest sounds, a body map of what you trained lately, and a report for each block.',
+      'Replay a past session, and play a month or a year back as a story.',
+    ],
+  },
+  {
     id: '2026-10-03',
     items: [
       'Pair two accessories as a superset — the player alternates them and rests after the pair.',

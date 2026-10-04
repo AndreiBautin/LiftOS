@@ -48,6 +48,7 @@ import { LadderStrip } from './LadderStrip'
 import { BarSection } from './BarSection'
 import { RestTimer } from './RestTimer'
 import { FocusView } from './FocusView'
+import { ExercisePeek } from './ExercisePeek'
 import { primeRestSounds } from './rest-sounds'
 import { SessionMap } from './SessionMap'
 import { SetRow } from './SetRow'
@@ -128,6 +129,12 @@ export function SessionPlayer({
   /* Open per exercise: paging on closes it rather than offering the next one's. */
   const [swappingAt, setSwappingAt] = useState<number | undefined>(undefined)
   const swapping = swappingAt === index
+  /* Open per exercise, like the swap: paging on closes it. See `ExercisePeek`. */
+  const [peekAt, setPeekAt] = useState<number | undefined>(undefined)
+  const closePeek = useCallback(() => {
+    setPeekAt(undefined)
+  }, [])
+  const holdTimer = useRef<number | undefined>(undefined)
   const strip = useRef<HTMLElement>(null)
 
   /*
@@ -486,7 +493,38 @@ export function SessionPlayer({
                 id="exercise-name"
                 className="text-ink-50 text-2xl font-semibold tracking-tight sm:text-3xl"
               >
-                {nameOf(entry.exerciseId)}
+                {/*
+                  **The name opens the exercise's recent past**, on a tap
+                  or a hold — a hold is what a phone teaches for "show me
+                  more", and a tap is what a mouse can do.
+                */}
+                <button
+                  type="button"
+                  aria-haspopup="dialog"
+                  aria-label={`${nameOf(entry.exerciseId)} — show recent sessions`}
+                  className="-mx-1 rounded-lg px-1 text-left select-none [-webkit-touch-callout:none] hover:bg-white/5"
+                  onPointerDown={() => {
+                    window.clearTimeout(holdTimer.current)
+                    holdTimer.current = window.setTimeout(() => {
+                      if ('vibrate' in navigator) navigator.vibrate(8)
+                      setPeekAt(index)
+                    }, 450)
+                  }}
+                  onPointerUp={() => {
+                    window.clearTimeout(holdTimer.current)
+                  }}
+                  onPointerLeave={() => {
+                    window.clearTimeout(holdTimer.current)
+                  }}
+                  onContextMenu={(event) => {
+                    event.preventDefault()
+                  }}
+                  onClick={() => {
+                    setPeekAt(index)
+                  }}
+                >
+                  {nameOf(entry.exerciseId)}
+                </button>
               </h1>
               <SupersetLine
                 workout={workout}
@@ -740,6 +778,17 @@ export function SessionPlayer({
             setRest(undefined)
             setUndo(undefined)
           }}
+        />
+      )}
+
+      {peekAt === index && warmup === undefined && (
+        <ExercisePeek
+          exerciseId={entry.exerciseId}
+          name={nameOf(entry.exerciseId)}
+          variant={entry.variant}
+          bodyweight={bodyweightHere}
+          currentWorkoutId={workout.id}
+          onClose={closePeek}
         />
       )}
 
