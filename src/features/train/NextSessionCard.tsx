@@ -1,4 +1,5 @@
-import { ClipboardList, ListChecks } from 'lucide-react'
+import { ClipboardList, ListChecks, Pencil } from 'lucide-react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { Badge, Card, CardHeading, Empty } from '@/components/shared/primitives'
@@ -6,7 +7,9 @@ import { buttonStyles } from '@/components/shared/styles'
 import { useSettings } from '@/app/context'
 
 import { useExercises, useSessionPreview } from './hooks'
+import { SessionDraftEditor } from './SessionDraftEditor'
 import { SessionOutline } from './SessionOutline'
+import { applyDraft, isEmptyDraft } from '@/domain/programs/session-draft'
 import { useNextSession } from './useNextSession'
 
 /**
@@ -21,7 +24,8 @@ import { useNextSession } from './useNextSession'
  * heading.
  */
 export function NextSessionCard() {
-  const { day, week, here } = useNextSession()
+  const { day, week, here, on } = useNextSession()
+  const [editing, setEditing] = useState(false)
   const exercises = useExercises()
   const preview = useSessionPreview()
   const { settings } = useSettings()
@@ -34,20 +38,40 @@ export function NextSessionCard() {
     )
   }
 
+  /* The plan as the draft leaves it, so what is shown is what Start opens. */
+  const shown = on === undefined ? day : applyDraft(day, settings.sessionDraft, on)
+  const drafted =
+    settings.sessionDraft?.on === on &&
+    settings.sessionDraft !== undefined &&
+    !isEmptyDraft(settings.sessionDraft)
+
   return (
     <Card>
       <CardHeading
         icon={<ClipboardList size={16} aria-hidden />}
         title="Session plan"
         action={
-          <Link
-            viewTransition
-            to="/program"
-            className={buttonStyles({ variant: 'ghost', size: 'sm' })}
-          >
-            <ListChecks size={16} aria-hidden />
-            Program
-          </Link>
+          <span className="flex items-center">
+            <button
+              type="button"
+              aria-pressed={editing}
+              onClick={() => {
+                setEditing(!editing)
+              }}
+              className={buttonStyles({ variant: 'ghost', size: 'sm' })}
+            >
+              <Pencil size={14} aria-hidden />
+              {editing ? 'Done' : 'Edit'}
+            </button>
+            <Link
+              viewTransition
+              to="/program"
+              className={buttonStyles({ variant: 'ghost', size: 'sm' })}
+            >
+              <ListChecks size={16} aria-hidden />
+              Program
+            </Link>
+          </span>
         }
       />
       {/*
@@ -61,8 +85,14 @@ export function NextSessionCard() {
         </div>
       )}
 
+      {editing && on !== undefined && (
+        <SessionDraftEditor day={day} on={on} library={exercises.data ?? []} />
+      )}
+      {drafted && !editing && (
+        <p className="text-accent-400 mb-2 text-xs font-medium">Edited for this session</p>
+      )}
       <SessionOutline
-        day={day}
+        day={shown}
         library={exercises.data ?? []}
         planned={preview.data ?? undefined}
         units={settings.units}

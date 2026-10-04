@@ -1,4 +1,5 @@
 import { asExerciseId, type ExerciseId } from '@/domain/ids/ids'
+import type { SessionDraft } from '@/domain/programs/session-draft'
 import type { HomeCardPrefs } from '@/domain/settings/home-cards'
 import type { E1rmFormula } from '@/domain/strength/one-rep-max'
 import type { WeightUnit } from '@/domain/units/weight'
@@ -126,6 +127,8 @@ export interface AppSettings {
    * floor away" — shown in the player under the exercise's name.
    */
   readonly exerciseCues?: Readonly<Record<string, string>>
+  /** Edits to the next session, made before starting it; see `session-draft`. */
+  readonly sessionDraft?: SessionDraft | undefined
   /** The newest release note dismissed; see `WhatsNew`. */
   readonly seenNotes?: string
   /** The home page's card order and hidden cards; see `home-cards.ts`. */

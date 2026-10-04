@@ -172,6 +172,26 @@ describe('accepted resets', () => {
     expect(readSettings(storage).settings.trueBlack).toBeUndefined()
   })
 
+  it('keeps a draft of the next session whole, or not at all', () => {
+    const storage = memoryStorage()
+    const draft = {
+      on: '2026-10-05',
+      order: ['b', 'a'],
+      dropped: ['c'],
+      swaps: { a: 'paused-bench-press' },
+    }
+    storage.setItem(
+      STORAGE_KEYS.settings,
+      JSON.stringify({ ...DEFAULT_SETTINGS, sessionDraft: draft }),
+    )
+    expect(readSettings(storage).settings.sessionDraft).toEqual(draft)
+    storage.setItem(
+      STORAGE_KEYS.settings,
+      JSON.stringify({ ...DEFAULT_SETTINGS, sessionDraft: { ...draft, dropped: [3] } }),
+    )
+    expect(readSettings(storage).settings.sessionDraft).toBeUndefined()
+  })
+
   it('keeps gym mode only when it is on', () => {
     const storage = memoryStorage()
     storage.setItem(STORAGE_KEYS.settings, JSON.stringify({ ...DEFAULT_SETTINGS, gymMode: true }))

@@ -145,7 +145,7 @@ export function useRecentWorkouts(limit = 20) {
 
 export function useStartWorkout() {
   const services = useServices()
-  const { athlete, settings } = useSettings()
+  const { athlete, settings, update } = useSettings()
   const program = useProgram()
   const client = useQueryClient()
 
@@ -159,6 +159,7 @@ export function useStartWorkout() {
           program: program.data,
           roundingIncrement: settings.roundingIncrement,
           ...(settings.loadResets !== undefined ? { resets: settings.loadResets } : {}),
+          ...(settings.sessionDraft !== undefined ? { draft: settings.sessionDraft } : {}),
           ...(options?.freestyleTitle !== undefined
             ? { freestyleTitle: options.freestyleTitle }
             : {}),
@@ -166,8 +167,11 @@ export function useStartWorkout() {
         services,
       )
     },
-    onSuccess: (result) => {
+    onSuccess: (result, options) => {
       logger.info('workout.start', { kind: result.kind })
+      // A draft is for one session: spent once that session has started.
+      if (result.kind === 'started' && options?.freestyleTitle === undefined)
+        update({ sessionDraft: undefined })
       void client.invalidateQueries({ queryKey: keys.activeWorkout })
     },
   })
@@ -473,7 +477,14 @@ export function useSessionPreview() {
   const program = useProgram()
 
   return useQuery({
-    queryKey: ['workouts', 'preview', settings.roundingIncrement, athlete, settings.loadResets],
+    queryKey: [
+      'workouts',
+      'preview',
+      settings.roundingIncrement,
+      athlete,
+      settings.loadResets,
+      settings.sessionDraft,
+    ],
     enabled: program.data !== undefined,
     queryFn: async () => {
       if (program.data === undefined) return null
@@ -483,6 +494,7 @@ export function useSessionPreview() {
           program: program.data,
           roundingIncrement: settings.roundingIncrement,
           ...(settings.loadResets !== undefined ? { resets: settings.loadResets } : {}),
+          ...(settings.sessionDraft !== undefined ? { draft: settings.sessionDraft } : {}),
         },
         services,
       )

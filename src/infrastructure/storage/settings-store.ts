@@ -1,3 +1,4 @@
+import type { ExerciseId } from '@/domain/ids/ids'
 import type { AppSettings } from '@/domain/settings/settings'
 import {
   DEFAULT_SETTINGS,
@@ -241,6 +242,7 @@ function mergeWithDefaults(parsed: unknown): AppSettings {
     ...loadResetsOf(stored.loadResets),
     ...liftGoalsOf(stored.liftGoals),
     ...exerciseCuesOf(stored.exerciseCues),
+    ...sessionDraftOf(stored.sessionDraft),
     ...(typeof stored.seenNotes === 'string' ? { seenNotes: stored.seenNotes } : {}),
     ...homeCardsOf(stored.homeCards),
     // Only a hue on offer: anything else could land on the good colour.
@@ -353,6 +355,39 @@ function liftGoalsOf(value: unknown): Pick<AppSettings, 'liftGoals'> {
       : []
   })
   return kept.length === 0 ? {} : { liftGoals: Object.fromEntries(kept) }
+}
+
+/**
+ * A draft of the next session: a day key and three lists of slot ids.
+ * Anything malformed falls out whole — a half-read draft could drop the
+ * wrong exercise from a session.
+ */
+function sessionDraftOf(value: unknown): Pick<AppSettings, 'sessionDraft'> {
+  if (typeof value !== 'object' || value === null) return {}
+  const raw = value as Record<string, unknown>
+  const strings = (list: unknown): string[] | undefined =>
+    Array.isArray(list) && list.every((one) => typeof one === 'string') ? list : undefined
+  const order = strings(raw.order)
+  const dropped = strings(raw.dropped)
+  const swaps = raw.swaps
+  if (
+    typeof raw.on !== 'string' ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(raw.on) ||
+    order === undefined ||
+    dropped === undefined ||
+    typeof swaps !== 'object' ||
+    swaps === null ||
+    !Object.values(swaps).every((one) => typeof one === 'string')
+  )
+    return {}
+  return {
+    sessionDraft: {
+      on: raw.on,
+      order,
+      dropped,
+      swaps: swaps as Record<string, ExerciseId>,
+    },
+  }
 }
 
 /** Cues, each a non-empty line kept to `CUE_LIMIT`; anything else falls out. */

@@ -742,6 +742,43 @@ describe('previewing the next session', () => {
   })
 })
 
+describe('editing the next session before starting it', () => {
+  /* A draft drops and swaps for that one session, in the preview and at Start alike. */
+  it('opens the session as the draft left it', async () => {
+    const deps = beginProgram()
+    const request = { athlete, program, roundingIncrement: 5 }
+    const plain = await previewWorkout(request, deps)
+    if (plain === undefined) throw new Error('expected a preview')
+    const working = plain.entries.filter((entry) => entry.role !== 'warmup')
+    const dropped = working.at(-1)
+    if (dropped?.slotId === undefined) throw new Error('expected a working slot')
+    const draft = { on: plain.date, order: [], dropped: [dropped.slotId], swaps: {} }
+
+    const preview = await previewWorkout({ ...request, draft }, deps)
+    const started = await startWorkout({ ...request, draft }, deps)
+    if (started.kind !== 'started') throw new Error('expected a started workout')
+
+    expect(started.workout.entries.map((entry) => entry.slotId)).not.toContain(dropped.slotId)
+    expect(started.workout.entries).toHaveLength(plain.entries.length - 1)
+    expect(preview?.entries.map((entry) => entry.exerciseId)).toEqual(
+      started.workout.entries.map((entry) => entry.exerciseId),
+    )
+  })
+
+  it('ignores a draft made for another day', async () => {
+    const deps = beginProgram()
+    const request = { athlete, program, roundingIncrement: 5 }
+    const plain = await previewWorkout(request, deps)
+    if (plain === undefined) throw new Error('expected a preview')
+    const first = plain.entries.find((entry) => entry.role !== 'warmup')?.slotId
+    if (first === undefined) throw new Error('expected a working slot')
+    const draft = { on: '1999-01-01', order: [], dropped: [first], swaps: {} }
+    const started = await startWorkout({ ...request, draft }, deps)
+    if (started.kind !== 'started') throw new Error('expected a started workout')
+    expect(started.workout.entries).toHaveLength(plain.entries.length)
+  })
+})
+
 describe('walking away from a session', () => {
   /*
    * An abandoned session keeps its log, with the exercises it never

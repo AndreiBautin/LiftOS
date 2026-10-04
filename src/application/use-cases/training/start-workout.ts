@@ -25,6 +25,7 @@ import {
 } from '@/domain/programs/progression'
 import type { RepRange } from '@/domain/programs/prescription'
 import { matchesQuery } from '@/domain/exercises/exercise'
+import { applyDraft, type SessionDraft } from '@/domain/programs/session-draft'
 import { DAY_VERSIONS, sameVersion } from '@/domain/splits/rp-splits'
 
 /**
@@ -54,6 +55,8 @@ export interface StartWorkoutRequest {
   readonly freestyleTitle?: string
   /** Resets accepted for stalled exercises; see `domain/programs/stall`. */
   readonly resets?: LoadResets
+  /** Edits made to this session before starting it, when they are for its day. */
+  readonly draft?: SessionDraft
 }
 
 export type StartWorkoutResult =
@@ -89,7 +92,8 @@ export async function startWorkout(
   if (scheduled === undefined) {
     return { kind: 'program-finished', message: 'This program has no scheduled days.' }
   }
-  const day = scheduled.day
+  // The lifter's edits for this session, applied to its day before it is built.
+  const day = applyDraft(scheduled.day, request.draft, scheduled.on)
 
   /*
    * The block's Monday is written down the first time it is needed, so a
@@ -155,12 +159,13 @@ export async function previewWorkout(
   if (scheduled === undefined) return undefined
 
   const library = await deps.exercises.all()
-  const { working, history } = await workingLoads(scheduled.day, library, request, {
+  const day = applyDraft(scheduled.day, request.draft, scheduled.on)
+  const { working, history } = await workingLoads(day, library, request, {
     ...deps,
     ids: PREVIEW_IDS,
   })
   return buildFromDay(
-    scheduled.day,
+    day,
     scheduled,
     { ...request, athlete: { ...request.athlete, working } },
     library,

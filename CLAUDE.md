@@ -57,6 +57,21 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **The next session can be edited before it starts** (Edit on the
+  session plan card, `SessionDraftEditor`; `applyDraft` and friends in
+  `domain/programs/session-draft.ts`, tested; `settings.sessionDraft`, in
+  the parse with a test). Swap an exercise for another of the same
+  muscle, move one up or down, drop one — **this session only**: the
+  routine is untouched, and the draft is cleared on Start. **Keyed by the
+  day it was made for and by slot id**: a draft for Monday is ignored on
+  Wednesday, and slot ids are stable because the program is derived
+  deterministically. It is applied to the day **before** the session is
+  built, in both `startWorkout` and `previewWorkout`, so the plan card
+  and Start cannot disagree — `training-flow.test.ts` holds them equal.
+  Warm-ups stay first and are not editable; a muscle with one exercise
+  shows its name rather than a menu of one. A swap plans from its own
+  history, as at Start. The parse takes a draft whole or not at all — a
+  half-read one could drop the wrong exercise.
 - **Gym mode** (`settings.gymMode`, in the parse with a test; Settings →
   During a session): the session player and the rest timer (both
   `.session-player`) read at arm's length — `--text-*` and the two dim
