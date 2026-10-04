@@ -172,6 +172,32 @@ describe('accepted resets', () => {
     expect(readSettings(storage).settings.trueBlack).toBeUndefined()
   })
 
+  it('keeps each template that holds its shape and drops one that does not', () => {
+    const storage = memoryStorage()
+    const good = {
+      id: 't1',
+      name: 'Heavy upper',
+      createdAt: '2026-10-04T12:00:00Z',
+      entries: [
+        {
+          exerciseId: 'bench-press',
+          role: 'strength',
+          sets: [
+            {
+              isWarmup: false,
+              prescription: { load: { kind: 'working' }, reps: { kind: 'range', low: 3, high: 5 } },
+            },
+          ],
+        },
+      ],
+    }
+    storage.setItem(
+      STORAGE_KEYS.settings,
+      JSON.stringify({ ...DEFAULT_SETTINGS, templates: [good, { ...good, id: 7 }] }),
+    )
+    expect(readSettings(storage).settings.templates).toEqual([good])
+  })
+
   it('keeps a draft of the next session whole, or not at all', () => {
     const storage = memoryStorage()
     const draft = {

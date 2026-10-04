@@ -57,6 +57,21 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **A session can be kept by name and started again** ("Keep this
+  session" at the foot of a past session's page, `KeepSession`; the
+  "Saved sessions" home card, `SavedSessionsCard`; `templateFrom`,
+  `entriesFromTemplate` and `isPlausibleTemplate` in `domain/logging/
+template.ts`, tested; `startFromTemplate` beside `repeatSession`,
+  tested). **The shape, never the results**: exercises in order with
+  their prescribed sets, what was done rather than what was planned (an
+  entry skipped entirely is left out). Started, it opens at **today's**
+  loads through the same `openAgain` build Repeat uses, so a template
+  never carries a stale weight. **A copy, not a pointer** — deleting the
+  session it came from leaves it standing (tested). Kept in
+  `settings.templates`, in the parse with a test, each template read as
+  `unknown` and dropped whole if its shape fails; settings travel in the
+  backup and the sync file, so templates do too. The card draws each as a
+  strip of movement glyphs and asks once before removing.
 - **A failed read says what failed** (`ReadFailure` in the shell,
   `failureSubjects` in `features/errors/subjects.ts`, tested): "Couldn't
   load your sessions and the programme" rather than "2 things could not

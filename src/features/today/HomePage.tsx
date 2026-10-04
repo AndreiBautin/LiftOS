@@ -4,6 +4,7 @@ import { AdherenceCard } from '@/features/train/AdherenceCard'
 import { ForecastCard } from '@/features/train/ForecastCard'
 import { ThenNowCard } from '@/features/train/ThenNowCard'
 import { RipeCard } from '@/features/train/RipeCard'
+import { SavedSessionsCard } from '@/features/templates/SavedSessionsCard'
 import { NoticeStrip } from './NoticeStrip'
 import { arrangeCards } from '@/domain/settings/home-cards'
 import { ArrangeCards } from './ArrangeCards'
@@ -165,6 +166,7 @@ const HOME_CARDS: readonly {
 }[] = [
   { key: 'session', label: 'Next session', node: <NextSessionCard /> },
   { key: 'ripe', label: 'Ripe for the next session', node: <RipeCard /> },
+  { key: 'saved', label: 'Saved sessions', node: <SavedSessionsCard /> },
   { key: 'week', label: 'This week', node: <WeekCard /> },
   { key: 'last-week', label: 'Last week', node: <LastWeekCard /> },
   { key: 'adherence', label: 'Showing up', node: <AdherenceCard /> },

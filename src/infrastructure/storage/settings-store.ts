@@ -1,4 +1,5 @@
 import type { ExerciseId } from '@/domain/ids/ids'
+import { isPlausibleTemplate } from '@/domain/logging/template'
 import type { AppSettings } from '@/domain/settings/settings'
 import {
   DEFAULT_SETTINGS,
@@ -243,6 +244,7 @@ function mergeWithDefaults(parsed: unknown): AppSettings {
     ...liftGoalsOf(stored.liftGoals),
     ...exerciseCuesOf(stored.exerciseCues),
     ...sessionDraftOf(stored.sessionDraft),
+    ...templatesOf(stored.templates),
     ...(typeof stored.seenNotes === 'string' ? { seenNotes: stored.seenNotes } : {}),
     ...homeCardsOf(stored.homeCards),
     // Only a hue on offer: anything else could land on the good colour.
@@ -355,6 +357,13 @@ function liftGoalsOf(value: unknown): Pick<AppSettings, 'liftGoals'> {
       : []
   })
   return kept.length === 0 ? {} : { liftGoals: Object.fromEntries(kept) }
+}
+
+/** Templates that hold their shape; any that do not fall out alone. */
+function templatesOf(value: unknown): Pick<AppSettings, 'templates'> {
+  if (!Array.isArray(value)) return {}
+  const kept = value.filter(isPlausibleTemplate)
+  return kept.length === 0 ? {} : { templates: kept }
 }
 
 /**

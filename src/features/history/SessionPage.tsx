@@ -1,5 +1,6 @@
 import { Check, ChevronDown, ChevronRight, Minus, Repeat, Star } from 'lucide-react'
 import { SessionNote } from './SessionNote'
+import { KeepSession } from '@/features/templates/KeepSession'
 import { CompareCard } from './CompareCard'
 import { ShareSession } from '@/features/share/ShareSession'
 import { shareCardFrom } from '@/features/share/card-from'
@@ -143,6 +144,8 @@ export function SessionPage() {
       <SessionReplay workout={workout} library={library} units={settings.units} />
 
       <SessionTimeline workout={workout} nameOf={(exerciseId) => nameOf(library, exerciseId)} />
+
+      {workout.status !== 'in-progress' && <KeepSession key={workout.id} workout={workout} />}
     </div>
   )
 }

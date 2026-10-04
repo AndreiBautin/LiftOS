@@ -6,7 +6,9 @@ import type { LoggedSet, WorkoutLog } from '@/domain/logging/workout-log'
 import type { ExerciseRepository, WorkoutRepository } from '@/domain/repositories/ports'
 import { anEntry, aSet, aWorkout } from '@/test/builders/workout'
 
-import { repeatSession } from './repeat-session'
+import { templateFrom } from '@/domain/logging/template'
+
+import { repeatSession, startFromTemplate } from './repeat-session'
 
 const ROW = asExerciseId('barbell-row')
 const range = { load: { kind: 'working' }, reps: { kind: 'range', low: 5, high: 10 } } as const
@@ -80,6 +82,34 @@ describe('repeating a past session', () => {
   it('resumes an open session rather than starting a second', async () => {
     const open = aWorkout({ id: asWorkoutId('open'), status: 'in-progress' })
     const result = await repeatSession({ sourceId: asWorkoutId('march') }, harness([march, open]))
+    expect(result).toMatchObject({ kind: 'resumed', workout: { id: 'open' } })
+  })
+})
+
+describe('starting a saved template', () => {
+  /* Kept from March; started in October, it opens at October's bar. */
+  const template = templateFrom(march, 'Pull, light', 't1', '2026-03-02T19:00:00Z')
+
+  it('opens under the template’s name at today’s loads', async () => {
+    const deps = harness([march, september])
+    const result = await startFromTemplate({ template }, deps)
+    expect(result.kind).toBe('started')
+    expect(result.workout.title).toBe('Pull, light')
+    expect(result.workout.entries[0]?.sets[0]).toMatchObject({
+      outcome: 'pending',
+      plannedLoad: 185,
+      plannedReps: 7,
+    })
+  })
+
+  it('still opens once the session it was kept from is deleted', async () => {
+    const result = await startFromTemplate({ template }, harness([september]))
+    expect(result.workout.entries).toHaveLength(1)
+  })
+
+  it('resumes an open session rather than starting a second', async () => {
+    const open = aWorkout({ id: asWorkoutId('open'), status: 'in-progress' })
+    const result = await startFromTemplate({ template }, harness([open]))
     expect(result).toMatchObject({ kind: 'resumed', workout: { id: 'open' } })
   })
 })

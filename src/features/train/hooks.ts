@@ -3,7 +3,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toDayKey } from '@/domain/time/day'
 import { recentNiggles, type NiggleSummary } from '@/domain/logging/niggles'
 import { reorderSession } from '@/application/use-cases/training/reorder-session'
-import { repeatSession } from '@/application/use-cases/training/repeat-session'
+import { repeatSession, startFromTemplate } from '@/application/use-cases/training/repeat-session'
+import type { SessionTemplate } from '@/domain/logging/template'
 import { addExercise } from '@/application/use-cases/training/add-exercise'
 import { pairSuperset, unpairSuperset } from '@/application/use-cases/training/superset'
 import { muscleBalance } from '@/application/use-cases/training/balance'
@@ -203,6 +204,28 @@ export function useRepeatSession() {
       ),
     onSuccess: (result) => {
       logger.info('workout.repeat', { kind: result.kind })
+      client.setQueryData(keys.activeWorkout, result.workout)
+      void client.invalidateQueries({ queryKey: keys.activeWorkout })
+    },
+  })
+}
+
+/** Starts a saved template at today's loads; see `startFromTemplate`. */
+export function useStartTemplate() {
+  const services = useServices()
+  const { settings } = useSettings()
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (template: SessionTemplate) =>
+      startFromTemplate(
+        {
+          template,
+          ...(settings.loadResets !== undefined ? { resets: settings.loadResets } : {}),
+        },
+        services,
+      ),
+    onSuccess: (result) => {
+      logger.info('workout.template', { kind: result.kind })
       client.setQueryData(keys.activeWorkout, result.workout)
       void client.invalidateQueries({ queryKey: keys.activeWorkout })
     },

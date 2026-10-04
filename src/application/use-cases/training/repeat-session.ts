@@ -1,4 +1,5 @@
 import { asWorkoutId, type IdGenerator, type WorkoutId } from '@/domain/ids/ids'
+import { entriesFromTemplate, type SessionTemplate } from '@/domain/logging/template'
 import type { LogEntry, WorkoutLog } from '@/domain/logging/workout-log'
 import type { LoadResets } from '@/domain/programs/stall'
 import type { Clock, ExerciseRepository, WorkoutRepository } from '@/domain/repositories/ports'
@@ -40,10 +41,42 @@ export async function repeatSession(
   if (source === undefined || source.status === 'in-progress') {
     throw new Error('No finished session to repeat.')
   }
+  return { kind: 'started', workout: await openAgain(source.title, source.entries, request, deps) }
+}
+
+/**
+ * A saved template, started as a freestyle session at today's loads —
+ * the same build as Repeat, from a template's shape rather than a past
+ * session's. An open session is resumed instead, as Start does.
+ */
+export async function startFromTemplate(
+  request: { readonly template: SessionTemplate; readonly resets?: LoadResets },
+  deps: RepeatSessionDeps,
+): Promise<RepeatSessionResult> {
+  const open = await deps.workouts.inProgress()
+  if (open !== undefined) return { kind: 'resumed', workout: open }
+  return {
+    kind: 'started',
+    workout: await openAgain(
+      request.template.name,
+      entriesFromTemplate(request.template),
+      request,
+      deps,
+    ),
+  }
+}
+
+/** Entries planned at today's loads and saved as a new open session. */
+async function openAgain(
+  title: string,
+  from: readonly LogEntry[],
+  request: { readonly resets?: LoadResets },
+  deps: RepeatSessionDeps,
+): Promise<WorkoutLog> {
   const library = await deps.exercises.all()
 
   const entries: LogEntry[] = []
-  for (const entry of source.entries) {
+  for (const entry of from) {
     const exercise = library.find((one) => one.id === entry.exerciseId)
     if (exercise === undefined || exercise.isArchived) continue
     const history = await deps.workouts.forExercise(exercise.id, 10)
@@ -68,9 +101,9 @@ export async function repeatSession(
     date: isoDate(now),
     startedAt: now.toISOString(),
     status: 'in-progress',
-    title: source.title,
+    title,
     entries,
   }
   await deps.workouts.save(workout)
-  return { kind: 'started', workout }
+  return workout
 }
