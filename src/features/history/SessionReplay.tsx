@@ -5,7 +5,7 @@ import { useSettings } from '@/app/context'
 import type { Exercise } from '@/domain/exercises/exercise'
 import { frameAt, replayFrames } from '@/domain/logging/replay'
 import type { WorkoutLog } from '@/domain/logging/workout-log'
-import { platesToHand, type BarKind } from '@/domain/units/plates'
+import { rackFor, type BarKind } from '@/domain/units/plates'
 import { formatLoad, type WeightUnit } from '@/domain/units/weight'
 import { Button, Card, CardHeading } from '@/components/shared/primitives'
 import { PlateLoader } from '@/features/train/PlateLoader'
@@ -142,7 +142,7 @@ export function SessionReplay({
               load={frame.load}
               unit={units}
               kind={kind}
-              available={platesToHand(settings.plates, units)}
+              available={rackFor(settings.plates, units, settings.platePairs)}
             />
           </div>
         )}

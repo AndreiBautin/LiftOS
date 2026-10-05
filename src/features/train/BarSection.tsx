@@ -4,7 +4,7 @@ import { useState } from 'react'
 
 import { useSettings } from '@/app/context'
 import type { Exercise } from '@/domain/exercises/exercise'
-import { platesToHand, type BarKind } from '@/domain/units/plates'
+import { rackFor, type BarKind } from '@/domain/units/plates'
 import { warmupRamp } from '@/domain/units/ramp'
 import { formatLoad, type WeightUnit } from '@/domain/units/weight'
 import { cn } from '@/lib/cn'
@@ -48,7 +48,7 @@ export function BarSection({
   }
   if (kind === undefined || load === undefined) return null
 
-  const plates = platesToHand(settings.plates, units)
+  const plates = rackFor(settings.plates, units, settings.platePairs)
   const steps = ramp ? warmupRamp(load, units, kind, plates) : []
   const shown = step === undefined ? load : (steps[step]?.load ?? load)
 

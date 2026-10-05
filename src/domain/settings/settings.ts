@@ -137,6 +137,8 @@ export interface AppSettings {
   readonly loadSteps?: Readonly<Record<string, number>> | undefined
   /** Sessions moved within their week; see `moveSession`. */
   readonly dayMoves?: DayMoves | undefined
+  /** Pairs owned of each plate, keyed by its size; absent is any number. */
+  readonly platePairs?: Readonly<Record<string, number>> | undefined
   /** The newest release note dismissed; see `WhatsNew`. */
   readonly seenNotes?: string
   /** The home page's card order and hidden cards; see `home-cards.ts`. */

@@ -57,6 +57,20 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **Plates are counted by the pair** (Settings → Units → "How many of
+  each?", `PlatePairs`; `settings.platePairs`, in the parse with a test;
+  `Rack` and `rackFor` in `domain/units/plates.ts`, tested). Unset is any
+  number; a count caps how many of that plate one side takes, in the
+  heaviest-first pass and in the exact search — so 315 with one pair of
+  45s loads 45 · 35 · 35 · 10 · 10. **The exact search now ties
+  heaviest-first**: the fewest plates first, then, among combinations
+  that many, the one with the heaviest plates earliest (a depth-first walk
+  down the sizes), because the old pass returned 35 · 35 · 25 where a
+  lifter loads 45 · 25 · 25. `available` on `platesFor`, `warmupRamp`,
+  `nearestLoadable` and `PlateLoader` takes a `Rack` — a plain list still
+  works — and every screen builds one with `rackFor(settings.plates,
+unit, settings.platePairs)`. Checked: one pair of 45s in Settings and
+  the palette's 315 drew the lighter loading.
 - **A session can be moved within its week** ("Move" beside the week
   name on the hero, `MoveSession`; `moveSession`, `liveMoves` and the
   `moves` argument of `sessionOn` in `domain/programs/schedule.ts`,

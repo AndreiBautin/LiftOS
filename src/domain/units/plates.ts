@@ -49,75 +49,153 @@ export function platesFor(
   unit: WeightUnit,
   kind: BarKind = 'barbell',
   /**
-   * The plates actually to hand — a home gym with no 35s, say. Defaults to
-   * the standard set; whatever is passed is read heaviest first.
+   * The plates actually to hand — a home gym with no 35s, say — and, as a
+   * rack, how many pairs of each. Defaults to the standard set with no
+   * limit; whatever is passed is read heaviest first.
    */
-  available: readonly number[] = PLATES[unit],
+  available: Rack = PLATES[unit],
 ): Loading | undefined {
   const bar = BAR_WEIGHT[kind][unit]
   if (!Number.isFinite(load) || load < bar) return undefined
+  const { plates, pairs } = rackOf(available)
 
   // Worked in hundredths so 2.5 and 1.25 subtract exactly.
-  let side = Math.round(((load - bar) / 2) * 100)
+  const whole = Math.round(((load - bar) / 2) * 100)
+  let side = whole
   const perSide: number[] = []
 
-  for (const plate of [...available].sort((a, b) => b - a)) {
+  for (const plate of [...plates].sort((a, b) => b - a)) {
     const step = Math.round(plate * 100)
-    while (side >= step) {
+    // A side takes one plate of each pair, so a pair count is a per-side limit.
+    let left = pairs(plate)
+    while (side >= step && left > 0) {
       perSide.push(plate)
       side -= step
+      left -= 1
     }
   }
 
   /*
    * **Greedy first, then exact.** Heaviest-first is right for a standard
    * set and wrong for some gyms: with no 5s, 95 a side greedily reads as
-   * 45 + 45 and 5 left over, when 45 + 25 + 25 makes it. So a leftover
-   * asks for the fewest plates that make the side exactly, and only a
-   * load nothing can make keeps its leftover.
+   * 45 + 45 and 5 left over, when 45 + 25 + 25 makes it — and with only
+   * one pair of 45s, 135 a side is 45 + 35 + 35 + 10 + 10, not three 45s.
+   * So a leftover asks for the fewest plates that make the side exactly
+   * within the pairs owned, and only a load nothing can make keeps its
+   * leftover.
    */
   if (side > 0) {
-    const exact = exactSide(Math.round(((load - bar) / 2) * 100), available)
+    const exact = exactSide(whole, plates, pairs)
     if (exact !== undefined) return { bar, perSide: exact, leftover: 0 }
   }
 
   return { bar, perSide, leftover: side / 100 }
 }
 
+/**
+ * The plates to hand, either as a list (any number of each) or with a
+ * count of pairs per plate. A plate with no count is unlimited, so a rack
+ * that names only the 45s limits only the 45s.
+ */
+export type Rack =
+  | readonly number[]
+  | {
+      readonly plates: readonly number[]
+      readonly pairs: Readonly<Record<string, number>>
+    }
+
+/** The plate sizes a rack holds, whatever its shape. */
+export function rackPlates(rack: Rack): readonly number[] {
+  return rackOf(rack).plates
+}
+
+function rackOf(rack: Rack): {
+  readonly plates: readonly number[]
+  readonly pairs: (plate: number) => number
+} {
+  if (Array.isArray(rack)) return { plates: rack, pairs: () => Number.POSITIVE_INFINITY }
+  const { plates, pairs } = rack as Exclude<Rack, readonly number[]>
+  return {
+    plates,
+    pairs: (plate) => pairs[String(plate)] ?? Number.POSITIVE_INFINITY,
+  }
+}
+
 const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b))
 
 /**
- * The fewest plates making one side exactly, heaviest first; undefined
- * when none do. Counted in the plates' common divisor, so 95 lb a side
- * from 45 / 35 / 25 / 10 is nineteen steps of five rather than nine
- * thousand hundredths.
+ * The fewest plates making one side exactly, heaviest first, using no
+ * more of a plate than there are pairs of it; undefined when none do.
+ * Counted in the plates' common divisor, so 95 lb a side from 45 / 35 /
+ * 25 / 10 is nineteen steps of five rather than nine thousand hundredths,
+ * and each plate is offered as many times as it could be used — a bounded
+ * search over a few dozen items.
  */
-function exactSide(hundredths: number, available: readonly number[]): number[] | undefined {
-  const plates = available.map((plate) => Math.round(plate * 100)).filter((plate) => plate > 0)
-  const unit = plates.reduce(gcd, 0)
+function exactSide(
+  hundredths: number,
+  plates: readonly number[],
+  pairs: (plate: number) => number,
+): number[] | undefined {
+  const sizes = plates.map((plate) => Math.round(plate * 100)).filter((plate) => plate > 0)
+  const unit = sizes.reduce(gcd, 0)
   if (unit === 0 || hundredths % unit !== 0) return undefined
   const target = hundredths / unit
-  const steps = plates.map((plate) => plate / unit)
-  // fewest[n]: the fewest plates making n steps, and the last plate used.
-  const fewest: { count: number; plate: number }[] = [{ count: 0, plate: 0 }]
-  for (let n = 1; n <= target; n += 1) {
-    let best: { count: number; plate: number } | undefined
-    for (const [at, step] of steps.entries()) {
-      const before = n >= step ? fewest[n - step] : undefined
-      if (before === undefined || before.count === Infinity) continue
-      if (best === undefined || before.count + 1 < best.count)
-        best = { count: before.count + 1, plate: at }
+  const items = sizes.flatMap((size) => {
+    const step = size / unit
+    const copies = Math.min(pairs(size / 100), Math.floor(target / step))
+    return Array.from({ length: Math.max(0, copies) }, () => step)
+  })
+  // fewest[n] after each item: the fewest items making n steps.
+  let fewest = Array<number>(target + 1).fill(Number.POSITIVE_INFINITY)
+  fewest[0] = 0
+  for (const step of items) {
+    const next = [...fewest]
+    for (let n = step; n <= target; n += 1) {
+      const via = (fewest[n - step] ?? Number.POSITIVE_INFINITY) + 1
+      if (via < (next[n] ?? Number.POSITIVE_INFINITY)) next[n] = via
     }
-    fewest.push(best ?? { count: Infinity, plate: 0 })
+    fewest = next
   }
-  if ((fewest[target]?.count ?? Infinity) === Infinity) return undefined
-  const used: number[] = []
-  for (let n = target; n > 0;) {
-    const at = fewest[n]?.plate ?? 0
-    used.push((plates[at] ?? 0) / 100)
-    n -= steps[at] ?? n
+  const best = fewest[target] ?? Number.POSITIVE_INFINITY
+  if (best === Number.POSITIVE_INFINITY) return undefined
+  /*
+   * The count is settled; which plates make it is not — 45 + 25 + 25 and
+   * 35 + 35 + 25 are both three. Heaviest first, the way a bar is loaded:
+   * a depth-first walk down the sizes takes the first combination of that
+   * many plates, which is the one with the heaviest plates earliest.
+   */
+  const order = [...new Set(sizes)].sort((a, b) => b - a).map((size) => size / unit)
+  const limit = (step: number) => Math.min(pairs((step * unit) / 100), Math.floor(target / step))
+  const walk = (left: number, from: number, room: number): number[] | undefined => {
+    if (left === 0) return []
+    if (room === 0) return undefined
+    for (let at = from; at < order.length; at += 1) {
+      const step = order[at] ?? 0
+      for (let take = Math.min(limit(step), Math.floor(left / step), room); take > 0; take -= 1) {
+        const rest = walk(left - take * step, at + 1, room - take)
+        if (rest !== undefined) return [...Array<number>(take).fill((step * unit) / 100), ...rest]
+      }
+    }
+    return undefined
   }
-  return used.toSorted((a, b) => b - a)
+  return walk(target, 0, best)
+}
+
+/**
+ * The plates to hand with the pairs owned of each, for the loader, the
+ * ramp and the nearest-load offer. Counts for plates not to hand, or not
+ * whole positive numbers, are ignored.
+ */
+export function rackFor(
+  stored: readonly number[] | undefined,
+  unit: WeightUnit,
+  pairs: Readonly<Record<string, number>> | undefined,
+): Rack {
+  const plates = platesToHand(stored, unit)
+  const kept = Object.entries(pairs ?? {}).filter(
+    ([plate, count]) => plates.includes(Number(plate)) && Number.isInteger(count) && count > 0,
+  )
+  return kept.length === 0 ? plates : { plates, pairs: Object.fromEntries(kept) }
 }
 
 /**
@@ -150,7 +228,7 @@ export function nearestLoadable(
   load: number,
   unit: WeightUnit,
   kind: BarKind = 'barbell',
-  available: readonly number[] = PLATES[unit],
+  available: Rack = PLATES[unit],
 ): { readonly below?: number; readonly above?: number } | undefined {
   if (!Number.isFinite(load) || load <= 0) return undefined
   const bar = BAR_WEIGHT[kind][unit]

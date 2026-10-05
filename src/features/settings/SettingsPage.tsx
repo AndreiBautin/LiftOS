@@ -736,7 +736,76 @@ function PlateSetting() {
       <p className="text-ink-500 mt-1.5 text-xs">
         The plate loader and the warm-up ramp only use these.
       </p>
+      <PlatePairs plates={toHand} />
     </div>
+  )
+}
+
+/**
+ * How many pairs of each plate the rack holds (`settings.platePairs`),
+ * folded because most gyms never run out. Unset is any number; a count
+ * caps how many of that plate one side can take, so 315 with one pair of
+ * 45s is loaded with 35s and 10s rather than three 45s that are not there.
+ */
+function PlatePairs({ plates }: { readonly plates: readonly number[] }) {
+  const { settings, update } = useSettings()
+  const pairs = settings.platePairs ?? {}
+  const set = (plate: number, count: number | undefined) => {
+    const { [String(plate)]: _old, ...rest } = pairs
+    const next = count === undefined ? rest : { ...rest, [String(plate)]: count }
+    update({ platePairs: Object.keys(next).length === 0 ? undefined : next })
+  }
+
+  return (
+    <details className="mt-3">
+      <summary className="text-ink-300 hover:text-accent-400 tap-target flex cursor-pointer items-center text-sm">
+        How many of each?{' '}
+        {Object.keys(pairs).length > 0 ? `(${String(Object.keys(pairs).length)} counted)` : ''}
+      </summary>
+      <ul className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+        {plates.map((plate) => {
+          const count = pairs[String(plate)]
+          return (
+            <li key={plate} className="well flex items-center justify-between gap-2 px-3 py-1">
+              <span className="numeric text-ink-100 text-sm">
+                {plate} {settings.units}
+              </span>
+              <span className="flex items-center gap-1">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  aria-label={`Fewer pairs of ${String(plate)}`}
+                  disabled={count === undefined}
+                  onClick={() => {
+                    set(plate, count === undefined || count <= 1 ? undefined : count - 1)
+                  }}
+                >
+                  −
+                </Button>
+                <span className="numeric text-ink-300 w-16 text-center text-xs">
+                  {count === undefined
+                    ? 'any'
+                    : `${String(count)} ${count === 1 ? 'pair' : 'pairs'}`}
+                </span>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  aria-label={`More pairs of ${String(plate)}`}
+                  onClick={() => {
+                    set(plate, (count ?? 0) + 1)
+                  }}
+                >
+                  +
+                </Button>
+              </span>
+            </li>
+          )
+        })}
+      </ul>
+      <p className="text-ink-500 mt-1.5 text-xs">
+        Any means as many as a bar needs. Below one pair is any again.
+      </p>
+    </details>
   )
 }
 

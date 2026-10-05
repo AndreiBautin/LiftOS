@@ -172,6 +172,15 @@ describe('accepted resets', () => {
     expect(readSettings(storage).settings.trueBlack).toBeUndefined()
   })
 
+  it('keeps plate pairs that are whole positive counts', () => {
+    const storage = memoryStorage()
+    storage.setItem(
+      STORAGE_KEYS.settings,
+      JSON.stringify({ ...DEFAULT_SETTINGS, platePairs: { '45': 2, '35': 0, '25': 1.5, x: 3 } }),
+    )
+    expect(readSettings(storage).settings.platePairs).toEqual({ '45': 2 })
+  })
+
   it('keeps day moves that name days, and drops anything else', () => {
     const storage = memoryStorage()
     storage.setItem(

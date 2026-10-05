@@ -243,6 +243,7 @@ function mergeWithDefaults(parsed: unknown): AppSettings {
     ...loadResetsOf(stored.loadResets),
     ...loadStepsOf(stored.loadSteps),
     ...dayMovesOf(stored.dayMoves),
+    ...platePairsOf(stored.platePairs),
     ...liftGoalsOf(stored.liftGoals),
     ...exerciseCuesOf(stored.exerciseCues),
     ...sessionDraftOf(stored.sessionDraft),
@@ -359,6 +360,16 @@ function liftGoalsOf(value: unknown): Pick<AppSettings, 'liftGoals'> {
       : []
   })
   return kept.length === 0 ? {} : { liftGoals: Object.fromEntries(kept) }
+}
+
+/** Pairs per plate, each a whole positive number; anything else falls out. */
+function platePairsOf(value: unknown): Pick<AppSettings, 'platePairs'> {
+  if (typeof value !== 'object' || value === null) return {}
+  const kept = Object.entries(value).filter(
+    (entry): entry is [string, number] =>
+      Number.isFinite(Number(entry[0])) && Number.isInteger(entry[1]) && (entry[1] as number) > 0,
+  )
+  return kept.length === 0 ? {} : { platePairs: Object.fromEntries(kept) }
 }
 
 /** Day moves keyed and valued by day keys (or null); anything else falls out. */

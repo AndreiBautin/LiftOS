@@ -1,5 +1,5 @@
 import type { WeightUnit } from '@/domain/units/weight'
-import { PLATES, platesFor, type BarKind } from '@/domain/units/plates'
+import { PLATES, platesFor, type BarKind, type Rack } from '@/domain/units/plates'
 
 /**
  * The bar, loaded, for the set you are about to do.
@@ -66,7 +66,7 @@ export function PlateLoader({
   readonly unit: WeightUnit
   readonly kind?: BarKind
   /** The plates to hand; the standard set when absent. */
-  readonly available?: readonly number[]
+  readonly available?: Rack
 }) {
   const loading = platesFor(load, unit, kind, available)
   if (loading === undefined) return null

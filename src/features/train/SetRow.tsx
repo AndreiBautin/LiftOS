@@ -1,5 +1,5 @@
 import { Check, Minus, SkipForward } from 'lucide-react'
-import { nearestLoadable, platesToHand, type BarKind } from '@/domain/units/plates'
+import { nearestLoadable, rackFor, type BarKind } from '@/domain/units/plates'
 import { NIGGLE_LABELS, NIGGLE_REGIONS, type NiggleRegion } from '@/domain/logging/niggles'
 import { appendDictation } from '@/features/dictation/dictation'
 import { DictateButton } from '@/features/dictation/DictateButton'
@@ -508,7 +508,7 @@ function Loadable({
     load,
     settings.units,
     bar,
-    platesToHand(settings.plates, settings.units),
+    rackFor(settings.plates, settings.units, settings.platePairs),
   )
   if (near === undefined || (near.below === undefined && near.above === undefined)) return null
   return (

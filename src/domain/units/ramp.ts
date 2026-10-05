@@ -1,4 +1,4 @@
-import { BAR_WEIGHT, platesFor, PLATES, type BarKind } from './plates'
+import { BAR_WEIGHT, platesFor, PLATES, type BarKind, rackPlates, type Rack } from './plates'
 import type { WeightUnit } from './weight'
 
 /**
@@ -31,12 +31,12 @@ export function warmupRamp(
   working: number,
   unit: WeightUnit,
   kind: BarKind = 'barbell',
-  available: readonly number[] = PLATES[unit],
+  available: Rack = PLATES[unit],
 ): readonly RampStep[] {
   const bar = BAR_WEIGHT[kind][unit]
   if (!Number.isFinite(working) || working <= bar) return []
 
-  const smallest = Math.min(...available)
+  const smallest = Math.min(...rackPlates(available))
   const loadable = (target: number): number => {
     // Walk down in the smallest pair of plates until one loads exactly.
     for (let load = Math.floor(target); load > bar; load -= 0.25) {

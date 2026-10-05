@@ -2,7 +2,7 @@ import { Search } from 'lucide-react'
 import { MUSCLE_GROUP_LABELS, type MuscleGroup } from '@/domain/exercises/taxonomy'
 import { useServices, useSettings } from '@/app/context'
 import { toDayKey } from '@/domain/time/day'
-import { nearestLoadable, platesToHand } from '@/domain/units/plates'
+import { nearestLoadable, rackFor } from '@/domain/units/plates'
 import { PlateLoader } from '@/features/train/PlateLoader'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -167,7 +167,7 @@ function Palette({ onClose }: { readonly onClose: () => void }) {
             <PlateLoader
               load={plateLoad}
               unit={settings.units}
-              available={platesToHand(settings.plates, settings.units)}
+              available={rackFor(settings.plates, settings.units, settings.platePairs)}
             />
             {(() => {
               // A load the plates cannot make offers the nearest that they can.
@@ -175,7 +175,7 @@ function Palette({ onClose }: { readonly onClose: () => void }) {
                 plateLoad,
                 settings.units,
                 'barbell',
-                platesToHand(settings.plates, settings.units),
+                rackFor(settings.plates, settings.units, settings.platePairs),
               )
               const options = [near?.below, near?.above].filter(
                 (value): value is number => value !== undefined,

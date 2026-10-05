@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useSettings } from '@/app/context'
 import { strengthTable } from '@/domain/strength/calculator'
 import { E1RM_FORMULA_LABELS } from '@/domain/strength/one-rep-max'
-import { platesToHand } from '@/domain/units/plates'
+import { rackFor } from '@/domain/units/plates'
 import { formatLoad } from '@/domain/units/weight'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { Card, CardHeading } from '@/components/shared/primitives'
@@ -140,7 +140,7 @@ export function CalculatorPage() {
                 <PlateLoader
                   load={barLoad}
                   unit={units}
-                  available={platesToHand(settings.plates, units)}
+                  available={rackFor(settings.plates, units, settings.platePairs)}
                 />
               </div>
             )}
