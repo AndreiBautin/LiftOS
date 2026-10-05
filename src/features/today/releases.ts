@@ -1,6 +1,16 @@
 /** Release notes, newest first; `WhatsNew` shows the first once. */
 export const RELEASES: readonly { readonly id: string; readonly items: readonly string[] }[] = [
   {
+    id: '2026-10-11',
+    items: [
+      'Keep any session by name and start it again at today’s loads — Saved sessions on the home page.',
+      'Move a session to another day this week from the hero.',
+      'Every muscle across the year, week by week, under Muscles by week.',
+      'A smaller load step when the next one is too big a jump, and plates counted by the pair.',
+      'A health check in Settings, and a failed load now says what failed.',
+    ],
+  },
+  {
     id: '2026-10-10',
     items: [
       'Edit the next session before you start it — swap, reorder or drop, this session only.',
