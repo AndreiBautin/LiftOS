@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { DataHealth } from './DataHealth'
 import { ExportCsv } from './ExportCsv'
 import { ImportOther } from './ImportOther'
 import { ACCENT_HUES, DEFAULT_ACCENT_HUE } from '@/domain/settings/settings'
@@ -512,6 +513,7 @@ export function SettingsPage() {
                 )}
               </div>
             </Card>
+            <DataHealth />
           </Section>
 
           {/* Not a Section — a footer, not a thing to decide about. */}

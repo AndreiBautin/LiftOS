@@ -57,6 +57,19 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   `/train`, `/history` and every removed path redirect to `/today`,
   because a PWA shortcut outlives the screen it named. The history list
   shows the newest eight and folds the rest.
+- **Settings has a health check** ("Health check" under Your data,
+  `DataHealth`; `dataHealth` in `domain/logging/health.ts`, tested):
+  sessions, working sets, abandoned and the first and last day, then
+  either "Everything checks out" or what looks wrong — a session left
+  open over a day (or a second one open), a copy of a session (same start
+  time and title; which of two identical records is "the copy" is decided
+  by id order, since neither is more real), a finished session with no
+  set done, and sets under an exercise the library does not know. **Each
+  fix is an operation the app already has** — abandon for left open,
+  delete (tombstone and all) for copies and empty records — run one
+  after another and asked once. An unknown exercise is reported only: the
+  sets are real. Checked by planting a copy in the demo: found, asked,
+  deleted, and the original kept.
 - **Plates are counted by the pair** (Settings → Units → "How many of
   each?", `PlatePairs`; `settings.platePairs`, in the parse with a test;
   `Rack` and `rackFor` in `domain/units/plates.ts`, tested). Unset is any
