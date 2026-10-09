@@ -3,15 +3,13 @@ import { Trophy } from 'lucide-react'
 import { LIFT_COLOURS as CHART_LIFT_COLOURS } from '@/features/charts/palette'
 import { Link } from 'react-router-dom'
 import { useServices, useSettings } from '@/app/context'
-import { STRENGTH_LIFT_SLUGS } from '@/domain/exercises/catalogue'
-import { asExerciseId } from '@/domain/ids/ids'
 import { strengthStandings, type LiftStanding } from '@/domain/strength/standards'
 import { projectReach } from '@/domain/strength/projection'
-import { strengthTrend, type TrendLift } from '@/domain/strength/trend'
+import { measuredMaxes, strengthTrend, type TrendLift } from '@/domain/strength/trend'
 import { toDayKey } from '@/domain/time/day'
-import { Button, Card, CardHeading } from '@/components/shared/primitives'
+import { Card, CardHeading } from '@/components/shared/primitives'
 
-import { useRecentWorkouts } from './hooks'
+import { isDeloadSession, useProgram, useRecentWorkouts } from './hooks'
 
 /**
  * Where each lift stands against the published bodyweight standards: the
@@ -41,26 +39,24 @@ const TREND_LIFT: Readonly<Record<string, TrendLift>> = {
   Deadlift: 'deadlift',
 }
 
-/**
- * Below this the two figures are the same number rounded twice, and an
- * offer to swap one for the other would be noise on every row.
- */
-const DRIFT = 5
-
 export function StrengthStandards() {
-  const { settings, update } = useSettings()
+  const { settings } = useSettings()
+  const program = useProgram()
   /*
-   * **The card and the chart beneath it read two different numbers**, and
-   * nothing said so: the card is the estimated max you keep in Settings,
-   * which every suggested load is planned from; the chart is what your
-   * sessions measure. Squat 353 above a chart ending at 356 read as a bug.
-   * Where they part by more than rounding, the row names the measured
-   * figure and offers it — **offered, never applied**, the stance the
-   * session report's own "use this estimate" takes, because the stored
-   * max moves every first-session load and must move only when asked.
+   * **The card reads what the sessions measure**: each lift's most recent
+   * finished session, deloads skipped (`measuredMaxes`), with the stored
+   * max standing in only for a lift no session has measured yet. It used
+   * to read the stored max and offer the measured figure beside it, which
+   * left the total a tap behind every session; the stored max is still
+   * what a first session is planned from, and the session report still
+   * offers to move it.
    */
   const workouts = useRecentWorkouts(200)
   const trend = workouts.data === undefined ? undefined : strengthTrend(workouts.data)
+  const measured =
+    workouts.data === undefined
+      ? {}
+      : measuredMaxes(workouts.data, (log) => isDeloadSession(log, program.data))
   /*
    * **When the next standard arrives at this rate**, from the trend's own
    * last twelve weeks (`projectReach`). Said only when the evidence holds
@@ -73,13 +69,8 @@ export function StrengthStandards() {
     if (lift === undefined || target === undefined || trend === undefined) return undefined
     return projectReach(trend[lift], target, today)
   }
-  const measuredFor = (name: string): number | undefined => {
-    const lift = TREND_LIFT[name]
-    return lift === undefined ? undefined : trend?.[lift].at(-1)?.value
-  }
-
   const { lifts, total } = strengthStandings({
-    estimatedMaxes: settings.estimatedMaxes,
+    estimatedMaxes: { ...settings.estimatedMaxes, ...measured },
     ...(settings.bodyweight !== undefined ? { bodyweight: settings.bodyweight } : {}),
   })
 
@@ -106,19 +97,8 @@ export function StrengthStandards() {
             key={lift.name}
             standing={lift}
             colour={LIFT_COLOURS[lift.name] ?? 'var(--color-accent-400)'}
-            measured={measuredFor(lift.name)}
             reach={reachFor(lift)}
             today={today}
-            onUse={(value) => {
-              const trendLift = TREND_LIFT[lift.name]
-              if (trendLift === undefined) return
-              update({
-                estimatedMaxes: {
-                  ...settings.estimatedMaxes,
-                  [asExerciseId(STRENGTH_LIFT_SLUGS[trendLift])]: value,
-                },
-              })
-            }}
           />
         ))}
       </ul>
@@ -144,23 +124,14 @@ function whenOf(day: string, today: string): string {
 function LiftRow({
   standing,
   colour,
-  measured,
   reach,
   today,
-  onUse,
 }: {
   readonly standing: LiftStanding
   readonly colour: string
   readonly reach?: string | undefined
   readonly today?: string
-  readonly measured?: number | undefined
-  readonly onUse?: (value: number) => void
 }) {
-  const drifted =
-    measured !== undefined &&
-    onUse !== undefined &&
-    (standing.max === undefined || Math.abs(measured - standing.max) >= DRIFT)
-
   return (
     <li>
       <div className="flex items-baseline justify-between gap-2">
@@ -181,24 +152,6 @@ function LiftRow({
           At this rate, {standing.next.multiple}× around{' '}
           <span className="text-ink-300">{whenOf(reach, today)}</span>
         </p>
-      )}
-      {drifted && (
-        <div className="border-ink-800 mt-2 flex items-center justify-between gap-3 rounded-lg border border-dashed px-3 py-1.5">
-          <span className="text-ink-500 text-xs">
-            Your sessions measure{' '}
-            <span className="numeric text-ink-100 font-semibold">{measured} lb</span>
-          </span>
-          <Button
-            variant="ghost"
-            size="sm"
-            aria-label={`Use ${String(measured)} lb as your ${standing.name.toLowerCase()} max`}
-            onClick={() => {
-              onUse(measured)
-            }}
-          >
-            Use it
-          </Button>
-        </div>
       )}
     </li>
   )

@@ -4,6 +4,7 @@ export const RELEASES: readonly { readonly id: string; readonly items: readonly 
     id: '2026-10-11',
     items: [
       'A set repeated across straight sets is read with reps in reserve, so the estimated max no longer treats it as a limit set.',
+      'The Strength card and the total read each lift off its latest session, deloads skipped; the stored max only stands in until a session has measured it.',
       'Keep any session by name and start it again at today’s loads — Saved sessions on the home page.',
       'Move a session to another day this week from the hero.',
       'Every muscle across the year, week by week, under Muscles by week.',

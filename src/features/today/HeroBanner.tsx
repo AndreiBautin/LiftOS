@@ -12,12 +12,15 @@ import { Button } from '@/components/shared/primitives'
 import { buttonStyles } from '@/components/shared/styles'
 import { weekIndexToStartOn } from '@/domain/programs/schedule'
 import { strengthStandings } from '@/domain/strength/standards'
+import { measuredMaxes } from '@/domain/strength/trend'
 import { glyphFor, type Glyph } from '@/features/glyphs/glyph-for'
 import { GLYPH_DOTS, GLYPH_PATHS } from '@/features/glyphs/glyph-paths'
 import {
+  isDeloadSession,
   useExercises,
   useJumpToWeek,
   useMuscleRecency,
+  useRecentWorkouts,
   useStartWorkout,
   useWeekSummary,
 } from '@/features/train/hooks'
@@ -63,8 +66,13 @@ export function HeroBanner() {
     setEverything(false)
   }, [])
 
+  const workouts = useRecentWorkouts(200)
+  const measured =
+    workouts.data === undefined
+      ? {}
+      : measuredMaxes(workouts.data, (log) => isDeloadSession(log, program))
   const { total } = strengthStandings({
-    estimatedMaxes: settings.estimatedMaxes,
+    estimatedMaxes: { ...settings.estimatedMaxes, ...measured },
     ...(settings.bodyweight !== undefined ? { bodyweight: settings.bodyweight } : {}),
   })
 

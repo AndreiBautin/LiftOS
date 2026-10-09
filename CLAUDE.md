@@ -31,6 +31,20 @@ the job search, the resume or Mind as a record of a decision rather than
 a description of the code. They are kept because the reasoning in them
 is often still why a training rule is the shape it is.
 
+- **The Strength card and the hero's total read what the sessions
+  measure** (`measuredMaxes` in `domain/strength/trend.ts`, tested;
+  `isDeloadSession` in `features/train/hooks.ts`). Asked for as _"why
+  can't it just be inferred from the most recent session of that lift?
+  (unless deload of course)"_. Each lift is its most recent finished
+  session's reliable estimate, **a deload session skipped** — read off
+  the session's own `position` against the programme's weeks, the
+  muscle-year rule — and the stored `estimatedMaxes` stand in only for a
+  lift no session has measured. **The stored max is not gone**: it is
+  still what a first session is planned from, Settings still edits it,
+  and the session report still offers to move it. What went is the
+  card's "Your sessions measure N · Use it" row, which left the total a
+  tap behind every session. `GoalsCard` already read the trend's last
+  point; the trend chart itself still plots deloads, being history.
 - **A repeated set is read with reps in reserve** (`inferredReserve` and
   `E1rmEstimate.reserve` in `domain/strength/one-rep-max.ts`, tested).
   Asked for as _"if I can repeat an effort 3/4 times, that doesn't

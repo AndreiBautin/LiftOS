@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import type { ExerciseId, WorkoutId } from '@/domain/ids/ids'
 import type { LogEntry, WorkoutLog } from '@/domain/logging/workout-log'
 
-import { strengthTrend } from './trend'
+import { measuredMaxes, strengthTrend } from './trend'
 
 function entry(slug: string, load: number, reps: number): LogEntry {
   return {
@@ -64,5 +64,42 @@ describe('the strength trend', () => {
     ])
 
     expect(trend.bench.map((point) => point.date)).toEqual(['2026-09-05'])
+  })
+})
+
+describe('the measured maxes', () => {
+  const squat = 'low-bar-squat' as ExerciseId
+
+  it('reads each lift off its most recent finished session', () => {
+    const measured = measuredMaxes(
+      [
+        log('2026-09-01', [entry('low-bar-squat', 300, 5)]),
+        log('2026-09-10', [entry('low-bar-squat', 250, 5)]),
+      ],
+      () => false,
+    )
+
+    expect(measured[squat]).toBe(Math.round(250 * (1 + 5 / 30)))
+  })
+
+  it('skips a deload session and reads the one before it', () => {
+    const measured = measuredMaxes(
+      [
+        log('2026-09-01', [entry('low-bar-squat', 300, 5)]),
+        log('2026-09-10', [entry('low-bar-squat', 200, 5)]),
+      ],
+      (one) => one.date === '2026-09-10',
+    )
+
+    expect(measured[squat]).toBe(Math.round(300 * (1 + 5 / 30)))
+  })
+
+  it('leaves a lift absent when no session has measured it', () => {
+    const measured = measuredMaxes(
+      [log('2026-09-01', [entry('low-bar-squat', 300, 5)])],
+      () => false,
+    )
+
+    expect(measured['bench-press' as ExerciseId]).toBeUndefined()
   })
 })

@@ -11,6 +11,7 @@ import { muscleBalance } from '@/application/use-cases/training/balance'
 import { recentMuscles } from '@/application/use-cases/training/recency'
 import type { ExerciseId, WorkoutId } from '@/domain/ids/ids'
 import type { WorkoutLog } from '@/domain/logging/workout-log'
+import type { ProgramTemplate as Program } from '@/domain/programs/program'
 import { exerciseHistory } from '@/domain/logging/exercise-history'
 import { workingSets } from '@/domain/logging/workout-log'
 import {
@@ -58,6 +59,18 @@ import { logger } from '@/shared/logging/logger'
  * milliseconds of pure computation over a fixed catalogue, and paying it
  * on render is what buys the guarantee that nothing can be stale.
  */
+/**
+ * Whether a session was filed from a deload week, read off its own
+ * `position` against the programme's weeks — the muscle-year page's rule,
+ * so a past deload stays one after the block moves. A session with no
+ * position, or a programme not yet loaded, is not a deload.
+ */
+export function isDeloadSession(log: WorkoutLog, program: Program | undefined): boolean {
+  const position = log.position
+  if (position === undefined || program === undefined) return false
+  return program.blocks[position.blockIndex]?.weeks[position.weekIndex]?.isDeload === true
+}
+
 export function useProgram() {
   const services = useServices()
   const { settings } = useSettings()
