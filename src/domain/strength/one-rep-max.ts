@@ -32,14 +32,58 @@ export interface E1rmEstimate {
   readonly value: number
   readonly formula: E1rmFormula
   readonly reps: number
+  /**
+   * Reps the set is read as having left in the tank. Zero for a set taken
+   * on its own; a set repeated across straight sets is credited one per
+   * extra set, up to `MAX_INFERRED_RESERVE` (see `inferredReserve`).
+   */
+  readonly reserve: number
   /** False once the rep count leaves the range the formula was fitted for. */
   readonly isReliable: boolean
+}
+
+/**
+ * The most reps in reserve a repeated set is ever credited with.
+ *
+ * Four straight sets of the same load and reps say the first was not a
+ * limit set, but they do not say by how much; three is the usual
+ * distance between "repeatable four times" and "could not do one more",
+ * and reading more into it would turn a lot of easy work into a big
+ * number.
+ */
+export const MAX_INFERRED_RESERVE = 3
+
+/**
+ * Reps in reserve inferred for one set from the sets around it.
+ *
+ * The formulas assume the set went to failure. Double progression never
+ * asks for that: a lifter who does 100 x 10 four times could plainly have
+ * done more than ten on the first set, so reading it as 100 x 10 to
+ * failure under-reads the max. Every other completed set at the same
+ * load for at least as many reps counts as one rep left over, capped.
+ * A set done once, or a top set nothing else matched, is read as given.
+ */
+export function inferredReserve(
+  sets: readonly { readonly load: number; readonly reps: number }[],
+  index: number,
+): number {
+  const set = sets[index]
+  if (set === undefined) return 0
+  let matched = 0
+  for (let i = 0; i < sets.length; i += 1) {
+    if (i === index) continue
+    const other = sets[i]
+    if (other === undefined) continue
+    if (other.load === set.load && other.reps >= set.reps) matched += 1
+  }
+  return Math.min(matched, MAX_INFERRED_RESERVE)
 }
 
 export function estimateOneRepMax(
   load: number,
   reps: number,
   formula: E1rmFormula = 'epley',
+  reserve = 0,
 ): E1rmEstimate {
   invariant(
     Number.isFinite(load) && load > 0,
@@ -52,14 +96,24 @@ export function estimateOneRepMax(
     `Cannot estimate a one-rep max from ${String(reps)} reps.`,
   )
 
-  // A single *is* the max. Every formula agrees, but only after rounding
-  // noise, and Brzycki in particular returns 1.0000x rather than exactly x.
-  const value = reps === 1 ? load : applyFormula(load, reps, formula)
+  invariant(
+    Number.isInteger(reserve) && reserve >= 0,
+    'E1RM_RESERVE_INVALID',
+    `Reps in reserve must be a whole number, received ${String(reserve)}.`,
+  )
+
+  // A single with nothing in reserve *is* the max. Every formula agrees,
+  // but only after rounding noise, and Brzycki in particular returns
+  // 1.0000x rather than exactly x. A set with reps left over is read as
+  // the set it would have been taken to failure.
+  const effective = reps + reserve
+  const value = effective === 1 ? load : applyFormula(load, effective, formula)
 
   return {
     value: Number(value.toFixed(2)),
     formula,
     reps,
+    reserve,
     isReliable: reps <= RELIABLE_REP_CEILING,
   }
 }
@@ -81,7 +135,9 @@ function applyFormula(load: number, reps: number, formula: E1rmFormula): number 
 
 /**
  * The best estimate across a set of completed sets — the highest, since
- * one hard set tells you more than several easy ones.
+ * one hard set tells you more than several easy ones — with each set
+ * read against the others through `inferredReserve`, so straight sets
+ * are not read as four limit sets.
  *
  * Warm-ups and skipped sets must be filtered out before this is called;
  * a 40% warm-up for five would otherwise compete with the working single.
@@ -90,15 +146,16 @@ export function bestEstimate(
   sets: readonly { readonly load: number; readonly reps: number }[],
   formula: E1rmFormula = 'epley',
 ): E1rmEstimate | undefined {
+  const valid = sets.filter(
+    (set) =>
+      Number.isFinite(set.load) && set.load > 0 && Number.isInteger(set.reps) && set.reps > 0,
+  )
   let best: E1rmEstimate | undefined
 
-  for (const set of sets) {
-    if (!Number.isFinite(set.load) || set.load <= 0) continue
-    if (!Number.isInteger(set.reps) || set.reps <= 0) continue
-
-    const estimate = estimateOneRepMax(set.load, set.reps, formula)
+  valid.forEach((set, index) => {
+    const estimate = estimateOneRepMax(set.load, set.reps, formula, inferredReserve(valid, index))
     if (best === undefined || estimate.value > best.value) best = estimate
-  }
+  })
 
   return best
 }

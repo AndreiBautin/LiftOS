@@ -1,5 +1,5 @@
 import type { ExerciseId, WorkoutId } from '@/domain/ids/ids'
-import { estimateOneRepMax, type E1rmFormula } from '@/domain/strength/one-rep-max'
+import { estimateOneRepMax, inferredReserve, type E1rmFormula } from '@/domain/strength/one-rep-max'
 
 import type { WorkoutLog } from './workout-log'
 
@@ -11,7 +11,9 @@ import type { WorkoutLog } from './workout-log'
  * **Finished and abandoned sessions both count** — a set done is a set
  * done, and walking away from the rest of a session does not unlift it.
  * Warm-ups do not. The estimate only reads sets within the formula's
- * reliable range, so a set of twenty does not out-rank a heavy triple.
+ * reliable range, so a set of twenty does not out-rank a heavy triple,
+ * and a set repeated across an entry's straight sets is credited its
+ * reps in reserve (`inferredReserve`), the rule every estimate follows.
  */
 export interface BestSet {
   readonly load: number
@@ -44,15 +46,20 @@ export function bestsByExercise(
   for (const log of logs) {
     if (log.status === 'in-progress') continue
     for (const entry of log.entries) {
-      for (const set of entry.sets) {
-        if (set.isWarmup || set.outcome !== 'completed') continue
-        const load = set.actualLoad
-        const reps = set.actualReps
-        if (load === undefined || load <= 0 || reps === undefined || reps <= 0) continue
-
+      const done = entry.sets.flatMap((set) =>
+        !set.isWarmup &&
+        set.outcome === 'completed' &&
+        set.actualLoad !== undefined &&
+        set.actualLoad > 0 &&
+        set.actualReps !== undefined &&
+        set.actualReps > 0
+          ? [{ load: set.actualLoad, reps: set.actualReps }]
+          : [],
+      )
+      for (const [index, { load, reps }] of done.entries()) {
         const here: BestSet = { load, reps, date: log.date, workoutId: log.id }
         const current = found.get(entry.exerciseId)
-        const estimate = estimateOneRepMax(load, reps, formula)
+        const estimate = estimateOneRepMax(load, reps, formula, inferredReserve(done, index))
         const candidate = estimate.isReliable ? { ...here, value: estimate.value } : undefined
 
         if (current === undefined) {

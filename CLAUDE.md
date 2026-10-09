@@ -31,6 +31,25 @@ the job search, the resume or Mind as a record of a decision rather than
 a description of the code. They are kept because the reasoning in them
 is often still why a training rule is the shape it is.
 
+- **A repeated set is read with reps in reserve** (`inferredReserve` and
+  `E1rmEstimate.reserve` in `domain/strength/one-rep-max.ts`, tested).
+  Asked for as _"if I can repeat an effort 3/4 times, that doesn't
+  represent a max effort lift"_. Every formula assumes the set went to
+  failure, and double progression never asks for that: 100 x 10 four
+  times reads as 100 x 10 to failure and under-reads the max. Each
+  other completed set at the **same load for at least as many reps**
+  counts as one rep left over, capped at `MAX_INFERRED_RESERVE` (3), and
+  the set is estimated as the one it would have been taken to failure
+  (100 x 13). A top set the later sets fell off from is read as given,
+  so a hard triple still beats three easy tens. **Applied in
+  `bestEstimate`**, which the report, the exercise page, the trend and
+  the forecast all read, and in the records wall's own loop; the
+  calculator takes one set and credits nothing. `isReliable` judges the
+  reps done, not the reps credited. The report marks a credited
+  estimate with a dagger and says why. The demo's lifts are exact
+  straight sets, so every demo estimate rose by three reps' worth and
+  the Strength card now offers "Your sessions measure" against the
+  seeded maxes; that is the rule reading the seed truthfully.
 - **Gone with the game:** `domain/game`, `domain/review`, the
   character and review use cases, `features/character`, the XP toast,
   and the `metrics` and `reviews` stores (cleared at `DB_VERSION` 25,

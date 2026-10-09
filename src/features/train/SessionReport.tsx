@@ -229,6 +229,7 @@ export function SessionReport({ report, units, onDismiss }: Props) {
                     <span className="text-ink-500 numeric text-xs">
                       e1RM {formatLoad(Math.round(entry.estimate.value), units)}
                       {!entry.estimate.isReliable && '*'}
+                      {entry.estimate.reserve > 0 && '\u2020'}
                     </span>
                   )}
                   <Verdict verdict={entry.verdict} />
@@ -239,6 +240,12 @@ export function SessionReport({ report, units, onDismiss }: Props) {
           {report.progress.some((entry) => entry.estimate?.isReliable === false) && (
             <p className="text-ink-500 mt-3 text-xs">
               * Estimated from a high-rep set, where the formulas lose accuracy.
+            </p>
+          )}
+          {report.progress.some((entry) => (entry.estimate?.reserve ?? 0) > 0) && (
+            <p className="text-ink-500 mt-3 text-xs">
+              {'\u2020'} Read with reps in reserve: a set repeated across straight sets was not a
+              limit set, so each extra set counts as one more rep, up to three.
             </p>
           )}
 
