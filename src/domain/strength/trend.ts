@@ -43,40 +43,64 @@ export function measuredMaxes(
   logs: readonly WorkoutLog[],
   isDeload: (log: WorkoutLog) => boolean,
 ): Readonly<Partial<Record<ExerciseId, number>>> {
-  const done = logs
-    .filter((log) => log.status === 'completed' && !isDeload(log))
-    .toSorted((a, b) => b.date.localeCompare(a.date))
-
+  const kept = logs.filter((log) => !isDeload(log))
   const measured: Partial<Record<ExerciseId, number>> = {}
   for (const slug of Object.values(STRENGTH_LIFT_SLUGS)) {
-    const id = asExerciseId(slug)
-    for (const log of done) {
-      const estimate = estimateFromWorkout(log, id)
-      if (estimate?.isReliable === true) {
-        measured[id] = Math.round(estimate.value)
-        break
-      }
-    }
+    const last = progressedSeries(kept, asExerciseId(slug)).at(-1)
+    if (last !== undefined) measured[asExerciseId(slug)] = last.value
   }
   return measured
 }
 
-export function strengthTrend(logs: readonly WorkoutLog[]): StrengthTrend {
+/**
+ * One lift's reliable estimates, oldest first, **with a step up the bar
+ * never reading as a step down**. Asked for as _"when you hit the top of
+ * the range and up the weight while resetting at the bottom, the
+ * estimate shows lower despite the fact that you clearly didn't get
+ * weaker"_. Double progression trades reps for load on purpose: 100 x 15
+ * becomes 105 x 10, and every formula reads the second as weaker. So a
+ * session whose top bar is heavier than the previous session's carries
+ * the previous estimate forward when its own reads lower. A session at
+ * the same or a lighter bar that reads lower is a real reading and is
+ * kept.
+ */
+function progressedSeries(logs: readonly WorkoutLog[], id: ExerciseId): readonly TrendPoint[] {
   const done = logs
     .filter((log) => log.status === 'completed')
     .toSorted((a, b) => a.date.localeCompare(b.date))
-
-  const seriesFor = (lift: TrendLift): readonly TrendPoint[] =>
-    done.flatMap((log) => {
-      const estimate = estimateFromWorkout(log, STRENGTH_LIFT_SLUGS[lift] as ExerciseId)
-      return estimate?.isReliable === true
-        ? [{ date: log.date, value: Math.round(estimate.value) }]
-        : []
+  const points: TrendPoint[] = []
+  let previousBar: number | undefined
+  for (const log of done) {
+    const estimate = estimateFromWorkout(log, id)
+    if (estimate?.isReliable !== true) continue
+    const bar = topBar(log, id)
+    const value = Math.round(estimate.value)
+    const before = points.at(-1)?.value
+    const steppedUp = previousBar !== undefined && bar > previousBar
+    points.push({
+      date: log.date,
+      value: steppedUp && before !== undefined && value < before ? before : value,
     })
+    previousBar = bar
+  }
+  return points
+}
 
+function topBar(log: WorkoutLog, id: ExerciseId): number {
+  return Math.max(
+    0,
+    ...log.entries
+      .filter((entry) => entry.exerciseId === id)
+      .flatMap((entry) => entry.sets)
+      .filter((set) => set.outcome === 'completed' && !set.isWarmup)
+      .map((set) => set.actualLoad ?? 0),
+  )
+}
+
+export function strengthTrend(logs: readonly WorkoutLog[]): StrengthTrend {
   return {
-    squat: seriesFor('squat'),
-    bench: seriesFor('bench'),
-    deadlift: seriesFor('deadlift'),
+    squat: progressedSeries(logs, STRENGTH_LIFT_SLUGS.squat as ExerciseId),
+    bench: progressedSeries(logs, STRENGTH_LIFT_SLUGS.bench as ExerciseId),
+    deadlift: progressedSeries(logs, STRENGTH_LIFT_SLUGS.deadlift as ExerciseId),
   }
 }

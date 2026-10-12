@@ -103,3 +103,29 @@ describe('the measured maxes', () => {
     expect(measured['bench-press' as ExerciseId]).toBeUndefined()
   })
 })
+
+describe('a step up the bar', () => {
+  const squat = 'low-bar-squat'
+
+  it('never reads as weaker when the reps reset', () => {
+    const trend = strengthTrend([
+      log('2026-09-01', [entry(squat, 225, 10)]),
+      log('2026-09-08', [entry(squat, 235, 5)]),
+    ])
+    expect(trend.squat[1]?.value).toBe(trend.squat[0]?.value)
+    expect(
+      measuredMaxes(
+        [log('2026-09-01', [entry(squat, 225, 10)]), log('2026-09-08', [entry(squat, 235, 5)])],
+        () => false,
+      )[squat as ExerciseId],
+    ).toBe(trend.squat[0]?.value)
+  })
+
+  it('still reads a worse session at the same bar as lower', () => {
+    const trend = strengthTrend([
+      log('2026-09-01', [entry(squat, 225, 8)]),
+      log('2026-09-08', [entry(squat, 225, 5)]),
+    ])
+    expect(trend.squat[1]?.value).toBeLessThan(trend.squat[0]?.value ?? 0)
+  })
+})
