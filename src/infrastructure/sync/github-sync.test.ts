@@ -130,14 +130,14 @@ describe('syncing two devices through one file', () => {
   it('writes the calendar ahead beside the records, and again only when it changes', async () => {
     const github = fakeGitHub()
     const phone = await device('sync-upcoming')
-    const today = [{ date: '2026-09-01', title: 'Tuesday — Legs', exercises: [] }]
+    const today = [{ date: '2026-09-01', title: 'Tuesday â€” Legs', exercises: [] }]
     await syncWithGitHub(target, phone, { ...options, upcoming: today }, github.fetchFn)
     expect(JSON.parse(github.text() ?? '{}')).toMatchObject({ upcoming: today })
 
     await syncWithGitHub(target, phone, { ...options, upcoming: today }, github.fetchFn)
     expect(github.writes()).toBe(1)
 
-    const tomorrow = [{ date: '2026-09-02', title: 'Wednesday — Upper', exercises: [] }]
+    const tomorrow = [{ date: '2026-09-02', title: 'Wednesday â€” Upper', exercises: [] }]
     await syncWithGitHub(target, phone, { ...options, upcoming: tomorrow }, github.fetchFn)
     expect(github.writes()).toBe(2)
     expect(JSON.parse(github.text() ?? '{}')).toMatchObject({ upcoming: tomorrow })
@@ -146,7 +146,7 @@ describe('syncing two devices through one file', () => {
   it("keeps the file's calendar when this device has none to offer", async () => {
     const github = fakeGitHub()
     const phone = await device('sync-upcoming-kept')
-    const today = [{ date: '2026-09-01', title: 'Tuesday — Legs', exercises: [] }]
+    const today = [{ date: '2026-09-01', title: 'Tuesday â€” Legs', exercises: [] }]
     await syncWithGitHub(target, phone, { ...options, upcoming: today }, github.fetchFn)
 
     await phone.workouts.restoreMany([aWorkout({ updatedAt: '2026-09-01T08:00:00.000Z' })])

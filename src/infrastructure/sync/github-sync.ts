@@ -92,7 +92,7 @@ export function isNewerPosition(
 /**
  * The calendar ahead travels beside the position for the same reason, and
  * one more: it is written for readers that are not LiftOS (Jarvis shows
- * today's session from it). Never read back � each device derives its own.
+ * today's session from it). Never read back — each device derives its own.
  */
 export interface SyncOptions extends ExportOptions {
   readonly upcoming?: readonly UpcomingSession[]
