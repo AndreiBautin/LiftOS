@@ -1,4 +1,4 @@
-import { Search } from 'lucide-react'
+import { Activity, CalendarDays, Dumbbell, LayoutGrid, Search } from 'lucide-react'
 import { MUSCLE_GROUP_LABELS, type MuscleGroup } from '@/domain/exercises/taxonomy'
 import { useServices, useSettings } from '@/app/context'
 import { toDayKey } from '@/domain/time/day'
@@ -126,7 +126,7 @@ function Palette({ onClose }: { readonly onClose: () => void }) {
         if (event.target === event.currentTarget) onClose()
       }}
     >
-      <div className="card w-full max-w-lg overflow-hidden p-0">
+      <div className="palette-panel w-full max-w-lg overflow-hidden rounded-2xl">
         <label className="border-ink-800 flex items-center gap-3 border-b px-4">
           <Search size={16} className="text-ink-500 shrink-0" aria-hidden />
           <span className="sr-only">Go to</span>
@@ -217,12 +217,31 @@ function Palette({ onClose }: { readonly onClose: () => void }) {
                 go(item)
               }}
               className={cn(
-                'flex cursor-pointer items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-sm',
-                index === at ? 'bg-accent-500/15 text-ink-50' : 'text-ink-300',
+                'palette-option flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm',
+                index === at ? 'palette-option-on text-ink-50' : 'text-ink-300',
               )}
             >
-              <span className="truncate">{item.label}</span>
+              <span
+                className="bg-ink-850 text-ink-300 flex size-7 shrink-0 items-center justify-center rounded-lg"
+                aria-hidden
+              >
+                {item.kind === 'Page' ? (
+                  <LayoutGrid size={14} />
+                ) : item.kind === 'Exercise' ? (
+                  <Dumbbell size={14} />
+                ) : item.kind === 'Muscle' ? (
+                  <Activity size={14} />
+                ) : (
+                  <CalendarDays size={14} />
+                )}
+              </span>
+              <span className="min-w-0 flex-1 truncate">{item.label}</span>
               <span className="text-ink-500 shrink-0 text-xs">{item.kind}</span>
+              {index === at && (
+                <kbd className="text-ink-300 border-ink-700 hidden rounded border px-1 text-[0.65rem] sm:inline">
+                  ↵
+                </kbd>
+              )}
             </li>
           ))}
         </ul>
