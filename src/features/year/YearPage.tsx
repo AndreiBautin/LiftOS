@@ -154,9 +154,9 @@ function MonthSquares({
             key={day}
             title={days[day] === undefined ? day : `${day}: ${String(days[day])} sets`}
             className={cn(
-              'aspect-square rounded-[3px]',
+              'year-day aspect-square rounded-[3px]',
               day > today && 'opacity-30',
-              day === today && 'ring-ink-50 ring-1',
+              day === today && 'year-today ring-ink-50 ring-1',
             )}
             style={{ background: shade(days[day] ?? 0) }}
           ></li>

@@ -2061,3 +2061,35 @@ main {
     translate: 100% 0;
   }
 }
+
+/* A year's day answers a pointer — it lifts and brightens under it, with
+   its sets in the title — and today glows once when the page opens. */
+@media (hover: hover) {
+  .year-day {
+    transition:
+      scale var(--dur-fast) var(--ease-spring),
+      filter var(--dur-fast) ease-out;
+  }
+
+  .year-day:hover {
+    scale: 1.6;
+    filter: brightness(1.4);
+    position: relative;
+    z-index: 1;
+  }
+}
+
+.year-today {
+  /* Not `both`: the ring is a box-shadow too, and holding the end frame
+     would wipe it. */
+  animation: today-glow 1800ms var(--ease-out) 400ms;
+}
+
+@keyframes today-glow {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--color-accent-400) 80%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 8px transparent;
+  }
+}
