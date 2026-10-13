@@ -1,5 +1,6 @@
 import {
   ACCENT,
+  DISPLAY,
   FONT,
   GOLD,
   H,
@@ -47,7 +48,7 @@ export function drawWallCard(args: {
   ctx.font = `600 30px ${FONT}`
   ctx.fillText('RECORDS', left, 130)
   ctx.fillStyle = INK_50
-  ctx.font = `700 92px ${FONT}`
+  ctx.font = `700 92px ${DISPLAY}`
   ctx.fillText('The wall', left, 236)
   ctx.fillStyle = INK_300
   ctx.font = `400 36px ${FONT}`
@@ -73,7 +74,7 @@ export function drawWallCard(args: {
     ctx.font = `500 26px ${FONT}`
     ctx.fillText(fit(ctx, tile.name, width - pad * 2), x + pad, y + 50)
     ctx.fillStyle = tile.fresh ? GOLD : INK_50
-    ctx.font = `700 54px ${FONT}`
+    ctx.font = `700 54px ${DISPLAY}`
     ctx.fillText(tile.load, x + pad, y + 126, width - pad * 2)
     ctx.fillStyle = INK_500
     ctx.font = `400 24px ${FONT}`

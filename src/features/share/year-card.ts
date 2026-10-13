@@ -1,5 +1,6 @@
 import {
   ACCENT,
+  DISPLAY,
   FONT,
   H,
   INK_300,
@@ -46,7 +47,7 @@ export function drawYearCard(card: YearCard): Promise<Blob> {
   ctx.font = `600 30px ${FONT}`
   ctx.fillText('THE YEAR', left, 130)
   ctx.fillStyle = INK_50
-  ctx.font = `700 112px ${FONT}`
+  ctx.font = `700 112px ${DISPLAY}`
   ctx.fillText(card.year, left, 246)
 
   const figures: readonly (readonly [string, string])[] = [
@@ -61,7 +62,7 @@ export function drawYearCard(card: YearCard): Promise<Blob> {
     ctx.font = `600 24px ${FONT}`
     ctx.fillText(label, x, 320)
     ctx.fillStyle = INK_50
-    ctx.font = `700 54px ${FONT}`
+    ctx.font = `700 54px ${DISPLAY}`
     ctx.fillText(value, x, 384)
   })
 

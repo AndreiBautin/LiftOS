@@ -54,6 +54,12 @@ export interface ShareCard {
 export const W = 1080
 export const H = 1350
 export const FONT = "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif"
+/**
+ * The app's display face for the big figures, as on screen. The page has
+ * already loaded it for its own headings by the time anything is shared;
+ * if it has not, the canvas falls back to FONT.
+ */
+export const DISPLAY = `'Space Grotesk Variable', ${FONT}`
 export const INK_50 = '#f2f4f8'
 export const INK_300 = '#aab1bf'
 export const INK_500 = '#79808f'
@@ -72,6 +78,20 @@ export function paintBackground(ctx: CanvasRenderingContext2D): void {
   glow.addColorStop(1, 'rgba(92, 202, 217, 0)')
   ctx.fillStyle = glow
   ctx.fillRect(0, 0, W, H)
+  const low = ctx.createRadialGradient(0, H, 0, 0, H, W * 0.9)
+  low.addColorStop(0, 'rgba(150, 120, 230, 0.16)')
+  low.addColorStop(1, 'rgba(150, 120, 230, 0)')
+  ctx.fillStyle = low
+  ctx.fillRect(0, 0, W, H)
+  // A frame of light, cyan to violet, the way the app's surfaces catch it.
+  const frame = ctx.createLinearGradient(0, 0, W, H)
+  frame.addColorStop(0, 'rgba(92, 202, 217, 0.55)')
+  frame.addColorStop(1, 'rgba(150, 120, 230, 0.35)')
+  ctx.strokeStyle = frame
+  ctx.lineWidth = 3
+  ctx.beginPath()
+  ctx.roundRect(24, 24, W - 48, H - 48, 40)
+  ctx.stroke()
 }
 
 /** A canvas the size of every share image, and its blob once drawn. */
@@ -114,7 +134,7 @@ export function drawShareCard(card: ShareCard): Promise<Blob> {
 
   y += 100
   ctx.fillStyle = INK_50
-  ctx.font = `700 92px ${FONT}`
+  ctx.font = `700 92px ${DISPLAY}`
   // The crest holds the top corner, so a title beside it wraps short of it.
   const titleWidth = card.crest === undefined ? W - left * 2 : W - left - 340
   y = wrap(ctx, card.title, left, y, titleWidth, 104)
@@ -139,7 +159,7 @@ export function drawShareCard(card: ShareCard): Promise<Blob> {
     ctx.font = `600 26px ${FONT}`
     ctx.fillText(label, x, y)
     ctx.fillStyle = INK_50
-    ctx.font = `700 56px ${FONT}`
+    ctx.font = `700 56px ${DISPLAY}`
     ctx.fillText(value, x, y + 72, column - 32)
   })
   y += 120
@@ -255,7 +275,7 @@ function drawStaircase(
   ctx.beginPath()
   ctx.arc(x + width - step / 2, at(last), 12, 0, Math.PI * 2)
   ctx.fill()
-  ctx.font = `700 40px ${FONT}`
+  ctx.font = `700 40px ${DISPLAY}`
   ctx.textAlign = 'right'
   ctx.fillText(String(last), x + width, at(last) - 28)
   ctx.textAlign = 'left'
