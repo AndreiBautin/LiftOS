@@ -1770,3 +1770,21 @@ svg.lucide {
     --sweep: 0%;
   }
 }
+
+/* A grouped inset list, the settings idiom: rows edge to edge inside one
+   card, parted by hairlines inset from the left, a row lit while held. */
+.inset-list > .inset-row {
+  padding: 0.75rem 1rem;
+  min-height: 3.25rem;
+  transition: background-color var(--dur-fast) ease-out;
+}
+
+.inset-list > .inset-row + .inset-row {
+  border-top: 1px solid color-mix(in oklab, var(--color-ink-800) 70%, transparent);
+  margin-left: 1rem;
+  padding-left: 0;
+}
+
+.inset-list > .inset-row:active {
+  background-color: color-mix(in oklab, var(--color-ink-800) 45%, transparent);
+}

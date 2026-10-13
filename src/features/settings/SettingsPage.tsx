@@ -223,7 +223,7 @@ export function SettingsPage() {
         than the one that shipped.
       */}
           <Section id="session" title="During a session">
-            <Card className="space-y-3">
+            <Card className="inset-list p-0 sm:p-0 lg:p-0">
               <Toggle
                 label="Rest timer"
                 checked={settings.restTimerEnabled}
@@ -670,9 +670,16 @@ function Toggle({
   readonly checked: boolean
   readonly onChange: (value: boolean) => void
 }) {
+  /* "Title — what it does": the clause after the dash is a detail line. */
+  const [title, detail] = label.split(' — ') as [string, string | undefined]
   return (
-    <label className="tap-target flex cursor-pointer items-center justify-between gap-3">
-      <span className="text-ink-300 text-sm">{label}</span>
+    <label className="inset-row tap-target flex cursor-pointer items-center justify-between gap-3">
+      <span className="min-w-0">
+        <span className="text-ink-100 block text-sm font-medium">{title}</span>
+        {detail === undefined ? null : (
+          <span className="text-ink-500 mt-0.5 block text-xs first-letter:uppercase">{detail}</span>
+        )}
+      </span>
       {/*
         A switch, not the platform's checkbox: the native box rendered as
         a bright system-blue square, the one control on the screen that
