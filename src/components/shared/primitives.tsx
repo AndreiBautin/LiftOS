@@ -1,5 +1,6 @@
 import type { VariantProps } from 'class-variance-authority'
 import type { ButtonHTMLAttributes, HTMLAttributes, InputHTMLAttributes, ReactNode } from 'react'
+import type { CSSProperties } from 'react'
 
 import { cn } from '@/lib/cn'
 
@@ -118,11 +119,15 @@ export function CardHeading({
   readonly title: string
   readonly action?: ReactNode
 }) {
+  const shift = hueShiftOf(title)
   return (
     <div className="mb-3 flex items-center justify-between gap-2">
-      <h2 className="text-ink-500 flex items-center gap-2 text-sm">
+      <h2 className="text-ink-300 flex items-center gap-2 text-sm font-medium">
         {icon !== undefined && (
-          <span className="bg-accent-500/10 text-accent-400 flex size-6 shrink-0 items-center justify-center rounded-md">
+          <span
+            className="card-badge flex size-7 shrink-0 items-center justify-center rounded-lg"
+            style={{ '--badge-hue': `calc(var(--accent-hue) + ${String(shift)})` } as CSSProperties}
+          >
             {icon}
           </span>
         )}
@@ -131,6 +136,18 @@ export function CardHeading({
       {action !== undefined && <div className="flex items-center gap-1">{action}</div>}
     </div>
   )
+}
+
+/**
+ * Each card's badge turns the accent a little its own way — the same
+ * card the same hue on every open, two cards side by side told apart —
+ * within ±40° so the set still reads as one palette and never reaches
+ * the green that means "good" or the violet that means deload.
+ */
+function hueShiftOf(title: string): number {
+  let hash = 0
+  for (const char of title) hash = (hash * 31 + char.charCodeAt(0)) | 0
+  return (Math.abs(hash) % 9) * 10 - 40
 }
 
 interface NumberFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
