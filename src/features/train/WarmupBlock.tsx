@@ -71,7 +71,7 @@ export function WarmupBlock({
   }
 
   return (
-    <section className="card p-4 lg:p-6" aria-labelledby="exercise-name">
+    <section className="card p-4 sm:p-5 lg:p-6" aria-labelledby="exercise-name">
       <div className="mb-1 flex items-center gap-2">
         <span className="bg-cool-500/15 text-cool-500 flex size-6 items-center justify-center rounded-md">
           <Flame size={14} aria-hidden />

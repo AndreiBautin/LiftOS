@@ -115,6 +115,19 @@
     'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue',
     Arial, sans-serif;
   --font-display: 'Space Grotesk Variable', var(--font-sans);
+  /* A fluid display ramp: the sizes a glance lands on grow a little with
+     the window, so a desktop is not a phone drawn larger and a phone keeps
+     exactly the sizes it had at 375. Body sizes stay fixed — reading text
+     that resizes with the window reads as a bug. */
+  --text-2xl: clamp(1.5rem, 1.38rem + 0.5vw, 1.75rem);
+  --text-2xl--line-height: 1.2;
+  --text-3xl: clamp(1.875rem, 1.7rem + 0.75vw, 2.25rem);
+  --text-3xl--line-height: 1.12;
+  --text-4xl: clamp(2.25rem, 2rem + 1vw, 2.75rem);
+  --text-4xl--line-height: 1.05;
+  --text-5xl: clamp(3rem, 2.6rem + 1.6vw, 3.75rem);
+  --text-5xl--line-height: 1;
+
   --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
 }
 
@@ -552,6 +565,7 @@
   :where(h1, h2) {
     font-family: var(--font-display);
     letter-spacing: -0.02em;
+    font-feature-settings: 'ss01';
     text-wrap: balance;
   }
 

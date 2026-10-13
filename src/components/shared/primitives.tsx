@@ -38,7 +38,7 @@ export function Button({ className, variant, size, full, ...props }: ButtonProps
  * everywhere at once.
  */
 export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('card p-4 lg:p-6', className)} {...props} />
+  return <div className={cn('card p-4 sm:p-5 lg:p-6', className)} {...props} />
 }
 
 interface SectionProps {

@@ -14,7 +14,11 @@ export function SwipePager({
 }) {
   const swipe = usePageSwipe(onNext, onPrevious)
   return (
-    <section className="card touch-pan-y p-4 lg:p-6" aria-labelledby="exercise-name" {...swipe}>
+    <section
+      className="card touch-pan-y p-4 sm:p-5 lg:p-6"
+      aria-labelledby="exercise-name"
+      {...swipe}
+    >
       {children}
     </section>
   )
