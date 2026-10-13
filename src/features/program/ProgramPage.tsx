@@ -198,7 +198,7 @@ export function ProgramPage() {
         plan does, so the heading says what kind of work a row is and the
         row can spend its width on the name and the numbers.
       */}
-      <nav aria-label="Days" className="mb-5">
+      <nav aria-label="Days" className="hero-panel mb-5 p-2.5 sm:p-3">
         <ol
           className="grid gap-1.5 sm:gap-2"
           style={{ gridTemplateColumns: `repeat(${String(week.days.length)}, minmax(0, 1fr))` }}
@@ -216,7 +216,7 @@ export function ProgramPage() {
                     'tap-target flex flex-col items-center rounded-xl border px-1 py-2 text-center transition-colors',
                     'relative',
                     isToday
-                      ? 'border-accent-500/60 bg-accent-500/10 text-ink-50'
+                      ? 'week-today border-accent-500/60 bg-accent-500/15 text-ink-50'
                       : isDone
                         ? 'border-good-500/30 bg-good-500/10 text-ink-100'
                         : 'border-ink-800 bg-ink-900/60 text-ink-300 hover:border-ink-700',
