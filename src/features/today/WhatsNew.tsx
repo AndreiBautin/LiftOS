@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { Gift, X } from 'lucide-react'
 import { useState } from 'react'
 
@@ -33,7 +34,7 @@ export function WhatsNew() {
   }
 
   return (
-    <Card className="border-accent-500/35">
+    <Card className="whats-new">
       <div className="flex items-center justify-between gap-3">
         <p className="text-accent-400 flex items-center gap-1.5 text-xs font-semibold tracking-[0.12em] uppercase">
           <Gift size={14} aria-hidden />
@@ -44,8 +45,12 @@ export function WhatsNew() {
         </Button>
       </div>
       <ul className="mt-2 space-y-1.5">
-        {(open ? latest.items : latest.items.slice(0, 2)).map((item) => (
-          <li key={item} className="text-ink-100 flex gap-2 text-sm">
+        {(open ? latest.items : latest.items.slice(0, 2)).map((item, at) => (
+          <li
+            key={item}
+            className="record-in text-ink-100 flex gap-2 text-sm"
+            style={{ '--i': at } as CSSProperties}
+          >
             <span className="bg-accent-400 mt-2 size-1 shrink-0 rounded-full" aria-hidden />
             {item}
           </li>

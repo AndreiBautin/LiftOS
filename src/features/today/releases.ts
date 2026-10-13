@@ -1,6 +1,17 @@
 /** Release notes, newest first; `WhatsNew` shows the first once. */
 export const RELEASES: readonly { readonly id: string; readonly items: readonly string[] }[] = [
   {
+    id: '2026-10-13',
+    items: [
+      'A sleeker look throughout: one motion style, lit sheets you can drag closed, and a hero with depth.',
+      'Set rows are bigger with a glowing one-tap log, and a swipe says Log or Skip as you drag.',
+      'The rest timer is a floating island; focus mode glows with the time left.',
+      'Finishing a session celebrates: the crest lands, records fan in edged in gold.',
+      'Settings is a grouped list, numbers edited in place, and captions read more clearly.',
+      'A muscle’s page opens on the body with that muscle lit; history rows carry each session’s crest.',
+    ],
+  },
+  {
     id: '2026-10-11',
     items: [
       'A set repeated across straight sets is read with reps in reserve, so the estimated max no longer treats it as a limit set.',
