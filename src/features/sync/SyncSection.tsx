@@ -1,6 +1,7 @@
 import { Cloud, RefreshCw, Unplug } from 'lucide-react'
 import { useId, useState, useSyncExternalStore } from 'react'
 
+import { cn } from '@/lib/cn'
 import { useServices, useSettings } from '@/app/context'
 import { Button, Card, Section } from '@/components/shared/primitives'
 import { holdsSampleData } from '@/domain/settings/settings'
@@ -71,9 +72,9 @@ export function SyncSection() {
       title="Sync across devices"
       description="Through a private GitHub repository of your own — free, and nothing of ours in between."
     >
-      <Card className="space-y-4">
+      <Card className="inset-list p-0 sm:p-0 lg:p-0">
         {connected === undefined ? (
-          <>
+          <div className="inset-row space-y-4">
             <ol className="text-ink-300 list-decimal space-y-1 pl-5 text-xs">
               <li>Create a private repository on GitHub, for example “lifeos-data”.</li>
               <li>
@@ -161,31 +162,41 @@ export function SyncSection() {
               <Cloud size={16} aria-hidden />
               {sampleHere ? 'Clear sample and connect' : 'Connect and sync'}
             </Button>
-          </>
+          </div>
         ) : (
           <>
-            <p className="text-ink-300 text-sm">
-              Syncing with{' '}
-              <span className="text-ink-50 font-medium">
+            <div className="inset-row flex items-center justify-between gap-3">
+              <span className="text-ink-100 text-sm font-medium">Repository</span>
+              <span className="text-ink-300 min-w-0 truncate text-sm">
                 {connected.owner}/{connected.repo}
-              </span>{' '}
-              on launch, on every page change and whenever the app comes back to the front.
-            </p>
+              </span>
+            </div>
 
-            <p
-              className={sync.phase === 'error' ? 'text-bad-500 text-xs' : 'text-ink-500 text-xs'}
-              role="status"
-            >
-              {sync.phase === 'syncing'
-                ? 'Syncing…'
-                : sync.phase === 'error'
-                  ? (sync.message ?? 'Sync failed.')
-                  : connected.lastSyncedAt === undefined
-                    ? 'Not synced yet.'
-                    : `Last synced ${describeAgo(connected.lastSyncedAt, clock.now())}.`}
-            </p>
+            <div className="inset-row flex items-center justify-between gap-3">
+              <span className="min-w-0">
+                <span className="text-ink-100 block text-sm font-medium">Status</span>
+                <span className="text-ink-500 block text-xs">
+                  On launch, each page change and on coming back to the app
+                </span>
+              </span>
+              <p
+                className={cn(
+                  'min-w-0 text-right text-sm',
+                  sync.phase === 'error' ? 'text-bad-500' : 'text-ink-300',
+                )}
+                role="status"
+              >
+                {sync.phase === 'syncing'
+                  ? 'Syncing…'
+                  : sync.phase === 'error'
+                    ? (sync.message ?? 'Sync failed.')
+                    : connected.lastSyncedAt === undefined
+                      ? 'Not synced yet.'
+                      : `Synced ${describeAgo(connected.lastSyncedAt, clock.now())}`}
+              </p>
+            </div>
 
-            <div className="flex gap-2">
+            <div className="inset-row flex gap-2">
               <Button
                 variant="outline"
                 className="flex-1"
