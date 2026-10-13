@@ -5,6 +5,7 @@ import { History, RotateCcw, Search, Star, Trash2 } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 
 import { useServices, useSettings } from '@/app/context'
+import { MoveGlyph } from '@/features/glyphs/MoveGlyph'
 import type { WorkoutId } from '@/domain/ids/ids'
 import { sessionRecords } from '@/domain/logging/records'
 import {
@@ -140,7 +141,7 @@ export function TrainingHistory() {
     return (
       <>
         {undoToast}
-        <Empty title="Nothing logged yet">
+        <Empty title="Nothing logged yet" art={<MoveGlyph glyph="squat" size={32} />}>
           <p>Finish a session and it will appear here.</p>
         </Empty>
       </>

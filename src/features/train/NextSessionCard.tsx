@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { Badge, Card, CardHeading, Empty } from '@/components/shared/primitives'
+import { MoveGlyph } from '@/features/glyphs/MoveGlyph'
 import { buttonStyles } from '@/components/shared/styles'
 import { useSettings } from '@/app/context'
 
@@ -32,7 +33,7 @@ export function NextSessionCard() {
 
   if (day === undefined) {
     return (
-      <Empty title="Building your session">
+      <Empty title="Building your session" art={<MoveGlyph glyph="bench" size={32} />}>
         <p>One moment — the week is put together from your routine.</p>
       </Empty>
     )

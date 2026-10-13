@@ -1719,3 +1719,37 @@ html {
 svg.lucide {
   stroke-width: 1.75;
 }
+
+/* An empty slot's picture: the thing that will fill it, on a soft disc
+   of the accent with a ring that draws round it once. */
+.empty-art {
+  position: relative;
+  background: radial-gradient(
+    circle,
+    color-mix(in oklab, var(--color-accent-500) 16%, transparent),
+    transparent 70%
+  );
+  animation: figure-in var(--dur-slow) var(--ease-out) both;
+}
+
+.empty-art::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid color-mix(in oklab, var(--color-accent-500) 35%, transparent);
+  mask: conic-gradient(#000 var(--sweep, 100%), transparent 0);
+  animation: empty-ring 900ms var(--ease-out) 120ms both;
+}
+
+@property --sweep {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 100%;
+}
+
+@keyframes empty-ring {
+  from {
+    --sweep: 0%;
+  }
+}

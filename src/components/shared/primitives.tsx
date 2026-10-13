@@ -185,9 +185,12 @@ export function NumberField({ label, hint, className, id, ...props }: NumberFiel
  */
 export function Empty({
   title,
+  art,
   children,
 }: {
   readonly title: string
+  /** A picture of what will fill the slot — a movement glyph, an icon. A plus without one. */
+  readonly art?: ReactNode
   readonly children?: ReactNode
 }) {
   return (
@@ -199,12 +202,21 @@ export function Empty({
           'radial-gradient(80% 60% at 50% 0%, color-mix(in oklab, var(--color-accent-500) 6%, transparent), transparent 70%)',
       }}
     >
-      <span
-        aria-hidden
-        className="border-ink-700 text-ink-700 mb-3 flex h-8 w-8 items-center justify-center rounded-full border border-dashed text-lg leading-none"
-      >
-        +
-      </span>
+      {art === undefined ? (
+        <span
+          aria-hidden
+          className="border-ink-700 text-ink-700 mb-3 flex h-8 w-8 items-center justify-center rounded-full border border-dashed text-lg leading-none"
+        >
+          +
+        </span>
+      ) : (
+        <span
+          aria-hidden
+          className="empty-art text-accent-400 mb-4 flex size-16 items-center justify-center rounded-full"
+        >
+          {art}
+        </span>
+      )}
       <p className="text-ink-100 font-medium">{title}</p>
       {children !== undefined && (
         <div className="text-ink-500 mt-1.5 max-w-prose text-sm">{children}</div>
