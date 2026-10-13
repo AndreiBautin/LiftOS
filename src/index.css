@@ -1846,3 +1846,18 @@ svg.lucide {
 .group:active .quick-log {
   transform: scale(0.88);
 }
+
+/* While a sheet is up the page behind it steps back — a touch smaller and
+   dimmer — so the sheet reads as a layer above it rather than a panel
+   pasted on. */
+main {
+  transition:
+    scale var(--dur-slow) var(--ease-out),
+    filter var(--dur-slow) var(--ease-out);
+  transform-origin: 50% 0;
+}
+
+:root[data-sheet] main {
+  scale: 0.96;
+  filter: brightness(0.7) saturate(0.85);
+}

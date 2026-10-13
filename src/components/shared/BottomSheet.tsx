@@ -61,7 +61,9 @@ export function BottomSheet({
       }
     }
     window.addEventListener('keydown', onKey)
+    document.documentElement.dataset.sheet = ''
     return () => {
+      delete document.documentElement.dataset.sheet
       window.removeEventListener('keydown', onKey)
       if (opener instanceof HTMLElement) opener.focus()
     }
