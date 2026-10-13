@@ -1,21 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 
-import { MonthPage } from '@/features/month/MonthPage'
-import { BlockPage } from '@/features/block/BlockPage'
-import { CalculatorPage } from '@/features/calculator/CalculatorPage'
-import { CompareLiftsPage } from '@/features/compare/CompareLiftsPage'
-import { LibraryPage } from '@/features/library/LibraryPage'
-import { YearPage } from '@/features/year/YearPage'
-import { MuscleYearPage } from '@/features/muscle/MuscleYearPage'
-import { MusclePage } from '@/features/muscle/MusclePage'
-import { WrappedPage } from '@/features/wrapped/WrappedPage'
-import { RecordsPage } from '@/features/records/RecordsPage'
 import { HomePage } from '@/features/today/HomePage'
-import { ProgramPage } from '@/features/program/ProgramPage'
-import { SessionPage } from '@/features/history/SessionPage'
-import { ExercisePage } from '@/features/exercise/ExercisePage'
 import { NotFoundPage } from '@/features/not-found/NotFoundPage'
-import { SettingsPage } from '@/features/settings/SettingsPage'
 
 import { AppShell } from './layout/AppShell'
 import { RouteError } from './RouteError'
@@ -25,6 +11,13 @@ import { RouteError } from './RouteError'
  * for asset paths, set once in vite.config.ts. Hardcoding a basename here
  * is the classic way a project-page deploy ends up serving its assets
  * correctly and 404ing on every route.
+ */
+/*
+ * Every screen but Today loads on demand. Today is the page the app opens
+ * on, so it stays in the main bundle; the rest are reached from it and
+ * fetch their chunk on the way. The service worker precaches every chunk,
+ * so an installed app still opens them offline, and `stale-chunk.ts`
+ * reloads once if a deploy has removed the chunk an open page asks for.
  */
 export const router = createBrowserRouter(
   [
@@ -80,24 +73,98 @@ export const router = createBrowserRouter(
          * the week actually looks like, which is Program.
          */
         { path: 'plan', element: <Navigate to="/program" replace /> },
-        { path: 'program', element: <ProgramPage /> },
-        { path: 'session/:id', element: <SessionPage /> },
-        { path: 'exercise/:id', element: <ExercisePage /> },
-        { path: 'records', element: <RecordsPage /> },
-        { path: 'exercises', element: <LibraryPage /> },
-        { path: 'block', element: <BlockPage /> },
-        { path: 'year', element: <YearPage /> },
-        { path: 'year/:year', element: <YearPage /> },
-        { path: 'compare', element: <CompareLiftsPage /> },
-        { path: 'calculator', element: <CalculatorPage /> },
-        { path: 'muscle/:id', element: <MusclePage /> },
-        { path: 'muscles', element: <MuscleYearPage /> },
-        { path: 'muscles/:year', element: <MuscleYearPage /> },
-        { path: 'wrapped/:period', element: <WrappedPage /> },
-        { path: 'month', element: <MonthPage /> },
-        { path: 'month/:month', element: <MonthPage /> },
+        {
+          path: 'program',
+          lazy: () =>
+            import('@/features/program/ProgramPage').then((m) => ({ Component: m.ProgramPage })),
+        },
+        {
+          path: 'session/:id',
+          lazy: () =>
+            import('@/features/history/SessionPage').then((m) => ({ Component: m.SessionPage })),
+        },
+        {
+          path: 'exercise/:id',
+          lazy: () =>
+            import('@/features/exercise/ExercisePage').then((m) => ({ Component: m.ExercisePage })),
+        },
+        {
+          path: 'records',
+          lazy: () =>
+            import('@/features/records/RecordsPage').then((m) => ({ Component: m.RecordsPage })),
+        },
+        {
+          path: 'exercises',
+          lazy: () =>
+            import('@/features/library/LibraryPage').then((m) => ({ Component: m.LibraryPage })),
+        },
+        {
+          path: 'block',
+          lazy: () =>
+            import('@/features/block/BlockPage').then((m) => ({ Component: m.BlockPage })),
+        },
+        {
+          path: 'year',
+          lazy: () => import('@/features/year/YearPage').then((m) => ({ Component: m.YearPage })),
+        },
+        {
+          path: 'year/:year',
+          lazy: () => import('@/features/year/YearPage').then((m) => ({ Component: m.YearPage })),
+        },
+        {
+          path: 'compare',
+          lazy: () =>
+            import('@/features/compare/CompareLiftsPage').then((m) => ({
+              Component: m.CompareLiftsPage,
+            })),
+        },
+        {
+          path: 'calculator',
+          lazy: () =>
+            import('@/features/calculator/CalculatorPage').then((m) => ({
+              Component: m.CalculatorPage,
+            })),
+        },
+        {
+          path: 'muscle/:id',
+          lazy: () =>
+            import('@/features/muscle/MusclePage').then((m) => ({ Component: m.MusclePage })),
+        },
+        {
+          path: 'muscles',
+          lazy: () =>
+            import('@/features/muscle/MuscleYearPage').then((m) => ({
+              Component: m.MuscleYearPage,
+            })),
+        },
+        {
+          path: 'muscles/:year',
+          lazy: () =>
+            import('@/features/muscle/MuscleYearPage').then((m) => ({
+              Component: m.MuscleYearPage,
+            })),
+        },
+        {
+          path: 'wrapped/:period',
+          lazy: () =>
+            import('@/features/wrapped/WrappedPage').then((m) => ({ Component: m.WrappedPage })),
+        },
+        {
+          path: 'month',
+          lazy: () =>
+            import('@/features/month/MonthPage').then((m) => ({ Component: m.MonthPage })),
+        },
+        {
+          path: 'month/:month',
+          lazy: () =>
+            import('@/features/month/MonthPage').then((m) => ({ Component: m.MonthPage })),
+        },
         { path: 'today', element: <HomePage /> },
-        { path: 'settings', element: <SettingsPage /> },
+        {
+          path: 'settings',
+          lazy: () =>
+            import('@/features/settings/SettingsPage').then((m) => ({ Component: m.SettingsPage })),
+        },
         { path: '*', element: <NotFoundPage /> },
       ],
     },
