@@ -38,6 +38,7 @@ export function RipeCard() {
       <CardHeading
         icon={<TrendingUp size={16} aria-hidden />}
         title={`Ripe ${when === 'today' ? 'today' : when === 'tomorrow' ? 'tomorrow' : 'next session'}`}
+        figure={`${String(ripe.length)} ${ripe.length === 1 ? 'lift' : 'lifts'}`}
       />
       <ul className="space-y-2.5">
         {ripe.map((lift) => {
