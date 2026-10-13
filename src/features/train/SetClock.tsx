@@ -67,7 +67,7 @@ export function SetClock() {
   return (
     <div className="well mt-3 px-3 py-2.5">
       <div className="flex items-center gap-2">
-        <Timer size={15} className="text-ink-500 shrink-0" aria-hidden />
+        <Timer size={16} className="text-ink-500 shrink-0" aria-hidden />
         <div className="flex flex-1 flex-wrap gap-1" role="group" aria-label="Tempo">
           {[{ label: 'No tempo', tempo: undefined }, ...TEMPOS].map((option) => {
             const on = option.tempo === tempo
@@ -111,7 +111,7 @@ export function SetClock() {
             running ? 'bg-bad-500/15 text-bad-500' : 'bg-accent-500/15 text-accent-400',
           )}
         >
-          {running ? <Square size={13} aria-hidden /> : null}
+          {running ? <Square size={14} aria-hidden /> : null}
           {running ? 'Stop' : 'Time the set'}
         </button>
       </div>

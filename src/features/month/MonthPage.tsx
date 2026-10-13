@@ -290,7 +290,7 @@ function Change({ by, percentOf }: { readonly by: number; readonly percentOf?: n
     <span
       className={cn('inline-flex items-center gap-0.5', by > 0 ? 'text-good-500' : 'text-ink-500')}
     >
-      <Icon size={11} aria-hidden />
+      <Icon size={12} aria-hidden />
       {text}
     </span>
   )

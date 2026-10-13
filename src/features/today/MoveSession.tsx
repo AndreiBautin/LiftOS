@@ -62,7 +62,7 @@ export function MoveSession({
                 {weekdayOf(day)}
                 {holds !== undefined && (
                   <span className="flex items-center gap-0.5 text-[0.6rem] font-normal">
-                    <ArrowLeftRight size={9} aria-hidden /> swap
+                    <ArrowLeftRight size={12} aria-hidden /> swap
                   </span>
                 )}
               </button>

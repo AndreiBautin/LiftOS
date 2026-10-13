@@ -113,7 +113,7 @@ export function SwipeRow({
         >
           {dx > 0 ? (
             <Check
-              size={22}
+              size={20}
               className="text-good-500"
               style={{ transform: `scale(${String(0.6 + progress * 0.5)})`, opacity: progress }}
             />

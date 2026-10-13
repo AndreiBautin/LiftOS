@@ -1121,9 +1121,9 @@ function StallHint({
       to={`/exercise/${exerciseId}`}
       className="text-warn-500 hover:text-warn-500/80 mt-2 flex items-center gap-1.5 text-xs font-medium"
     >
-      <TrendingDown size={13} aria-hidden />
+      <TrendingDown size={14} aria-hidden />
       Stalled for {sessionsWithoutProgress(tops)} sessions — see options
-      <ChevronRight size={13} aria-hidden />
+      <ChevronRight size={14} aria-hidden />
     </Link>
   )
 }
@@ -1278,7 +1278,7 @@ function SupersetLine({
   if (partner === undefined || other === undefined) return null
   return (
     <p className="text-accent-400 mt-1 flex items-center gap-2 text-xs">
-      <Link2 size={13} aria-hidden />
+      <Link2 size={14} aria-hidden />
       <span className="min-w-0 truncate">
         Superset {partner > index ? 'A1' : 'A2'} · with {nameOf(other.exerciseId)}
       </span>

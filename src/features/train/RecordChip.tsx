@@ -16,7 +16,7 @@ export function RecordChip({ kind }: { readonly kind: RecordKind }) {
       className="pr-chip numeric relative inline-flex items-center gap-1 overflow-hidden rounded-full px-2 py-0.5 text-xs font-semibold whitespace-nowrap"
       aria-label={`Personal record: ${RECORD_LABELS[kind]}`}
     >
-      <Star size={11} fill="currentColor" aria-hidden />
+      <Star size={12} fill="currentColor" aria-hidden />
       {RECORD_LABELS[kind]}
     </span>
   )

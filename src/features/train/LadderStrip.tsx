@@ -91,7 +91,7 @@ export function LadderStrip({
           state.kind === 'earned' ? 'text-accent-400 font-semibold' : 'text-ink-300',
         )}
       >
-        {state.kind === 'earned' && <TrendingUp size={13} aria-hidden />}
+        {state.kind === 'earned' && <TrendingUp size={14} aria-hidden />}
         {sentence(state, range, bump)}
       </p>
     </div>

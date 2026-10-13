@@ -84,7 +84,7 @@ export function RipeCard() {
                   }}
                   title="Heaviest bar yet"
                 >
-                  <Star size={10} aria-hidden fill="currentColor" />
+                  <Star size={12} aria-hidden fill="currentColor" />
                   Heaviest
                 </span>
               )}

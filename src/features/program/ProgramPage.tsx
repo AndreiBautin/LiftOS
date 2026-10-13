@@ -233,7 +233,7 @@ export function ProgramPage() {
                       className="bg-good-500 absolute -top-1.5 -right-1.5 flex size-4 items-center justify-center rounded-full text-black"
                       aria-hidden
                     >
-                      <Check size={11} strokeWidth={3} />
+                      <Check size={12} strokeWidth={3} />
                     </span>
                   )}
                   {isDone && <span className="sr-only">Done this week: </span>}

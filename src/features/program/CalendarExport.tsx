@@ -58,7 +58,7 @@ export function CalendarExport({
           setOpen(true)
         }}
       >
-        <CalendarPlus size={15} aria-hidden />
+        <CalendarPlus size={16} aria-hidden />
         <span className="hidden sm:inline">Calendar</span>
       </Button>
     )

@@ -125,7 +125,7 @@ export function LastWeekCard() {
           )}
           {records > 0 && (
             <span className="inline-flex items-center gap-1 text-[oklch(0.86_0.13_85)]">
-              <Star size={11} fill="currentColor" aria-hidden />
+              <Star size={12} fill="currentColor" aria-hidden />
               <span className="numeric font-semibold">{records}</span>
               {records === 1 ? 'record' : 'records'}
             </span>

@@ -422,7 +422,7 @@ function SessionRow({
                   className="numeric inline-flex shrink-0 items-center gap-0.5 text-xs font-semibold text-[oklch(0.86_0.13_85)]"
                   aria-label={`${String(records)} personal record${records === 1 ? '' : 's'}`}
                 >
-                  <Star size={11} fill="currentColor" aria-hidden />
+                  <Star size={12} fill="currentColor" aria-hidden />
                   {records}
                 </span>
               )}
@@ -459,7 +459,7 @@ function SessionRow({
               aria-label={`Delete ${described}`}
               className="tap-target text-ink-700 hover:text-bad-500 flex items-center justify-center rounded-lg transition-colors"
             >
-              <Trash2 size={15} aria-hidden />
+              <Trash2 size={16} aria-hidden />
             </button>
           )}
         </div>

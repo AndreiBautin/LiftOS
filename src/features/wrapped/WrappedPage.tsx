@@ -161,7 +161,7 @@ function Story({
             onClick={onClose}
             className="text-ink-50/80 tap-target flex items-center justify-center rounded-full"
           >
-            <X size={22} aria-hidden />
+            <X size={20} aria-hidden />
           </button>
         </div>
         <div

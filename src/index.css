@@ -1712,3 +1712,10 @@ html {
 .rest-island.rest-done {
   animation: rest-done 1600ms ease-in-out both;
 }
+
+/* One icon weight. Lucide draws at 2, which beside the hand-drawn
+   movement glyphs (1.7) read as two sets; 1.75 joins them. Sizes run on
+   a 12 · 14 · 16 · 18 · 20 grid and nothing between. */
+svg.lucide {
+  stroke-width: 1.75;
+}
