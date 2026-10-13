@@ -7,6 +7,7 @@ import {
 } from '@/infrastructure/backup/backup-service'
 import { mergeNewer, recordsFingerprint } from '@/infrastructure/backup/sync-merge'
 import type { ProgramPosition } from '@/domain/programs/position'
+import type { UpcomingSession } from '@/domain/programs/upcoming'
 import type { PositionRepository } from '@/domain/repositories/ports'
 
 import { GitHubSyncError, readFile, writeFile, type GitHubTarget } from './github-file'
@@ -88,10 +89,29 @@ export function isNewerPosition(
   return ours === undefined || theirs.updatedAt > (ours.updatedAt ?? '')
 }
 
+/**
+ * The calendar ahead travels beside the position for the same reason, and
+ * one more: it is written for readers that are not LiftOS (Jarvis shows
+ * today's session from it). Never read back � each device derives its own.
+ */
+export interface SyncOptions extends ExportOptions {
+  readonly upcoming?: readonly UpcomingSession[]
+}
+
+/** The `upcoming` a sync file carries, unread: it is only compared and passed on. */
+function upcomingInFile(text: string): unknown {
+  try {
+    const parsed: unknown = JSON.parse(text)
+    return (parsed as { readonly upcoming?: unknown } | null)?.upcoming
+  } catch {
+    return undefined
+  }
+}
+
 export async function syncWithGitHub(
   target: GitHubTarget,
   repositories: SyncRepositories,
-  options: ExportOptions,
+  options: SyncOptions,
   fetchFn: typeof fetch = fetch,
 ): Promise<SyncRun> {
   let pulled = 0
@@ -102,6 +122,7 @@ export async function syncWithGitHub(
 
     let remoteFingerprint: string | undefined
     let remotePosition: ProgramPosition | undefined
+    let remoteUpcoming: unknown
     if (remote !== undefined) {
       const parsed = parseBackup(remote.text)
       if (parsed.envelope === undefined) {
@@ -122,6 +143,7 @@ export async function syncWithGitHub(
       remoteFingerprint = recordsFingerprint(parsed.envelope.data)
 
       remotePosition = positionInFile(remote.text)
+      remoteUpcoming = upcomingInFile(remote.text)
       if (repositories.position !== undefined && remotePosition !== undefined) {
         if (isNewerPosition(remotePosition, await repositories.position.get())) {
           await repositories.position.restore(remotePosition)
@@ -130,17 +152,25 @@ export async function syncWithGitHub(
       }
     }
 
-    const local = await buildBackup(repositories, options)
+    // A device that could not derive the calendar carries the file's along.
+    const { upcoming: derived, ...exportOptions } = options
+    const upcoming: unknown = derived ?? remoteUpcoming
+    const local = await buildBackup(repositories, exportOptions)
     const localPosition = await repositories.position?.get()
     const samePosition = (localPosition?.updatedAt ?? '') === (remotePosition?.updatedAt ?? '')
-    if (remoteFingerprint === recordsFingerprint(local.data) && samePosition) {
+    const sameUpcoming = JSON.stringify(upcoming) === JSON.stringify(remoteUpcoming)
+    if (remoteFingerprint === recordsFingerprint(local.data) && samePosition && sameUpcoming) {
       return { pulled, purged, uploaded: false }
     }
 
+    const extras = {
+      ...(localPosition === undefined ? {} : { position: localPosition }),
+      ...(upcoming === undefined ? {} : { upcoming }),
+    }
     const body =
-      localPosition === undefined
+      Object.keys(extras).length === 0
         ? serialiseBackup(local)
-        : JSON.stringify({ ...local, position: localPosition }, null, 2)
+        : JSON.stringify({ ...local, ...extras }, null, 2)
 
     const outcome = await writeFile(
       target,

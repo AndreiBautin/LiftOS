@@ -3,6 +3,11 @@ import { useEffect, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
 
 import { useServices, useSettings } from '@/app/context'
+import { deriveProgram } from '@/application/use-cases/programs/current-program'
+import { blockStartOf } from '@/application/use-cases/programs/schedule'
+import { upcomingSessions, type UpcomingSession } from '@/domain/programs/upcoming'
+import type { AppSettings } from '@/domain/settings/settings'
+import { toDayKey } from '@/domain/time/day'
 import { GitHubSyncError } from '@/infrastructure/sync/github-file'
 import { syncWithGitHub } from '@/infrastructure/sync/github-sync'
 import { logger } from '@/shared/logging/logger'
@@ -99,10 +104,13 @@ export function useGitHubSync(): void {
       syncStore.phase('syncing')
 
       try {
+        const settings = latestSettings.current
+        const upcoming = await upcomingFor(services, settings)
         const result = await syncWithGitHub(config, services, {
-          settings: latestSettings.current,
+          settings,
           appVersion: APP_VERSION,
           now: services.clock.now(),
+          ...(upcoming === undefined ? {} : { upcoming }),
         })
         syncStore.synced(services.clock.now().toISOString())
         logger.info('sync.round', {
@@ -170,4 +178,25 @@ export function useGitHubSync(): void {
       document.removeEventListener('visibilitychange', onVisible)
     }
   }, [])
+}
+
+/**
+ * The week ahead for the sync file, derived as the schedule screen derives
+ * it. A programme that cannot be built is no reason to fail the sync: the
+ * round goes ahead and carries the file's calendar along.
+ */
+async function upcomingFor(
+  services: ReturnType<typeof useServices>,
+  settings: AppSettings,
+): Promise<readonly UpcomingSession[] | undefined> {
+  try {
+    const exercises = await services.exercises.all()
+    const program = deriveProgram(settings, exercises)
+    const today = toDayKey(services.clock.now())
+    const blockStartedOn = blockStartOf(program, await services.position.get(), today)
+    return upcomingSessions(program, blockStartedOn, today, exercises, settings.dayMoves)
+  } catch {
+    logger.warn('sync.upcoming_failed', {})
+    return undefined
+  }
 }
