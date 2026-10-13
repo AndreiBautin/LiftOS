@@ -341,6 +341,10 @@
     outline: 2px solid var(--color-accent-400);
     outline-offset: 2px;
     border-radius: 0.375rem;
+    /* A halo outside the ring, so focus reads as light on the surface
+       rather than a line drawn round it. */
+    box-shadow: 0 0 0 6px color-mix(in oklab, var(--color-accent-500) 18%, transparent);
+    transition: outline-offset var(--dur-fast) var(--ease-out);
   }
 
   /* Number inputs used for load and reps: no spinners, and a numeric
@@ -447,6 +451,19 @@
         transform 220ms var(--ease-out-expo),
         box-shadow 220ms var(--ease-out-expo),
         --spot 320ms ease-out;
+    }
+
+    a.well,
+    button.well {
+      transition:
+        transform var(--dur-fast) var(--ease-out),
+        border-color var(--dur-fast) ease-out;
+    }
+
+    a.well:hover,
+    button.well:hover {
+      transform: translateY(-2px);
+      border-color: color-mix(in oklab, var(--color-accent-500) 30%, var(--color-ink-700));
     }
 
     .card:hover {
