@@ -1788,3 +1788,16 @@ svg.lucide {
 .inset-list > .inset-row:active {
   background-color: color-mix(in oklab, var(--color-ink-800) 45%, transparent);
 }
+
+/* A logged set's tick draws itself in rather than appearing, and the
+   badge behind it gives one soft pulse of the good colour. */
+.check-draw path {
+  stroke-dasharray: 20;
+  animation: check-draw 360ms var(--ease-out) 60ms both;
+}
+
+@keyframes check-draw {
+  from {
+    stroke-dashoffset: 20;
+  }
+}

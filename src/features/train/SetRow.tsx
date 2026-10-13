@@ -198,7 +198,13 @@ export function SetRow(props: Props) {
               )}
               aria-hidden
             >
-              {done ? <Check size={16} /> : skipped ? <Minus size={14} /> : index + 1}
+              {done ? (
+                <Check size={16} className="check-draw" />
+              ) : skipped ? (
+                <Minus size={14} />
+              ) : (
+                index + 1
+              )}
             </span>
             <span className="flex min-w-0 flex-col">
               <span
