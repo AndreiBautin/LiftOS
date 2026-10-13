@@ -108,8 +108,8 @@ function Story({
       aria-label="Your training, as a story"
       className="bg-ink-950 fixed inset-0 z-40 overflow-hidden select-none"
       style={{
-        backgroundImage: `radial-gradient(120% 70% at 20% 0%, oklch(0.42 0.12 ${String(card.hue)} / 0.55), transparent 65%), radial-gradient(90% 60% at 100% 100%, oklch(0.38 0.1 ${String(card.hue + 60)} / 0.45), transparent 60%)`,
-        transition: 'background-image 600ms ease',
+        backgroundImage: `var(--grain), radial-gradient(120% 70% at 20% 0%, oklch(0.42 0.12 ${String(card.hue)} / 0.55), transparent 65%), radial-gradient(90% 60% at 100% 100%, oklch(0.38 0.1 ${String(card.hue + 60)} / 0.45), transparent 60%)`,
+        transition: 'background-image 600ms var(--ease-out)',
       }}
       onPointerDown={() => {
         setHeld(true)
