@@ -373,7 +373,7 @@ function LeadMedallion({ glyph, name }: { readonly glyph: Glyph; readonly name: 
   return (
     <svg
       viewBox="0 0 48 48"
-      className="hero-medallion text-accent-400 size-16 shrink-0 sm:size-20"
+      className="hero-medallion text-accent-400 size-20 shrink-0 sm:size-24"
       role="img"
       aria-label={`Leads with ${name}`}
     >

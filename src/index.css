@@ -1634,3 +1634,54 @@ html {
     inset 0 1px 0 oklch(1 0 0 / 0.07),
     0 -24px 60px -12px oklch(0 0 0 / 0.6);
 }
+
+/* The hero has depth when the page moves: the plate behind it drifts up
+   and turns slower than the page scrolls, the medallion sits on a halo.
+   Scroll-driven, so no listener runs; a browser without scroll timelines
+   simply draws it still, and so does reduced motion. */
+.hero-medallion {
+  border-radius: 9999px;
+  background: radial-gradient(
+    circle at 50% 45%,
+    color-mix(in oklab, var(--color-accent-500) 22%, transparent),
+    transparent 68%
+  );
+  filter: drop-shadow(0 10px 24px color-mix(in oklab, var(--color-accent-500) 30%, transparent));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: scroll()) {
+    /* Two animations on one element: the plate still slides on once by
+       the clock, and drifts by the scroll on the separate translate and
+       rotate properties, which compose with its transform. */
+    .hero-plate {
+      animation:
+        plate-in 1600ms var(--ease-out-expo) both,
+        hero-drift linear both;
+      animation-timeline: auto, scroll(root);
+      animation-range:
+        normal,
+        0 640px;
+    }
+
+    .hero-panel {
+      animation: hero-recede linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 480px;
+    }
+  }
+}
+
+@keyframes hero-drift {
+  to {
+    translate: 0 -48px;
+    rotate: 24deg;
+  }
+}
+
+@keyframes hero-recede {
+  to {
+    scale: 0.97;
+    opacity: 0.75;
+  }
+}
