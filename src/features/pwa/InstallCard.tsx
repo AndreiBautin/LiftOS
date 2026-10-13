@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { Share, X } from 'lucide-react'
 import { useState } from 'react'
 
@@ -44,11 +45,34 @@ export function InstallCard() {
       <div className="min-w-0 flex-1">
         <p className="text-ink-50 text-sm font-semibold">Keep it on your home screen</p>
         {offer === 'ios' ? (
-          <p className="text-ink-300 mt-1 text-xs leading-relaxed">
-            Tap <Share size={12} className="inline align-[-1px]" aria-label="Share" /> in Safari,
-            then <span className="text-ink-100">Add to Home Screen</span>. It opens full screen and
-            keeps your training safe from Safari's clean-up.
-          </p>
+          <>
+            <ol className="mt-2 space-y-1.5 text-xs">
+              {[
+                <>
+                  Tap <Share size={12} className="inline align-[-1px]" aria-label="Share" /> in
+                  Safari
+                </>,
+                <>
+                  Choose <span className="text-ink-100">Add to Home Screen</span>
+                </>,
+                <>Open it from the icon</>,
+              ].map((step, at) => (
+                <li
+                  key={at}
+                  className="record-in text-ink-300 flex items-center gap-2"
+                  style={{ '--i': at } as CSSProperties}
+                >
+                  <span className="numeric bg-accent-500/20 text-accent-400 flex size-5 shrink-0 items-center justify-center rounded-full text-[0.65rem] font-semibold">
+                    {at + 1}
+                  </span>
+                  <span>{step}</span>
+                </li>
+              ))}
+            </ol>
+            <p className="text-ink-500 mt-2 text-xs">
+              It opens full screen and keeps your training safe from Safari's clean-up.
+            </p>
+          </>
         ) : (
           <>
             <p className="text-ink-300 mt-1 text-xs">
