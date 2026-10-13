@@ -4,7 +4,9 @@ import type { Exercise } from '@/domain/exercises/exercise'
 
 import type { ProgramTemplate } from './program'
 import { moveSession } from './schedule'
-import { upcomingSessions } from './upcoming'
+import type { WorkoutLog } from '@/domain/logging/workout-log'
+
+import { upcomingSessions, withTodaysPlan } from './upcoming'
 
 const sets = (working: number) => [
   { isWarmup: true },
@@ -70,5 +72,32 @@ describe('the sessions the sync file carries ahead', () => {
       ['2026-10-05', 'Monday — Squat'],
       ['2026-10-06', 'Wednesday — Bench'],
     ])
+  })
+})
+
+describe("today's session as Start would open it", () => {
+  const preview = {
+    entries: [
+      {
+        exerciseId: 'squat',
+        sets: [
+          { isWarmup: true, plannedLoad: 135, plannedReps: 5 },
+          { isWarmup: false, plannedLoad: 275, plannedReps: 5 },
+          { isWarmup: false, plannedLoad: 275, plannedReps: 5 },
+        ],
+      },
+      { exerciseId: 'warmup-only', sets: [{ isWarmup: true }] },
+    ],
+  } as unknown as WorkoutLog
+
+  it("gives today the preview's loads and reps and leaves later days as outlines", () => {
+    const sessions = withTodaysPlan(
+      upcomingSessions(PROGRAM, START, START, EXERCISES),
+      START,
+      preview,
+      EXERCISES,
+    )
+    expect(sessions[0]?.exercises).toEqual([{ name: 'Low Bar Squat', sets: 2, load: 275, reps: 5 }])
+    expect(sessions[1]?.exercises).toEqual([])
   })
 })

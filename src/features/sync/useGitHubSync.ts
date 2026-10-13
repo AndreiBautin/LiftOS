@@ -4,8 +4,10 @@ import { useLocation } from 'react-router-dom'
 
 import { useServices, useSettings } from '@/app/context'
 import { deriveProgram } from '@/application/use-cases/programs/current-program'
-import { blockStartOf } from '@/application/use-cases/programs/schedule'
-import { upcomingSessions, type UpcomingSession } from '@/domain/programs/upcoming'
+import { blockStartOf, scheduleFor } from '@/application/use-cases/programs/schedule'
+import { previewWorkout } from '@/application/use-cases/training/start-workout'
+import { upcomingSessions, withTodaysPlan, type UpcomingSession } from '@/domain/programs/upcoming'
+import type { AthleteState } from '@/domain/resolution/resolve'
 import type { AppSettings } from '@/domain/settings/settings'
 import { toDayKey } from '@/domain/time/day'
 import { GitHubSyncError } from '@/infrastructure/sync/github-file'
@@ -51,14 +53,16 @@ const VISIBLE_PULL_MS = 60_000
  */
 export function useGitHubSync(): void {
   const services = useServices()
-  const { settings } = useSettings()
+  const { settings, athlete } = useSettings()
   const client = useQueryClient()
   const { pathname } = useLocation()
 
   const latestSettings = useRef(settings)
+  const latestAthlete = useRef(athlete)
   useEffect(() => {
     latestSettings.current = settings
-  }, [settings])
+    latestAthlete.current = athlete
+  }, [settings, athlete])
 
   const state = useRef<{
     running: boolean
@@ -105,7 +109,7 @@ export function useGitHubSync(): void {
 
       try {
         const settings = latestSettings.current
-        const upcoming = await upcomingFor(services, settings)
+        const upcoming = await upcomingFor(services, settings, latestAthlete.current)
         const result = await syncWithGitHub(config, services, {
           settings,
           appVersion: APP_VERSION,
@@ -188,13 +192,29 @@ export function useGitHubSync(): void {
 async function upcomingFor(
   services: ReturnType<typeof useServices>,
   settings: AppSettings,
+  athlete: AthleteState,
 ): Promise<readonly UpcomingSession[] | undefined> {
   try {
     const exercises = await services.exercises.all()
     const program = deriveProgram(settings, exercises)
     const today = toDayKey(services.clock.now())
     const blockStartedOn = blockStartOf(program, await services.position.get(), today)
-    return upcomingSessions(program, blockStartedOn, today, exercises, settings.dayMoves)
+    const sessions = upcomingSessions(program, blockStartedOn, today, exercises, settings.dayMoves)
+    // The preview opens the next session; it is today's only when it is dated today.
+    const schedule = await scheduleFor(program, services, settings.dayMoves)
+    if (schedule.next?.on !== today) return sessions
+    const preview = await previewWorkout(
+      {
+        athlete,
+        program,
+        roundingIncrement: settings.roundingIncrement,
+        ...(settings.loadResets !== undefined ? { resets: settings.loadResets } : {}),
+        ...(settings.sessionDraft !== undefined ? { draft: settings.sessionDraft } : {}),
+        ...(settings.dayMoves !== undefined ? { moves: settings.dayMoves } : {}),
+      },
+      services,
+    )
+    return preview === undefined ? sessions : withTodaysPlan(sessions, today, preview, exercises)
   } catch {
     logger.warn('sync.upcoming_failed', {})
     return undefined

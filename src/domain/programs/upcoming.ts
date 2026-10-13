@@ -1,4 +1,5 @@
 import type { Exercise } from '@/domain/exercises/exercise'
+import type { WorkoutLog } from '@/domain/logging/workout-log'
 import { shiftDay } from '@/domain/time/day'
 
 import type { ProgramTemplate, Slot } from './program'
@@ -17,7 +18,15 @@ export interface UpcomingSession {
   readonly date: string
   readonly title: string
   readonly focus?: string
-  readonly exercises: readonly { readonly name: string; readonly sets: number }[]
+  readonly exercises: readonly UpcomingExercise[]
+}
+
+/** `load` and `reps` are the first working set's, and only on today's session. */
+export interface UpcomingExercise {
+  readonly name: string
+  readonly sets: number
+  readonly load?: number
+  readonly reps?: number
 }
 
 export const UPCOMING_DAYS = 7
@@ -55,4 +64,38 @@ export function upcomingSessions(
       ]
     },
   )
+}
+
+/**
+ * Today's session as Start would open it: the preview's exercises, with
+ * the loads and reps it planned from history, replace the programme's
+ * outline. Only today's — a later day's loads depend on today's lifting,
+ * so promising them would be a number that moves.
+ */
+export function withTodaysPlan(
+  sessions: readonly UpcomingSession[],
+  today: string,
+  preview: WorkoutLog,
+  exercises: readonly Exercise[],
+): readonly UpcomingSession[] {
+  const byId = new Map(exercises.map((exercise) => [exercise.id as string, exercise]))
+  return sessions.map((session) => {
+    if (session.date !== today) return session
+    return {
+      ...session,
+      exercises: preview.entries.flatMap((entry) => {
+        const working = entry.sets.filter((set) => !set.isWarmup)
+        const first = working[0]
+        if (first === undefined) return []
+        return [
+          {
+            name: byId.get(entry.exerciseId)?.name ?? 'Exercise',
+            sets: working.length,
+            ...(first.plannedLoad === undefined ? {} : { load: first.plannedLoad }),
+            ...(first.plannedReps === undefined ? {} : { reps: first.plannedReps }),
+          },
+        ]
+      }),
+    }
+  })
 }
