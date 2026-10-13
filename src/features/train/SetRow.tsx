@@ -178,7 +178,7 @@ export function SetRow(props: Props) {
       >
         <div
           className={cn(
-            'relative flex items-stretch overflow-hidden rounded-xl border transition-colors',
+            'set-row relative flex items-stretch overflow-hidden rounded-2xl border transition-colors',
             done && 'border-good-500/30 bg-good-500/10',
             skipped && 'border-ink-800 bg-ink-850 opacity-60',
             !done && !skipped && 'border-ink-800 bg-ink-850 hover:border-ink-700',
@@ -189,12 +189,14 @@ export function SetRow(props: Props) {
             type="button"
             onClick={onOpen}
             aria-label={`Set ${String(index + 1)}, ${headline}. ${done ? 'Logged' : skipped ? 'Skipped' : 'Edit'}.`}
-            className="tap-target flex min-w-0 flex-1 items-center gap-3 px-3 py-2.5 text-left"
+            className="tap-target flex min-h-16 min-w-0 flex-1 items-center gap-3 px-3.5 py-3 text-left"
           >
             <span
               className={cn(
-                'flex size-7 shrink-0 items-center justify-center rounded-lg text-xs font-semibold',
-                done ? 'bg-good-500 text-black' : 'bg-ink-800 text-ink-300',
+                'numeric flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold transition-colors',
+                done
+                  ? 'bg-good-500 text-black shadow-[0_0_16px_-4px_var(--color-good-500)]'
+                  : 'bg-ink-800 text-ink-300 ring-ink-700 ring-1',
               )}
               aria-hidden
             >
@@ -209,7 +211,7 @@ export function SetRow(props: Props) {
             <span className="flex min-w-0 flex-col">
               <span
                 className={cn(
-                  'numeric truncate text-base font-semibold',
+                  'numeric truncate text-lg leading-tight font-semibold',
                   done ? 'text-good-500' : 'text-ink-50',
                 )}
               >
@@ -253,9 +255,11 @@ export function SetRow(props: Props) {
               type="button"
               onClick={logPlanned}
               aria-label={`Log set ${String(index + 1)} as planned${set.plannedLoad === undefined ? '' : `: ${plannedSummary}`}`}
-              className="border-ink-800 text-ink-300 hover:text-accent-400 hover:bg-accent-500/10 flex w-14 shrink-0 items-center justify-center border-l transition-colors"
+              className="group flex w-16 shrink-0 items-center justify-center"
             >
-              <Check size={20} aria-hidden />
+              <span className="quick-log text-accent-400 flex size-11 items-center justify-center rounded-full">
+                <Check size={20} aria-hidden />
+              </span>
             </button>
           )}
         </div>
