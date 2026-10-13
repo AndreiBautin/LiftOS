@@ -2115,3 +2115,10 @@ main {
     scale: 0.5;
   }
 }
+
+/* The one muscle a page is about, lit and glowing on the body. */
+.body-lit {
+  fill: var(--color-accent-400);
+  filter: drop-shadow(0 0 6px color-mix(in oklab, var(--color-accent-500) 70%, transparent));
+  animation: figure-in var(--dur-slow) var(--ease-spring) 200ms both;
+}

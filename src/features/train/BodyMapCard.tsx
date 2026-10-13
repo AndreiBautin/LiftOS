@@ -1,3 +1,5 @@
+import { Figure } from './body-figures'
+import { BACK_REGIONS, FRONT_REGIONS } from './body-regions'
 import { PersonStanding } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useState, type ReactElement } from 'react'
@@ -91,38 +93,11 @@ export function BodyMapCard() {
       <svg viewBox="0 0 220 186" className="mx-auto mt-3 w-full max-w-sm" role="group">
         <title>Muscles by how lately they were trained</title>
         <Figure x={0} label="Front">
-          {region('front-delts', [ellipse(32, 40, 7, 6), ellipse(68, 40, 7, 6)], 'fd')}
-          {region('side-delts', [ellipse(24, 44, 3.5, 7), ellipse(76, 44, 3.5, 7)], 'sd')}
-          {region('chest', [block(37, 35, 12.5, 15, 4), block(50.5, 35, 12.5, 15, 4)], 'ch')}
-          {region('biceps', [block(21, 49, 8, 19, 4), block(71, 49, 8, 19, 4)], 'bi')}
-          {region('forearms', [block(19, 71, 7, 21, 3.5), block(74, 71, 7, 21, 3.5)], 'fa')}
-          {region('core', [block(39, 53, 22, 29, 5)], 'co')}
-          {region('quads', [block(37, 92, 12, 34, 6), block(51, 92, 12, 34, 6)], 'qu')}
-          {region('calves', [block(38.5, 130, 9, 34, 4.5), block(52.5, 130, 9, 34, 4.5)], 'cf')}
+          {FRONT_REGIONS.map(([muscle, shapes], at) => region(muscle, shapes, `f${String(at)}`))}
           <Niggles niggles={niggles} at={FRONT_JOINTS} />
         </Figure>
         <Figure x={115} label="Back">
-          {region('traps', [<polygon key="t" points="42,27 58,27 67,36 50,46 33,36" />], 'tr')}
-          {region('rear-delts', [ellipse(32, 40, 7, 6), ellipse(68, 40, 7, 6)], 'rd')}
-          {region('side-delts', [ellipse(24, 44, 3.5, 7), ellipse(76, 44, 3.5, 7)], 'sd')}
-          {region('upper-back', [block(41, 45, 18, 11, 3)], 'ub')}
-          {region(
-            'lats',
-            [
-              <polygon key="l" points="35,45 40,47 45,74 38,69" />,
-              <polygon key="r" points="65,45 60,47 55,74 62,69" />,
-            ],
-            'la',
-          )}
-          {region('triceps', [block(21, 49, 8, 19, 4), block(71, 49, 8, 19, 4)], 'tc')}
-          {region('forearms', [block(19, 71, 7, 21, 3.5), block(74, 71, 7, 21, 3.5)], 'fa')}
-          {region('glutes', [block(37, 84, 12.5, 15, 6), block(50.5, 84, 12.5, 15, 6)], 'gl')}
-          {region(
-            'hamstrings',
-            [block(37.5, 101, 11.5, 27, 5.5), block(51, 101, 11.5, 27, 5.5)],
-            'ha',
-          )}
-          {region('calves', [block(38.5, 130, 9, 34, 4.5), block(52.5, 130, 9, 34, 4.5)], 'cf')}
+          {BACK_REGIONS.map(([muscle, shapes], at) => region(muscle, shapes, `b${String(at)}`))}
           <Niggles niggles={niggles} at={BACK_JOINTS} />
         </Figure>
       </svg>
@@ -238,41 +213,6 @@ const LEGEND: readonly { readonly freshness: Freshness; readonly label: string }
   { freshness: 'recovering', label: '2–3 days ago' },
   { freshness: 'fresh', label: 'Longer' },
 ]
-
-function Figure({
-  x,
-  label,
-  children,
-}: {
-  readonly x: number
-  readonly label: string
-  readonly children: React.ReactNode
-}) {
-  return (
-    <g transform={`translate(${String(x + 5)} 0)`}>
-      {/* The parts no count lights: head, neck, hips, shins. */}
-      <g className="fill-ink-700/45">
-        <circle cx="50" cy="15" r="10" />
-        <rect x="45" y="24" width="10" height="7" rx="2" />
-        <rect x="38" y="82" width="24" height="9" rx="3" />
-      </g>
-      {children}
-      <text x="50" y="180" textAnchor="middle" className="fill-ink-500 text-[9px]">
-        {label}
-      </text>
-    </g>
-  )
-}
-
-function block(x: number, y: number, width: number, height: number, radius: number) {
-  return (
-    <rect key={`${String(x)}-${String(y)}`} x={x} y={y} width={width} height={height} rx={radius} />
-  )
-}
-
-function ellipse(cx: number, cy: number, rx: number, ry: number) {
-  return <ellipse key={`${String(cx)}-${String(cy)}`} cx={cx} cy={cy} rx={rx} ry={ry} />
-}
 
 function describe(recency: MuscleRecency): string {
   const when =

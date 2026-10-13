@@ -6,6 +6,7 @@ import type { ExerciseId } from '@/domain/ids/ids'
 import { mondayOf, shiftDay, toDayKey } from '@/domain/time/day'
 import { MUSCLE_WEEKS, muscleHistory } from '@/domain/volume/muscle-history'
 import { PageHeader } from '@/components/shared/PageHeader'
+import { BodyHighlight } from '@/features/train/body-figures'
 import { PageSkeleton } from '@/components/shared/PageSkeleton'
 import { Card, CardHeading } from '@/components/shared/primitives'
 import { NIGGLE_LABELS, nigglesForMuscle, recentNiggles } from '@/domain/logging/niggles'
@@ -54,6 +55,7 @@ export function MusclePage() {
       />
 
       <section className="hero-panel p-5 sm:p-6" aria-label={`${label} over twelve weeks`}>
+        <BodyHighlight muscle={muscle} className="mx-auto mb-4 w-full max-w-[16rem]" />
         <dl className="grid grid-cols-3 gap-3">
           <Figure
             label="Sets"
