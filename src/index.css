@@ -1861,3 +1861,65 @@ main {
   scale: 0.96;
   filter: brightness(0.7) saturate(0.85);
 }
+
+/* Finishing is the one moment the app celebrates. A slow wash of light
+   opens behind the report's hero, the crest lands on a halo, and the
+   records card is edged in gold with its rows fanning in one by one.
+   All once; reduced motion shows the finished state. */
+.report-hero::before {
+  content: '';
+  position: absolute;
+  inset: -40%;
+  z-index: -1;
+  background: conic-gradient(
+    from 200deg at 70% 40%,
+    transparent,
+    color-mix(in oklab, var(--color-accent-500) 18%, transparent) 25deg,
+    transparent 60deg,
+    color-mix(in oklab, var(--color-gold-500, oklch(0.8 0.14 85)) 12%, transparent) 110deg,
+    transparent 150deg
+  );
+  animation: report-wash 1800ms var(--ease-out-expo) both;
+  pointer-events: none;
+}
+
+@keyframes report-wash {
+  from {
+    opacity: 0;
+    rotate: -30deg;
+    scale: 0.8;
+  }
+}
+
+.report-crest {
+  border-radius: 9999px;
+  filter: drop-shadow(0 0 22px color-mix(in oklab, var(--color-accent-500) 45%, transparent));
+  animation: crest-land 900ms var(--ease-spring) 250ms both;
+}
+
+@keyframes crest-land {
+  from {
+    opacity: 0;
+    scale: 0.4;
+    rotate: -90deg;
+  }
+}
+
+.records-card {
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklab, oklch(0.8 0.14 85) 30%, transparent),
+    0 18px 40px -20px oklch(0.8 0.14 85 / 0.45);
+}
+
+.record-in {
+  animation: record-in var(--dur-slow) var(--ease-spring) both;
+  animation-delay: calc(500ms + var(--i, 0) * 110ms);
+}
+
+@keyframes record-in {
+  from {
+    opacity: 0;
+    translate: -14px 0;
+    scale: 0.96;
+  }
+}

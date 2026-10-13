@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { ArrowDown, ArrowUp, BarChart3, Minus, Sparkles, Star, TrendingUp } from 'lucide-react'
 
 import { SessionNote } from '@/features/history/SessionNote'
@@ -137,7 +138,7 @@ export function SessionReport({ report, units, onDismiss }: Props) {
   return (
     <div className="mx-auto max-w-2xl space-y-4 pb-8">
       <section
-        className="hero-panel p-5 sm:p-6"
+        className="hero-panel report-hero p-5 sm:p-6"
         aria-labelledby="report-title"
         // The session bar grows into this on finish; see `HomePage`.
         style={{ viewTransitionName: 'session-hero' }}
@@ -170,7 +171,7 @@ export function SessionReport({ report, units, onDismiss }: Props) {
           <SessionCrest
             crest={crest}
             library={exercises.data ?? []}
-            className="size-20 shrink-0 sm:size-24"
+            className="report-crest size-20 shrink-0 sm:size-24"
           />
         </div>
         <p className="text-ink-300 mt-2 text-sm">{report.headline}</p>
@@ -196,11 +197,15 @@ export function SessionReport({ report, units, onDismiss }: Props) {
         headline a session can have, and it is rare enough to say first.
       */}
       {report.records.length > 0 && (
-        <Card>
+        <Card className="records-card">
           <CardHeading icon={<Star size={16} aria-hidden />} title="New records" />
           <ul className="space-y-2.5">
-            {report.records.map((record) => (
-              <li key={record.exerciseId} className="flex items-center justify-between gap-3">
+            {report.records.map((record, at) => (
+              <li
+                key={record.exerciseId}
+                className="record-in flex items-center justify-between gap-3"
+                style={{ '--i': at } as CSSProperties}
+              >
                 <span className="min-w-0">
                   <span className="text-ink-100 block truncate text-sm">{record.name}</span>
                   <span className="text-ink-500 numeric text-xs">
