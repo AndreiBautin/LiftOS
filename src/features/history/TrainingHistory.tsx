@@ -7,6 +7,8 @@ import { useCallback, useMemo, useState } from 'react'
 import { useServices, useSettings } from '@/app/context'
 import { MoveGlyph } from '@/features/glyphs/MoveGlyph'
 import type { WorkoutId } from '@/domain/ids/ids'
+import type { Exercise } from '@/domain/exercises/exercise'
+import { sessionCrest, type Crest } from '@/domain/logging/crest'
 import { sessionRecords } from '@/domain/logging/records'
 import {
   dayNameOf,
@@ -16,6 +18,7 @@ import {
   type HistoryFilter,
 } from '@/domain/logging/history-filter'
 import { useExercises } from '@/features/train/hooks'
+import { SessionCrest } from './SessionCrest'
 import type { WorkoutLog } from '@/domain/logging/workout-log'
 import { remainingSets, totalTonnage, totalWorkingSets } from '@/domain/logging/workout-log'
 import type { WeightUnit } from '@/domain/units/weight'
@@ -206,6 +209,11 @@ export function TrainingHistory() {
               <SessionRow
                 workout={workout}
                 records={records.get(workout.id)?.length ?? 0}
+                crest={sessionCrest(
+                  workout,
+                  new Set((records.get(workout.id) ?? []).map((record) => record.exerciseId)),
+                )}
+                library={exercises.data ?? []}
                 units={settings.units}
                 confirming={confirming === workout.id}
                 pending={deleteWorkout.isPending}
@@ -344,6 +352,8 @@ function HistoryFilters({
  * finish from a real session.
  */
 function SessionRow({
+  crest,
+  library,
   workout,
   records,
   units,
@@ -357,6 +367,8 @@ function SessionRow({
 }: {
   readonly workout: WorkoutLog
   readonly records: number
+  readonly crest: Crest
+  readonly library: readonly Exercise[]
   readonly units: WeightUnit
   readonly confirming: boolean
   readonly pending: boolean
@@ -434,6 +446,12 @@ function SessionRow({
               {units}
             </p>
           </div>
+          <SessionCrest
+            crest={crest}
+            library={library}
+            className={cn('size-10 shrink-0', workout.status === 'abandoned' && 'opacity-40')}
+            still
+          />
         </Link>
 
         <div className="flex shrink-0 items-center">
