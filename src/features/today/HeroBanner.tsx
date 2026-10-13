@@ -100,7 +100,7 @@ export function HeroBanner() {
   }
 
   return (
-    <section className="hero-panel p-5 sm:p-6 lg:p-8" aria-labelledby="hero-title">
+    <section className="hero-panel hero-assemble p-5 sm:p-6 lg:p-8" aria-labelledby="hero-title">
       <Plate />
 
       <header className="mb-6 flex items-center justify-between gap-3">

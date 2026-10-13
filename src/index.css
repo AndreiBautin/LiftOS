@@ -1943,3 +1943,37 @@ main {
     inset 0 1px 0 oklch(1 0 0 / 0.1),
     inset 0 0 0 1px oklch(0.6 0.1 var(--badge-hue) / 0.25);
 }
+
+/* Today's hero assembles rather than appearing: the header, then the
+   day's name and its words, then the actions, then the figures — each
+   rising a little after the one above. Once per mount. */
+.hero-assemble > header,
+.hero-assemble div:has(> #hero-title),
+.hero-assemble div:has(> #hero-title) ~ *,
+.hero-assemble dl {
+  animation: assemble-rise 620ms var(--ease-out-expo) both;
+}
+
+.hero-assemble > header {
+  animation-delay: 60ms;
+}
+
+.hero-assemble div:has(> #hero-title) {
+  animation-delay: 180ms;
+}
+
+.hero-assemble div:has(> #hero-title) ~ * {
+  animation-delay: 300ms;
+}
+
+.hero-assemble dl {
+  animation-delay: 440ms;
+}
+
+@keyframes assemble-rise {
+  from {
+    opacity: 0;
+    translate: 0 10px;
+    filter: blur(4px);
+  }
+}
