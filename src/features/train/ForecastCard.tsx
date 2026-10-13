@@ -230,7 +230,7 @@ export function ForecastCard() {
           )}
         </p>
       )}
-      <p className="text-ink-600 mt-2 text-xs">
+      <p className="text-ink-500 mt-2 text-xs">
         A straight line through the last twelve weeks. Strength rarely climbs straight for long —
         read the band, not the line.
       </p>

@@ -99,7 +99,7 @@ export function ActivityHeatmap() {
             <span
               key={first}
               aria-hidden
-              className="text-ink-600 h-3 overflow-visible text-[9px] leading-none whitespace-nowrap"
+              className="text-ink-500 h-3 overflow-visible text-[9px] leading-none whitespace-nowrap"
             >
               {starts ? monthOf(first) : ''}
             </span>
@@ -108,7 +108,7 @@ export function ActivityHeatmap() {
 
         <div
           aria-hidden
-          className="text-ink-600 grid grid-rows-7 gap-[3px] text-[9px] leading-none"
+          className="text-ink-500 grid grid-rows-7 gap-[3px] text-[9px] leading-none"
         >
           {WEEKDAY_LABELS.map((label, index) => (
             <span key={index} className="flex items-center">
@@ -148,7 +148,7 @@ export function ActivityHeatmap() {
         ))}
       </div>
 
-      <div className="text-ink-600 mt-2 flex items-center justify-end gap-1 text-[10px]">
+      <div className="text-ink-500 mt-2 flex items-center justify-end gap-1 text-[10px]">
         Less
         {BAND_FILL.map((fill) => (
           <span key={fill} className="size-2.5 rounded-[3px]" style={{ backgroundColor: fill }} />

@@ -128,7 +128,7 @@ export function LibraryPage() {
             <Card key={shelf.muscle} className="p-3.5">
               <h2 className="text-ink-500 mb-2 flex items-baseline justify-between text-sm">
                 {MUSCLE_GROUP_LABELS[shelf.muscle]}
-                <span className="numeric text-ink-600 text-xs">{shelf.rows.length}</span>
+                <span className="numeric text-ink-500 text-xs">{shelf.rows.length}</span>
               </h2>
               <ul className="divide-ink-800/60 divide-y">
                 {shelf.rows.map((row) => (
