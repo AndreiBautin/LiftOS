@@ -36,6 +36,18 @@
    (Settings → Look, `ACCENT_HUES`); `AppShell` writes it here. */
 :root {
   --accent-hue: 200;
+
+  /* One motion vocabulary. Every animation names one of these rather
+     than its own curve, so the app moves with one personality. */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-draw: cubic-bezier(0.45, 0, 0.2, 1);
+  --dur-fast: 160ms;
+  --dur-base: 260ms;
+  --dur-slow: 420ms;
 }
 
 @theme {
@@ -419,8 +431,8 @@
   @media (hover: hover) {
     .card {
       transition:
-        transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
-        box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1),
+        transform 220ms var(--ease-out-expo),
+        box-shadow 220ms var(--ease-out-expo),
         --spot 320ms ease-out;
     }
 
@@ -457,7 +469,7 @@
      arrives one after another rather than as a single block. Inherited,
      so a card nested inside a staggered wrapper keeps its parent's slot. */
   .card {
-    animation: card-in 560ms cubic-bezier(0.16, 1, 0.3, 1) var(--stagger, 0ms) both;
+    animation: card-in 560ms var(--ease-out-expo) var(--stagger, 0ms) both;
   }
 
   /*
@@ -910,7 +922,7 @@ html {
 }
 
 ::view-transition-new(page) {
-  animation: page-in 380ms cubic-bezier(0.22, 1, 0.36, 1) 60ms both;
+  animation: page-in 380ms var(--ease-out) 60ms both;
 }
 
 ::view-transition-group(page) {
@@ -935,7 +947,7 @@ html {
 }
 
 .heat-cell {
-  animation: heat-cell-in 420ms cubic-bezier(0.22, 1, 0.36, 1)
+  animation: heat-cell-in 420ms var(--ease-out)
     calc(var(--stagger, 0ms) + 200ms + var(--cell-delay, 0ms)) both;
 }
 
@@ -951,7 +963,7 @@ html {
 .line-draw {
   stroke-dasharray: 1;
   stroke-dashoffset: 0;
-  animation: line-draw 1400ms cubic-bezier(0.45, 0, 0.2, 1) var(--line-delay, 0ms) both;
+  animation: line-draw 1400ms var(--ease-draw) var(--line-delay, 0ms) both;
 }
 
 /* The wash under the line and the end marker arrive once it has drawn. */
@@ -968,8 +980,7 @@ html {
 .line-end {
   transform-box: fill-box;
   transform-origin: center;
-  animation: figure-in 500ms cubic-bezier(0.22, 1, 0.36, 1) calc(var(--line-delay, 0ms) + 1300ms)
-    both;
+  animation: figure-in 500ms var(--ease-out) calc(var(--line-delay, 0ms) + 1300ms) both;
 }
 
 /*
@@ -1034,7 +1045,7 @@ html {
 }
 
 .hero-plate {
-  animation: plate-in 1600ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: plate-in 1600ms var(--ease-out-expo) both;
 }
 
 /* The lead lift's medallion traces its figure in once, then the head and
@@ -1057,25 +1068,25 @@ html {
 .crest-arc {
   stroke-dasharray: 1;
   stroke-dashoffset: 0;
-  animation: medallion-trace 900ms cubic-bezier(0.65, 0, 0.35, 1) both;
+  animation: medallion-trace 900ms var(--ease-in-out) both;
 }
 
 .crest-stud {
   transform-box: fill-box;
   transform-origin: center;
-  animation: medallion-dot 420ms cubic-bezier(0.34, 1.56, 0.64, 1) 900ms both;
+  animation: medallion-dot 420ms var(--ease-spring) 900ms both;
 }
 
 .medallion-trace {
   stroke-dasharray: 1;
   stroke-dashoffset: 0;
-  animation: medallion-trace 1100ms cubic-bezier(0.65, 0, 0.35, 1) 250ms both;
+  animation: medallion-trace 1100ms var(--ease-in-out) 250ms both;
 }
 
 .medallion-dot {
   transform-box: fill-box;
   transform-origin: center;
-  animation: medallion-dot 400ms cubic-bezier(0.34, 1.56, 0.64, 1) 1200ms both;
+  animation: medallion-dot 400ms var(--ease-spring) 1200ms both;
 }
 
 /*
@@ -1139,7 +1150,7 @@ html {
 }
 
 .swipe-peek {
-  animation: swipe-peek 1100ms cubic-bezier(0.22, 1, 0.36, 1) 700ms 1;
+  animation: swipe-peek 1100ms var(--ease-out) 700ms 1;
 }
 
 /* The recap's day columns rise once, left to right. */
@@ -1151,7 +1162,7 @@ html {
 
 .bar-rise {
   transform-origin: bottom;
-  animation: bar-rise 600ms cubic-bezier(0.22, 1, 0.36, 1) var(--bar-delay, 0ms) both;
+  animation: bar-rise 600ms var(--ease-out) var(--bar-delay, 0ms) both;
 }
 
 /* The ladder lights once when the session earns the next load. */
@@ -1192,7 +1203,7 @@ html {
     color-mix(in oklab, oklch(0.7 0.13 60) 18%, transparent)
   );
   box-shadow: inset 0 0 0 1px color-mix(in oklab, oklch(0.82 0.14 85) 45%, transparent);
-  animation: beat-pop 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: beat-pop 420ms var(--ease-spring) both;
 }
 
 .pr-chip::after {
@@ -1226,7 +1237,7 @@ html {
 }
 
 .beat-shine {
-  animation: beat-pop 380ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: beat-pop 380ms var(--ease-spring) both;
 }
 
 .beat-shine::after {
@@ -1281,7 +1292,7 @@ html {
 
 .plate-on-left,
 .plate-on-right {
-  animation: 600ms cubic-bezier(0.33, 0, 0.2, 1) var(--plate-delay, 0ms) both;
+  animation: 600ms var(--ease-standard) var(--plate-delay, 0ms) both;
 }
 
 /*
@@ -1319,7 +1330,7 @@ html {
 }
 
 .dumbbell-set {
-  animation: dumbbell-set 520ms cubic-bezier(0.33, 0, 0.2, 1) both;
+  animation: dumbbell-set 520ms var(--ease-standard) both;
 }
 
 /* A set logged: a band of the good colour sweeps across its row, once. */
@@ -1344,7 +1355,7 @@ html {
     color-mix(in oklab, var(--color-good-500) 32%, transparent) 45%,
     transparent 75%
   );
-  animation: set-sweep 750ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  animation: set-sweep 750ms var(--ease-standard) both;
 }
 
 .plate-on-left {
@@ -1361,7 +1372,7 @@ html {
    the group resizes. */
 ::view-transition-group(*.morph) {
   animation-duration: 420ms;
-  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-timing-function: var(--ease-out);
 }
 
 ::view-transition-old(*.morph),
@@ -1375,7 +1386,7 @@ html {
    the app marks. */
 ::view-transition-group(session-hero) {
   animation-duration: 600ms;
-  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-timing-function: var(--ease-out);
 }
 
 ::view-transition-old(session-hero),
@@ -1394,7 +1405,7 @@ html {
 }
 
 .toast-in {
-  animation: toast-in 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: toast-in 260ms var(--ease-out) both;
 }
 
 /* A record set's burst (`RecordBurst`): gold sparks thrown out from the
@@ -1420,14 +1431,14 @@ html {
   border-radius: 9999px;
   background: oklch(0.86 0.13 85);
   box-shadow: 0 0 6px oklch(0.86 0.13 85 / 70%);
-  animation: record-spark 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: record-spark 900ms var(--ease-out) both;
 }
 
 /* The install card's tile drops onto the home screen once. */
 .install-tile {
   transform-box: fill-box;
   transform-origin: center;
-  animation: install-tile-drop 700ms cubic-bezier(0.34, 1.56, 0.64, 1) 300ms both;
+  animation: install-tile-drop 700ms var(--ease-spring) 300ms both;
 }
 
 @keyframes install-tile-drop {
@@ -1476,7 +1487,7 @@ html {
 
 /* A new set in focus rises into place. */
 .focus-enter {
-  animation: focus-enter 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: focus-enter 420ms var(--ease-out) both;
 }
 
 @keyframes focus-enter {
@@ -1490,7 +1501,7 @@ html {
 .fan-line path {
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
-  animation: fan-draw 900ms cubic-bezier(0.3, 0.7, 0.2, 1) forwards;
+  animation: fan-draw 900ms var(--ease-out) forwards;
   animation-delay: inherit;
 }
 
@@ -1502,7 +1513,7 @@ html {
 
 /* The story: each card rises in, and the current segment fills over its time. */
 .story-card {
-  animation: story-card 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: story-card 520ms var(--ease-out) both;
 }
 
 @keyframes story-card {
@@ -1543,7 +1554,7 @@ html {
 
 /* The peek: the sheet rises, the backdrop fades, the line draws itself once. */
 .peek-sheet {
-  animation: peek-rise 340ms cubic-bezier(0.2, 0.9, 0.25, 1) both;
+  animation: peek-rise 340ms var(--ease-out) both;
 }
 
 .peek-backdrop {
@@ -1566,7 +1577,7 @@ html {
 .tide-rise {
   transform-box: fill-box;
   transform-origin: bottom;
-  animation: tide-rise 700ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: tide-rise 700ms var(--ease-out) both;
 }
 
 @keyframes tide-rise {
@@ -1579,12 +1590,12 @@ html {
 /* The open-session pill rises in once. Nothing on it loops: see the
    premium pass's motion rule in CLAUDE.md. */
 .session-pill {
-  animation: peek-rise 420ms cubic-bezier(0.2, 0.9, 0.25, 1) both;
+  animation: peek-rise 420ms var(--ease-out) both;
 }
 
 /* Each new part of a rep pops in, so the change is seen before it is read. */
 .tempo-phase {
-  animation: tempo-phase 220ms cubic-bezier(0.3, 1.5, 0.6, 1) both;
+  animation: tempo-phase 220ms var(--ease-spring) both;
 }
 
 @keyframes tempo-phase {
@@ -1596,5 +1607,5 @@ html {
 
 /* The records timeline's nodes rise in once, newest first. */
 .timeline-node {
-  animation: focus-enter 360ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: focus-enter 360ms var(--ease-out) both;
 }

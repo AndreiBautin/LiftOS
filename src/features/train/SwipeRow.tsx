@@ -130,7 +130,7 @@ export function SwipeRow({
         className={cn('relative touch-pan-y', peek && dx === 0 && !settling && 'swipe-peek')}
         style={{
           transform: dx === 0 ? undefined : `translateX(${String(dx)}px)`,
-          transition: settling ? 'transform 180ms cubic-bezier(0.22, 1, 0.36, 1)' : undefined,
+          transition: settling ? 'transform 180ms var(--ease-out)' : undefined,
         }}
         onPointerDown={down}
         onPointerMove={move}

@@ -43,7 +43,7 @@ export function RollingNumber({
             {/* Holds the wheel's width: one digit, invisible. */}
             <span className="invisible">0</span>
             <span
-              className="absolute inset-x-0 top-0 flex flex-col transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+              className="absolute inset-x-0 top-0 flex flex-col transition-transform duration-500 ease-(--ease-out)"
               style={{ transform: `translateY(${String(-digit * 10)}%)` }}
             >
               {DIGITS.map((one) => (
