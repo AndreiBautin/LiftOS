@@ -1782,7 +1782,7 @@ svg.lucide {
   transition: background-color var(--dur-fast) ease-out;
 }
 
-.inset-list > .inset-row + .inset-row {
+.inset-list > .inset-row ~ .inset-row {
   border-top: 1px solid color-mix(in oklab, var(--color-ink-800) 70%, transparent);
   margin-left: 1rem;
   padding-left: 0;

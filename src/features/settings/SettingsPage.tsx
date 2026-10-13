@@ -282,8 +282,8 @@ export function SettingsPage() {
                 : 'All of it is in this browser and nowhere else'
             }
           >
-            <Card className="space-y-4">
-              <div className="flex items-start gap-3">
+            <Card className="inset-list p-0 sm:p-0 lg:p-0">
+              <div className="inset-row flex items-start gap-3">
                 <HardDrive size={18} className="text-ink-500 mt-0.5 shrink-0" aria-hidden />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
@@ -329,55 +329,74 @@ export function SettingsPage() {
                 </div>
               </div>
 
-              <div className="border-warn-500/30 bg-warn-500/5 flex gap-3 rounded-lg border p-3">
-                <AlertTriangle size={16} className="text-warn-500 mt-0.5 shrink-0" aria-hidden />
-                <div className="text-ink-300 space-y-1.5 text-xs">
-                  <p className="text-ink-100 font-medium">What will delete this data</p>
-                  <p>
-                    Clearing site data, and in most browsers clearing cookies — the control is
-                    usually labelled &ldquo;cookies and other site data&rdquo; and it takes this
-                    database with it.
-                  </p>
-                  <p>
-                    Uninstalling the app, switching browser, or moving to a new phone.{' '}
-                    {syncing
-                      ? 'Connecting the new browser to the same repository brings it all back.'
-                      : 'None of it transfers; there is no account and no server.'}
-                  </p>
-                  <p className="text-ink-100 font-medium">
-                    {syncing
-                      ? 'The repository and an export both survive all of it.'
-                      : 'Export is the only thing that survives all of it.'}
-                  </p>
+              <div className="inset-row flex items-center justify-between gap-3">
+                <span className="text-ink-100 text-sm font-medium">Last export</span>
+                <span
+                  className={cn(
+                    'numeric text-sm',
+                    age.stale && age.days !== undefined ? 'text-warn-500' : 'text-ink-300',
+                  )}
+                >
+                  {age.days === undefined
+                    ? 'Never'
+                    : age.days === 0
+                      ? 'Today'
+                      : `${String(age.days)} ${age.days === 1 ? 'day' : 'days'} ago`}
+                </span>
+              </div>
+              <div className="inset-row">
+                <div className="border-warn-500/30 bg-warn-500/5 flex gap-3 rounded-lg border p-3">
+                  <AlertTriangle size={16} className="text-warn-500 mt-0.5 shrink-0" aria-hidden />
+                  <div className="text-ink-300 space-y-1.5 text-xs">
+                    <p className="text-ink-100 font-medium">What will delete this data</p>
+                    <p>
+                      Clearing site data, and in most browsers clearing cookies — the control is
+                      usually labelled &ldquo;cookies and other site data&rdquo; and it takes this
+                      database with it.
+                    </p>
+                    <p>
+                      Uninstalling the app, switching browser, or moving to a new phone.{' '}
+                      {syncing
+                        ? 'Connecting the new browser to the same repository brings it all back.'
+                        : 'None of it transfers; there is no account and no server.'}
+                    </p>
+                    <p className="text-ink-100 font-medium">
+                      {syncing
+                        ? 'The repository and an export both survive all of it.'
+                        : 'Export is the only thing that survives all of it.'}
+                    </p>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex gap-2">
-                <Button
-                  variant="primary"
-                  className="flex-1"
-                  disabled={backup.exportBackup.isPending}
-                  onClick={() => {
-                    backup.exportBackup.mutate()
-                  }}
-                >
-                  <Download size={16} aria-hidden />
-                  Export
-                </Button>
+              <div className="inset-row space-y-3">
+                <div className="flex gap-2">
+                  <Button
+                    variant="primary"
+                    className="flex-1"
+                    disabled={backup.exportBackup.isPending}
+                    onClick={() => {
+                      backup.exportBackup.mutate()
+                    }}
+                  >
+                    <Download size={16} aria-hidden />
+                    Export
+                  </Button>
 
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => {
-                    fileInput.current?.click()
-                  }}
-                >
-                  <Upload size={16} aria-hidden />
-                  Import
-                </Button>
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => {
+                      fileInput.current?.click()
+                    }}
+                  >
+                    <Upload size={16} aria-hidden />
+                    Import
+                  </Button>
+                </div>
+                <ExportCsv />
+                <ImportOther />
               </div>
-              <ExportCsv />
-              <ImportOther />
 
               <input
                 ref={fileInput}
@@ -393,39 +412,27 @@ export function SettingsPage() {
                 }}
               />
 
-              <p
-                className={
-                  age.stale && age.days !== undefined
-                    ? 'text-warn-500 text-xs'
-                    : 'text-ink-500 text-xs'
-                }
-              >
-                {age.days === undefined
-                  ? 'No backup taken yet.'
-                  : `Last export ${new Date(settings.lastExportAt ?? '').toLocaleDateString()} — ${
-                      age.days === 0 ? 'today' : `${String(age.days)} days ago`
-                    }.`}
-              </p>
-
               {backup.preview !== undefined && (
-                <ImportPanel
-                  preview={backup.preview}
-                  canImport={backup.canImport}
-                  confirmReplace={confirmReplace}
-                  onConfirmChange={setConfirmReplace}
-                  onMerge={() => {
-                    backup.runImport.mutate('merge')
-                  }}
-                  onReplace={() => {
-                    backup.runImport.mutate('replace')
-                    setConfirmReplace('')
-                  }}
-                  onCancel={() => {
-                    backup.clearPreview()
-                    setConfirmReplace('')
-                  }}
-                  busy={backup.runImport.isPending}
-                />
+                <div className="inset-row">
+                  <ImportPanel
+                    preview={backup.preview}
+                    canImport={backup.canImport}
+                    confirmReplace={confirmReplace}
+                    onConfirmChange={setConfirmReplace}
+                    onMerge={() => {
+                      backup.runImport.mutate('merge')
+                    }}
+                    onReplace={() => {
+                      backup.runImport.mutate('replace')
+                      setConfirmReplace('')
+                    }}
+                    onCancel={() => {
+                      backup.clearPreview()
+                      setConfirmReplace('')
+                    }}
+                    busy={backup.runImport.isPending}
+                  />
+                </div>
               )}
 
               {/*
@@ -435,7 +442,7 @@ export function SettingsPage() {
             can only be filled. The wipe asks twice and offers the export
             first, because it is the one control here that cannot be undone.
           */}
-              <div className="border-ink-800 space-y-2 border-t pt-4">
+              <div className="inset-row space-y-2">
                 {/*
               **No sample on a synced device.** The next round would upload
               it into the real history, and sync cannot tell it apart
