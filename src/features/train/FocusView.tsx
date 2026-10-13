@@ -239,7 +239,20 @@ function Countdown({
   const done = left <= 0
   return (
     <div className="relative size-64">
-      <svg viewBox="0 0 120 120" className="size-full -rotate-90" aria-hidden>
+      {/*
+        A glow behind the ring that dims as the rest drains and turns the
+        good colour at the end — the room lit by the clock rather than a
+        number alone. It follows the reading; it never pulses.
+      */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -inset-24 rounded-full transition-[opacity,background] duration-700"
+        style={{
+          opacity: done ? 0.9 : 0.25 + 0.55 * (left / (seconds * 1000)),
+          background: `radial-gradient(circle, color-mix(in oklab, var(--color-${done ? 'good' : 'accent'}-500) 35%, transparent), transparent 62%)`,
+        }}
+      />
+      <svg viewBox="0 0 120 120" className="relative size-full -rotate-90" aria-hidden>
         <circle cx="60" cy="60" r="54" className="stroke-ink-800 fill-none" strokeWidth="6" />
         <circle
           cx="60"
