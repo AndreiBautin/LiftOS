@@ -96,6 +96,31 @@ export function isNewerPosition(
  */
 export interface SyncOptions extends ExportOptions {
   readonly upcoming?: readonly UpcomingSession[]
+  /**
+   * The SBD total as this app computes it, and which sessions were
+   * deloads, for readers of the file (Jarvis). Derived, never read back.
+   */
+  readonly strength?: SyncStrength
+}
+
+export interface SyncStrength {
+  readonly total: number | null
+  readonly lifts: readonly {
+    readonly lift: string
+    readonly exerciseId: string
+    readonly max: number | null
+    readonly measuredOn: string | null
+  }[]
+  readonly deloadWorkoutIds: readonly string[]
+}
+
+function strengthInFile(text: string): unknown {
+  try {
+    const parsed: unknown = JSON.parse(text)
+    return (parsed as { readonly strength?: unknown } | null)?.strength
+  } catch {
+    return undefined
+  }
 }
 
 /** The `upcoming` a sync file carries, unread: it is only compared and passed on. */
@@ -123,6 +148,7 @@ export async function syncWithGitHub(
     let remoteFingerprint: string | undefined
     let remotePosition: ProgramPosition | undefined
     let remoteUpcoming: unknown
+    let remoteStrength: unknown
     if (remote !== undefined) {
       const parsed = parseBackup(remote.text)
       if (parsed.envelope === undefined) {
@@ -144,6 +170,7 @@ export async function syncWithGitHub(
 
       remotePosition = positionInFile(remote.text)
       remoteUpcoming = upcomingInFile(remote.text)
+      remoteStrength = strengthInFile(remote.text)
       if (repositories.position !== undefined && remotePosition !== undefined) {
         if (isNewerPosition(remotePosition, await repositories.position.get())) {
           await repositories.position.restore(remotePosition)
@@ -153,19 +180,27 @@ export async function syncWithGitHub(
     }
 
     // A device that could not derive the calendar carries the file's along.
-    const { upcoming: derived, ...exportOptions } = options
+    const { upcoming: derived, strength: derivedStrength, ...exportOptions } = options
     const upcoming: unknown = derived ?? remoteUpcoming
+    const strength: unknown = derivedStrength ?? remoteStrength
     const local = await buildBackup(repositories, exportOptions)
     const localPosition = await repositories.position?.get()
     const samePosition = (localPosition?.updatedAt ?? '') === (remotePosition?.updatedAt ?? '')
     const sameUpcoming = JSON.stringify(upcoming) === JSON.stringify(remoteUpcoming)
-    if (remoteFingerprint === recordsFingerprint(local.data) && samePosition && sameUpcoming) {
+    const sameStrength = JSON.stringify(strength) === JSON.stringify(remoteStrength)
+    if (
+      remoteFingerprint === recordsFingerprint(local.data) &&
+      samePosition &&
+      sameUpcoming &&
+      sameStrength
+    ) {
       return { pulled, purged, uploaded: false }
     }
 
     const extras = {
       ...(localPosition === undefined ? {} : { position: localPosition }),
       ...(upcoming === undefined ? {} : { upcoming }),
+      ...(strength === undefined ? {} : { strength }),
     }
     const body =
       Object.keys(extras).length === 0

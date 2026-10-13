@@ -104,3 +104,38 @@ export function strengthTrend(logs: readonly WorkoutLog[]): StrengthTrend {
     deadlift: progressedSeries(logs, STRENGTH_LIFT_SLUGS.deadlift as ExerciseId),
   }
 }
+
+/** One competition lift as the SBD total reads it. */
+export interface SbdLift {
+  readonly lift: TrendLift
+  readonly exerciseId: ExerciseId
+  readonly max: number | undefined
+  /** The session that measured it, or null when the stored max stands in. */
+  readonly measuredOn: string | null
+}
+
+/**
+ * The SBD total exactly as the hero banner computes it, with where each
+ * lift's number came from — so the sync file can carry the app's own
+ * answer rather than leave another app to re-derive it and drift.
+ * Reported once already: Jarvis read 1011 while this app said 1018.
+ */
+export function sbdSummary(
+  logs: readonly WorkoutLog[],
+  isDeload: (log: WorkoutLog) => boolean,
+  storedMaxes: Readonly<Partial<Record<ExerciseId, number>>>,
+): { readonly lifts: readonly SbdLift[]; readonly total: number | undefined } {
+  const kept = logs.filter((log) => !isDeload(log))
+  const lifts = (Object.keys(STRENGTH_LIFT_SLUGS) as TrendLift[]).map((lift): SbdLift => {
+    const exerciseId = asExerciseId(STRENGTH_LIFT_SLUGS[lift])
+    const last = progressedSeries(kept, exerciseId).at(-1)
+    return last === undefined
+      ? { lift, exerciseId, max: storedMaxes[exerciseId], measuredOn: null }
+      : { lift, exerciseId, max: last.value, measuredOn: last.date }
+  })
+  const maxes = lifts.map((lift) => lift.max)
+  const total = maxes.every((max): max is number => max !== undefined)
+    ? maxes.reduce((sum, max) => sum + max, 0)
+    : undefined
+  return { lifts, total }
+}

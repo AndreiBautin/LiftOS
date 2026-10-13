@@ -3,7 +3,8 @@ import { describe, expect, it } from 'vitest'
 import type { ExerciseId, WorkoutId } from '@/domain/ids/ids'
 import type { LogEntry, WorkoutLog } from '@/domain/logging/workout-log'
 
-import { measuredMaxes, strengthTrend } from './trend'
+import { measuredMaxes, sbdSummary, strengthTrend } from './trend'
+import { strengthStandings } from './standards'
 
 function entry(slug: string, load: number, reps: number): LogEntry {
   return {
@@ -127,5 +128,36 @@ describe('a step up the bar', () => {
       log('2026-09-08', [entry(squat, 225, 5)]),
     ])
     expect(trend.squat[1]?.value).toBeLessThan(trend.squat[0]?.value ?? 0)
+  })
+})
+
+describe('the SBD summary', () => {
+  const logs = [
+    log('2026-09-01', [
+      entry('low-bar-squat', 300, 5),
+      entry('bench-press', 200, 3),
+      entry('sumo-deadlift', 400, 2),
+    ]),
+    log('2026-09-10', [entry('low-bar-squat', 200, 5)]),
+  ]
+  const isDeload = (one: WorkoutLog): boolean => one.date === '2026-09-10'
+  const stored = { ['bench-press' as ExerciseId]: 999 }
+
+  // The sync file carries this number; the hero banner shows the other.
+  it('totals exactly what the hero banner totals', () => {
+    const summary = sbdSummary(logs, isDeload, stored)
+    const { total } = strengthStandings({
+      estimatedMaxes: { ...stored, ...measuredMaxes(logs, isDeload) },
+    })
+
+    expect(summary.total).toBe(total.max)
+    expect(summary.lifts[0]).toMatchObject({ lift: 'squat', measuredOn: '2026-09-01' })
+  })
+
+  it('falls back to the stored max and says so', () => {
+    const summary = sbdSummary([], () => false, stored)
+
+    expect(summary.lifts[1]).toMatchObject({ max: 999, measuredOn: null })
+    expect(summary.total).toBeUndefined()
   })
 })

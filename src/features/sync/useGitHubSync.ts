@@ -9,9 +9,11 @@ import { previewWorkout } from '@/application/use-cases/training/start-workout'
 import { upcomingSessions, withTodaysPlan, type UpcomingSession } from '@/domain/programs/upcoming'
 import type { AthleteState } from '@/domain/resolution/resolve'
 import type { AppSettings } from '@/domain/settings/settings'
+import { sbdSummary } from '@/domain/strength/trend'
 import { toDayKey } from '@/domain/time/day'
+import { isDeloadSession } from '@/features/train/hooks'
 import { GitHubSyncError } from '@/infrastructure/sync/github-file'
-import { syncWithGitHub } from '@/infrastructure/sync/github-sync'
+import { syncWithGitHub, type SyncStrength } from '@/infrastructure/sync/github-sync'
 import { logger } from '@/shared/logging/logger'
 
 import { syncStore } from './sync-store'
@@ -110,11 +112,13 @@ export function useGitHubSync(): void {
       try {
         const settings = latestSettings.current
         const upcoming = await upcomingFor(services, settings, latestAthlete.current)
+        const strength = await strengthFor(services, settings)
         const result = await syncWithGitHub(config, services, {
           settings,
           appVersion: APP_VERSION,
           now: services.clock.now(),
           ...(upcoming === undefined ? {} : { upcoming }),
+          ...(strength === undefined ? {} : { strength }),
         })
         syncStore.synced(services.clock.now().toISOString())
         logger.info('sync.round', {
@@ -217,6 +221,35 @@ async function upcomingFor(
     return preview === undefined ? sessions : withTodaysPlan(sessions, today, preview, exercises)
   } catch {
     logger.warn('sync.upcoming_failed', {})
+    return undefined
+  }
+}
+
+/**
+ * The SBD total for the sync file, from the same 200 recent sessions and
+ * deload rule the hero banner uses, so the file says what the screen says.
+ */
+async function strengthFor(
+  services: ReturnType<typeof useServices>,
+  settings: AppSettings,
+): Promise<SyncStrength | undefined> {
+  try {
+    const program = deriveProgram(settings, await services.exercises.all())
+    const logs = await services.workouts.recent(200)
+    const isDeload = (log: (typeof logs)[number]): boolean => isDeloadSession(log, program)
+    const summary = sbdSummary(logs, isDeload, settings.estimatedMaxes)
+    return {
+      total: summary.total === undefined ? null : Math.round(summary.total),
+      lifts: summary.lifts.map((lift) => ({
+        lift: lift.lift,
+        exerciseId: lift.exerciseId,
+        max: lift.max ?? null,
+        measuredOn: lift.measuredOn,
+      })),
+      deloadWorkoutIds: logs.filter(isDeload).map((log) => log.id),
+    }
+  } catch {
+    logger.warn('sync.strength_failed', {})
     return undefined
   }
 }
