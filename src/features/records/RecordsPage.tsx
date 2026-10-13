@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { Star } from 'lucide-react'
 import { RecordTimeline } from './RecordTimeline'
 import { Link, useSearchParams } from 'react-router-dom'
@@ -123,18 +124,22 @@ export function RecordsPage() {
         </Card>
       ) : (
         <ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
-          {bests.map(({ best, exercise }) => {
+          {bests.map(({ best, exercise }, at) => {
             const isFresh = best.heaviest.date >= fresh
             const name = exercise?.name ?? best.exerciseId
             const to = `/exercise/${best.exerciseId}`
             return (
-              <li key={best.exerciseId}>
+              <li
+                key={best.exerciseId}
+                className="record-tile-in"
+                style={{ '--i': Math.min(at, 12) } as CSSProperties}
+              >
                 <Link
                   viewTransition
                   to={to}
                   className={cn(
                     'card flex h-full flex-col p-3.5 transition-transform hover:-translate-y-0.5',
-                    isFresh && 'ring-1 ring-[oklch(0.86_0.13_85/45%)]',
+                    isFresh && 'record-fresh ring-1 ring-[oklch(0.86_0.13_85/45%)]',
                   )}
                 >
                   <span className="flex items-start justify-between gap-2">
