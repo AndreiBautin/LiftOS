@@ -1,7 +1,7 @@
-import { ArrowRight, X } from 'lucide-react'
-import { useEffect } from 'react'
+import { ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
+import { BottomSheet } from '@/components/shared/BottomSheet'
 import { useSettings } from '@/app/context'
 import type { ExerciseId } from '@/domain/ids/ids'
 import type { ExerciseSeries } from '@/domain/logging/exercise-history'
@@ -45,16 +45,6 @@ export function ExercisePeek({
   const { settings } = useSettings()
   const history = useExerciseHistory(exerciseId)
 
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => {
-      window.removeEventListener('keydown', onKey)
-    }
-  }, [onClose])
-
   const series = pickSeries(history.data ?? [], variant)
   const sessions = (series?.sessions ?? [])
     .filter((session) => session.workoutId !== currentWorkoutId)
@@ -62,79 +52,51 @@ export function ExercisePeek({
   const cue = settings.exerciseCues?.[exerciseId]
 
   return (
-    <div className="fixed inset-0 z-40 flex items-end justify-center" role="presentation">
-      <button
-        type="button"
-        aria-label="Close"
-        className="peek-backdrop absolute inset-0 bg-black/55"
-        onClick={onClose}
-      />
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label={`${name}, recent sessions`}
-        className="peek-sheet border-ink-800 bg-ink-900 relative w-full max-w-lg rounded-t-3xl border-x border-t px-5 pt-3"
-        style={{ paddingBottom: 'calc(1.25rem + var(--safe-bottom))' }}
-      >
-        <span className="bg-ink-700 mx-auto block h-1 w-10 rounded-full" aria-hidden />
-        <div className="mt-3 flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <p className="text-ink-500 text-xs tracking-[0.14em] uppercase">
-              Last {sessions.length === 1 ? 'session' : `${String(sessions.length)} sessions`}
-              {variant !== undefined && DAY_VERSIONS.includes(variant) ? ` · ${variant}` : ''}
-            </p>
-            <h2 className="text-ink-50 truncate text-lg font-semibold">{name}</h2>
+    <BottomSheet
+      label={`${name}, recent sessions`}
+      eyebrow={`Last ${sessions.length === 1 ? 'session' : `${String(sessions.length)} sessions`}${variant !== undefined && DAY_VERSIONS.includes(variant) ? ` · ${variant}` : ''}`}
+      title={name}
+      onClose={onClose}
+    >
+      {history.data === undefined ? (
+        <p className="text-ink-500 mt-4 text-sm">Loading…</p>
+      ) : sessions.length === 0 ? (
+        <p className="text-ink-300 mt-4 text-sm">
+          Not done before — this session is the first line in its history.
+        </p>
+      ) : (
+        <Sparkline
+          points={sessions.map((session) => ({ date: session.date, top: session.top }))}
+          bodyweight={bodyweight}
+          units={settings.units}
+        />
+      )}
+
+      <dl className="mt-4 grid grid-cols-2 gap-3">
+        {series !== undefined && (
+          <div className="bg-ink-850 rounded-xl px-3 py-2">
+            <dt className="text-ink-500 text-[0.65rem] tracking-wide uppercase">Best set</dt>
+            <dd className="numeric text-[oklch(0.86_0.13_85)] mt-0.5 font-semibold">
+              {describe(series.best, bodyweight, settings.units)}
+            </dd>
           </div>
-          <button
-            type="button"
-            aria-label="Close"
-            onClick={onClose}
-            className="text-ink-300 tap-target flex items-center justify-center"
-          >
-            <X size={18} aria-hidden />
-          </button>
-        </div>
-
-        {history.data === undefined ? (
-          <p className="text-ink-500 mt-4 text-sm">Loading…</p>
-        ) : sessions.length === 0 ? (
-          <p className="text-ink-300 mt-4 text-sm">
-            Not done before — this session is the first line in its history.
-          </p>
-        ) : (
-          <Sparkline
-            points={sessions.map((session) => ({ date: session.date, top: session.top }))}
-            bodyweight={bodyweight}
-            units={settings.units}
-          />
         )}
+        {cue !== undefined && (
+          <div className="bg-ink-850 rounded-xl px-3 py-2">
+            <dt className="text-ink-500 text-[0.65rem] tracking-wide uppercase">Your cue</dt>
+            <dd className="text-accent-400 mt-0.5 text-sm italic">{cue}</dd>
+          </div>
+        )}
+      </dl>
 
-        <dl className="mt-4 grid grid-cols-2 gap-3">
-          {series !== undefined && (
-            <div className="bg-ink-850 rounded-xl px-3 py-2">
-              <dt className="text-ink-500 text-[0.65rem] tracking-wide uppercase">Best set</dt>
-              <dd className="numeric text-[oklch(0.86_0.13_85)] mt-0.5 font-semibold">
-                {describe(series.best, bodyweight, settings.units)}
-              </dd>
-            </div>
-          )}
-          {cue !== undefined && (
-            <div className="bg-ink-850 rounded-xl px-3 py-2">
-              <dt className="text-ink-500 text-[0.65rem] tracking-wide uppercase">Your cue</dt>
-              <dd className="text-accent-400 mt-0.5 text-sm italic">{cue}</dd>
-            </div>
-          )}
-        </dl>
-
-        <Link
-          viewTransition
-          to={`/exercise/${exerciseId}`}
-          className="text-accent-400 tap-target mt-2 flex items-center gap-1.5 text-sm font-medium"
-        >
-          The whole history <ArrowRight size={14} aria-hidden />
-        </Link>
-      </div>
-    </div>
+      <Link
+        viewTransition
+        to={`/exercise/${exerciseId}`}
+        className="text-accent-400 tap-target mt-2 flex items-center gap-1.5 text-sm font-medium"
+      >
+        The whole history <ArrowRight size={14} aria-hidden />
+      </Link>
+    </BottomSheet>
   )
 }
 
