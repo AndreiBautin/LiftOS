@@ -2,6 +2,7 @@ import { ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 import { BottomSheet } from '@/components/shared/BottomSheet'
+import { Skeleton } from '@/components/shared/Skeleton'
 import { useSettings } from '@/app/context'
 import type { ExerciseId } from '@/domain/ids/ids'
 import type { ExerciseSeries } from '@/domain/logging/exercise-history'
@@ -59,7 +60,10 @@ export function ExercisePeek({
       onClose={onClose}
     >
       {history.data === undefined ? (
-        <p className="text-ink-500 mt-4 text-sm">Loading…</p>
+        <div className="mt-4 space-y-3">
+          <Skeleton className="h-28 rounded-xl" label="Loading recent sessions" />
+          <Skeleton className="h-4 w-2/3 rounded" />
+        </div>
       ) : sessions.length === 0 ? (
         <p className="text-ink-300 mt-4 text-sm">
           Not done before — this session is the first line in its history.
