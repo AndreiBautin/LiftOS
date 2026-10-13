@@ -49,7 +49,13 @@ export function GoalsCard() {
 
   return (
     <Card>
-      <CardHeading icon={<Flag size={16} aria-hidden />} title="Goals" />
+      <CardHeading
+        icon={<Flag size={16} aria-hidden />}
+        title="Goals"
+        figure={
+          Object.keys(goals).length === 0 ? undefined : `${String(Object.keys(goals).length)} set`
+        }
+      />
       <ul className="space-y-5">
         {LIFTS.map(({ lift, name, colour }) => {
           const points = trend?.[lift] ?? []

@@ -198,7 +198,11 @@ export function SessionReport({ report, units, onDismiss }: Props) {
       */}
       {report.records.length > 0 && (
         <Card className="records-card">
-          <CardHeading icon={<Star size={16} aria-hidden />} title="New records" />
+          <CardHeading
+            icon={<Star size={16} aria-hidden />}
+            title="New records"
+            figure={report.records.length}
+          />
           <ul className="space-y-2.5">
             {report.records.map((record, at) => (
               <li

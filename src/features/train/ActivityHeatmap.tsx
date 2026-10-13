@@ -67,7 +67,11 @@ export function ActivityHeatmap() {
 
   return (
     <Card>
-      <CardHeading icon={<CalendarDays size={14} aria-hidden />} title="Training" />
+      <CardHeading
+        icon={<CalendarDays size={14} aria-hidden />}
+        title="Training"
+        figure={`${String(sessions)} sessions`}
+      />
 
       <p className="text-ink-300 numeric mb-3 text-sm">
         <span className="text-ink-50 font-semibold">{sessions}</span> sessions ·{' '}
