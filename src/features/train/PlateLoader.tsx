@@ -130,7 +130,25 @@ export function PlateLoader({
           <pattern id="knurl" width="3" height="3" patternUnits="userSpaceOnUse">
             <path d="M0 3 3 0M-1 1 1-1M2 4 4 2" stroke="oklch(0.3 0.01 250)" strokeWidth="0.6" />
           </pattern>
+          <radialGradient id="floor-shadow">
+            <stop offset="0" stopColor="black" stopOpacity="0.55" />
+            <stop offset="1" stopColor="black" stopOpacity="0" />
+          </radialGradient>
+          <radialGradient id="bar-spot" cx="0.5" cy="0.35" r="0.6">
+            <stop offset="0" stopColor="white" stopOpacity="0.07" />
+            <stop offset="1" stopColor="white" stopOpacity="0" />
+          </radialGradient>
         </defs>
+
+        {/* A spotlight behind the bar and its shadow on the floor, so it sits in a room. */}
+        <rect width={VIEW.width} height={VIEW.height} fill="url(#bar-spot)" />
+        <ellipse
+          cx={VIEW.width / 2}
+          cy={VIEW.height - 3}
+          rx={VIEW.width * 0.42}
+          ry="3"
+          fill="url(#floor-shadow)"
+        />
 
         {/* Shaft, sleeves and collars. */}
         <rect
