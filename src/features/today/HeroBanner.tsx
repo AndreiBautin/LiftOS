@@ -5,6 +5,7 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 
 import { useServices, useSettings } from '@/app/context'
+import { useCountUp } from '@/features/train/useCountUp'
 import { EverythingSheet } from '@/features/navigation/EverythingSheet'
 import { SyncBadge } from '@/features/sync/SyncBadge'
 import { RestedFor } from './RestedFor'
@@ -321,7 +322,7 @@ function Stat({
       <dd className="numeric text-ink-50 mt-1 flex items-center gap-1.5 text-xl font-semibold">
         {lead}
         <span>
-          {value ?? '—'}
+          {value === undefined ? '—' : <Counted value={value} />}
           {value !== undefined && suffix !== undefined && (
             <span className="text-ink-500 text-sm font-normal">{suffix}</span>
           )}
@@ -439,5 +440,16 @@ function WeekRing({ done, of }: { readonly done: number; readonly of: number }) 
         />
       ))}
     </svg>
+  )
+}
+
+/** A figure that counts up once as the hero arrives; the real value is what a screen reader gets. */
+function Counted({ value }: { readonly value: number }) {
+  const shown = useCountUp(value, 1100)
+  return (
+    <>
+      <span aria-hidden>{Math.round(shown)}</span>
+      <span className="sr-only">{value}</span>
+    </>
   )
 }
