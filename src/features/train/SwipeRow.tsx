@@ -102,13 +102,19 @@ export function SwipeRow({
   const progress = Math.min(1, Math.abs(dx) / (width * COMMIT))
 
   return (
-    <div className="relative overflow-hidden rounded-xl" data-swipe-row>
+    <div className="relative overflow-hidden rounded-2xl" data-swipe-row>
       {enabled && dx !== 0 && (
         <div
           className={cn(
-            'absolute inset-0 flex items-center px-5',
-            dx > 0 ? 'bg-good-500/25 justify-start' : 'bg-ink-800 justify-end',
+            'absolute inset-0 flex items-center gap-2 px-5 text-sm font-semibold',
+            dx > 0 ? 'justify-start' : 'justify-end',
           )}
+          style={{
+            background:
+              dx > 0
+                ? `color-mix(in oklab, var(--color-good-500) ${String(Math.round(12 + progress * 28))}%, transparent)`
+                : `color-mix(in oklab, var(--color-ink-700) ${String(Math.round(40 + progress * 50))}%, transparent)`,
+          }}
           aria-hidden
         >
           {dx > 0 ? (
@@ -117,7 +123,14 @@ export function SwipeRow({
               className="text-good-500"
               style={{ transform: `scale(${String(0.6 + progress * 0.5)})`, opacity: progress }}
             />
-          ) : (
+          ) : null}
+          <span
+            className={dx > 0 ? 'text-good-500' : 'text-ink-300'}
+            style={{ opacity: progress >= 1 ? 1 : progress * 0.7 }}
+          >
+            {dx > 0 ? 'Log' : 'Skip'}
+          </span>
+          {dx > 0 ? null : (
             <SkipForward
               size={20}
               className="text-ink-300"
@@ -130,7 +143,7 @@ export function SwipeRow({
         className={cn('relative touch-pan-y', peek && dx === 0 && !settling && 'swipe-peek')}
         style={{
           transform: dx === 0 ? undefined : `translateX(${String(dx)}px)`,
-          transition: settling ? 'transform 180ms var(--ease-out)' : undefined,
+          transition: settling ? 'transform var(--dur-base) var(--ease-spring)' : undefined,
         }}
         onPointerDown={down}
         onPointerMove={move}
