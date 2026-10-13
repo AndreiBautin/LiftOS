@@ -2101,3 +2101,17 @@ main {
   background: color-mix(in oklab, var(--color-ink-800) 70%, transparent);
   box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-ink-700) 60%, transparent);
 }
+
+/* The month fills in day by day: each trained day lights in calendar
+   order, a beat apart, as though the month were being lived again. */
+.month-lit {
+  animation: month-fill 420ms var(--ease-spring) both;
+  animation-delay: calc(150ms + var(--i, 0) * 28ms);
+}
+
+@keyframes month-fill {
+  from {
+    opacity: 0;
+    scale: 0.5;
+  }
+}

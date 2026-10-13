@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Play, Star } from 'lucide-react'
 import { LIFT_COLOURS } from '@/features/charts/palette'
 import { Link, Navigate, useParams } from 'react-router-dom'
@@ -326,18 +327,19 @@ function MonthCalendar({ recap, today }: { readonly recap: MonthRecap; readonly 
               aria-label={sets === 0 ? undefined : `${shortDay(day)}: ${String(sets)} sets`}
               className={cn(
                 'numeric flex aspect-square items-center justify-center rounded-lg text-xs',
-                sets === 0 ? 'text-ink-500 bg-ink-900/50' : 'text-ink-950 font-semibold',
+                sets === 0 ? 'text-ink-500 bg-ink-900/50' : 'month-lit text-ink-950 font-semibold',
                 day === today && 'ring-accent-400 ring-2',
                 day > today && 'opacity-40',
               )}
               style={
                 sets === 0
                   ? undefined
-                  : {
+                  : ({
                       background: `color-mix(in oklab, var(--color-accent-400) ${String(
                         Math.round(45 + (sets / most) * 55),
                       )}%, transparent)`,
-                    }
+                      '--i': index,
+                    } as CSSProperties)
               }
             >
               {index + 1}
