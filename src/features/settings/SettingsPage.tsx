@@ -166,8 +166,8 @@ export function SettingsPage() {
           </Section>
 
           <Section id="units" title="Units">
-            <Card className="space-y-4">
-              <div className="flex gap-2">
+            <Card className="inset-list p-0 sm:p-0 lg:p-0">
+              <div className="inset-row flex gap-2">
                 {(['lb', 'kg'] as const).map((unit) => (
                   <Button
                     key={unit}
@@ -638,8 +638,8 @@ function NumberSetting({
   const id = `setting-${label.toLowerCase().replace(/[^a-z]+/g, '-')}`
 
   return (
-    <div className="flex items-center justify-between gap-3">
-      <label htmlFor={id} className="text-ink-300 text-sm">
+    <div className="inset-row flex items-center justify-between gap-3">
+      <label htmlFor={id} className="text-ink-100 text-sm font-medium">
         {label}
       </label>
       <div className="flex items-center gap-1.5">
@@ -653,7 +653,7 @@ function NumberSetting({
             const next = Number(event.target.value)
             if (Number.isFinite(next)) onChange(next)
           }}
-          className="numeric bg-ink-850 border-ink-800 text-ink-50 tap-target w-24 rounded-lg border px-2 text-center"
+          className="inline-value numeric tap-target w-24"
         />
         {suffix !== undefined && <span className="text-ink-500 text-xs">{suffix}</span>}
       </div>
@@ -717,8 +717,8 @@ function PlateSetting() {
   const toHand = platesToHand(settings.plates, settings.units)
 
   return (
-    <div>
-      <p className="text-ink-300 text-sm">Plates you have</p>
+    <div className="inset-row">
+      <p className="text-ink-100 text-sm font-medium">Plates you have</p>
       <div className="mt-2 flex flex-wrap gap-1.5" role="group" aria-label="Plates you have">
         {PLATES[settings.units].map((plate) => {
           const has = toHand.includes(plate)

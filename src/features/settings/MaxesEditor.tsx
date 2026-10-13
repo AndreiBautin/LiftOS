@@ -34,7 +34,7 @@ export function MaxesEditor({ settings, onChange }: Props) {
       title="Current maxes"
       description="Where a lift starts before it has any history. After the first session the bar is carried forward from what you actually lifted, so these only matter once each."
     >
-      <Card className="space-y-3">
+      <Card className="inset-list p-0 sm:p-0 lg:p-0">
         {LIFTS.map((lift) => (
           <MaxRow
             key={lift.id}
@@ -68,8 +68,8 @@ function MaxRow({
   const inputId = `max-${id as string}`
 
   return (
-    <div className="flex items-center justify-between gap-3">
-      <label htmlFor={inputId} className="text-ink-300 text-sm">
+    <div className="inset-row flex items-center justify-between gap-3">
+      <label htmlFor={inputId} className="text-ink-100 text-sm font-medium">
         {label}
       </label>
       <div className="flex items-center gap-1.5">
@@ -83,7 +83,7 @@ function MaxRow({
             const parsed = Number(event.target.value)
             if (Number.isFinite(parsed) && parsed > 0) onChange(parsed)
           }}
-          className="numeric bg-ink-850 border-ink-800 text-ink-50 tap-target w-24 rounded border px-2 py-1.5 text-right text-sm"
+          className="inline-value numeric tap-target w-24"
         />
         <span className="text-ink-500 w-6 text-xs">{units}</span>
       </div>

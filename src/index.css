@@ -1801,3 +1801,28 @@ svg.lucide {
     stroke-dashoffset: 20;
   }
 }
+
+/* A value edited in place inside an inset row: no box until it is
+   touched, right-aligned like the value column of a settings list, and
+   a well appears under it on focus. */
+.inline-value {
+  border-radius: 0.625rem;
+  border: 1px solid transparent;
+  background: transparent;
+  padding: 0 0.5rem;
+  text-align: right;
+  font-weight: 600;
+  color: var(--color-ink-50);
+  transition:
+    background-color var(--dur-fast) ease-out,
+    border-color var(--dur-fast) ease-out;
+}
+
+.inline-value:hover {
+  background: color-mix(in oklab, var(--color-ink-850) 70%, transparent);
+}
+
+.inline-value:focus {
+  background: var(--color-ink-950);
+  border-color: color-mix(in oklab, var(--color-accent-500) 45%, transparent);
+}
