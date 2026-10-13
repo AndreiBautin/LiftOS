@@ -140,12 +140,12 @@ export function RestTimer({
     >
       <div
         className={cn(
-          'border-ink-800 bg-ink-900/85 overflow-hidden rounded-2xl border backdrop-blur-xl shadow-[0_-12px_40px_-12px_rgb(0_0_0/80%)]',
+          'rest-island mx-auto max-w-md overflow-hidden rounded-[1.75rem] backdrop-blur-xl',
           elapsed && 'rest-done',
         )}
       >
         {next !== undefined && (
-          <p className="border-ink-800 flex items-baseline gap-2 border-b px-3 py-1.5 text-xs">
+          <p className="border-ink-800 flex items-baseline gap-2 border-b px-5 py-1.5 text-xs">
             <span className="text-ink-500 shrink-0 font-medium tracking-wide uppercase">
               Up next
             </span>
@@ -155,7 +155,7 @@ export function RestTimer({
             </span>
           </p>
         )}
-        <div className="flex items-center gap-3 px-3 py-2.5">
+        <div className="flex items-center gap-3 px-4 py-2.5">
           <svg viewBox="0 0 48 48" className="size-12 shrink-0 -rotate-90" aria-hidden>
             <circle
               cx="24"
