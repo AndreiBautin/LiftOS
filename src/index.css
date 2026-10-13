@@ -1926,3 +1926,7 @@ main {
     scale: 0.96;
   }
 }
+
+.set-segment-lit {
+  box-shadow: 0 0 6px -1px var(--color-accent-500);
+}

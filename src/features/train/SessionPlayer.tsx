@@ -404,13 +404,22 @@ export function SessionPlayer({
             <FinishAt workout={workout} exercises={exercises} />
           </p>
         </div>
-        <div className="bg-ink-800 mt-2 h-1 overflow-hidden rounded-full" aria-hidden>
-          <div
-            className="from-accent-600 to-accent-400 h-full rounded-full bg-gradient-to-r transition-[width] duration-500"
-            style={{
-              width: `${String(totalSets === 0 ? 0 : Math.round((settled / totalSets) * 100))}%`,
-            }}
-          />
+        {/*
+          A segment per set rather than one bar: a session is counted in
+          sets, so the strip says how many are left at a glance. The one
+          just settled lights last, which is the logged-set feedback
+          reaching the top of the screen.
+        */}
+        <div className="mt-2 flex h-1 gap-[2px]" aria-hidden>
+          {Array.from({ length: totalSets }, (_, at) => (
+            <span
+              key={at}
+              className={cn(
+                'h-full flex-1 rounded-full transition-colors duration-300',
+                at < settled ? 'bg-accent-400 set-segment-lit' : 'bg-ink-800',
+              )}
+            />
+          ))}
         </div>
 
         {/*
