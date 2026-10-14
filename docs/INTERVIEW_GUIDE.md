@@ -291,15 +291,45 @@ reads better than one who says nothing is wrong.
 
 ---
 
+### "How did you approach performance?"
+
+> Measure first, and keep what moved the number. The entry chunk went
+> from 522 kB to 355 kB by loading cards below the fold and rarely used
+> tools on demand, and a size budget in CI keeps it there. Lighthouse
+> mobile went from the mid-fifties to around ninety, and most of that was
+> one fix: the hero was being pushed down twice after it painted — a
+> notice strip measured while still hidden, then animated from zero —
+> which I only found by recording layout-shift sources in headless Chrome,
+> because Lighthouse names what moved, not what moved it.
+>
+> Two of my ideas made things worse when measured — prefetching the card
+> chunks and splitting the first render — so they were reverted, and the
+> doc says so. `docs/PERFORMANCE.md` has every number and how to re-run it.
+
+### "What did a security review find?"
+
+> One real bug: the sync file path was encoded segment by segment, which
+> does not neutralise `..` — the URL parser resolves it — so a crafted
+> path could send the GitHub token to other endpoints. The address is
+> checked before any request now, with tests that assert no request is
+> made.
+>
+> The rest was hardening for a client-only app: a strict Content Security
+> Policy as a meta tag (Pages sets no headers), so a script that should
+> never run can neither execute inline nor send the token anywhere;
+> records from a backup or the sync file validated one by one, because
+> that file lives in a repository other hands can edit; formula cells
+> defused in the CSV export; and every CI action pinned to a commit.
+
 ## Numbers, if asked
 
-|              |                                                                     |
-| ------------ | ------------------------------------------------------------------- |
-| TypeScript   | ~27,000 lines across about 150 files, after the narrowing           |
-| Tests        | about 360 cases in 37 files, one run with no services needed        |
-| Domain layer | zero React and zero browser APIs, checked by lint                   |
-| Verification | one command — typecheck, lint, format, test, build                  |
-| Gate         | pre-push hook and CI run the same command; the deploy depends on it |
+|              |                                                                                 |
+| ------------ | ------------------------------------------------------------------------------- |
+| TypeScript   | ~57,000 lines across about 420 files, tests and comments included               |
+| Tests        | more than 800 cases in over 100 files, one run with no services needed          |
+| Domain layer | zero React and zero browser APIs, checked by lint                               |
+| Verification | one command — typecheck, lint, dead code, format, test, build, size budget, CSP |
+| Gate         | pre-push hook and CI run the same command; the deploy depends on it             |
 
 **Do not lead with these.** Line count is not an achievement and
 everybody knows it. They are here in case somebody asks about scale —

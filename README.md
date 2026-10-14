@@ -181,7 +181,8 @@ layout stranded in the middle of a monitor.
 - **Vitest + fake-indexeddb** so tests exercise real database semantics,
   migrations included.
 
-Roughly **360 tests** across 37 files, run on every push.
+More than **800 tests** across over a hundred files, run on every push
+(the exact count is in the CI log; a number written here only drifts).
 
 ## Documentation
 

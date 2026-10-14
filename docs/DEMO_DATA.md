@@ -58,8 +58,8 @@ That refusal is a tested property rather than a convention.
 
 ## What is in it
 
-About seventeen weeks of the shipped routine — the A and B days, Monday
-to Saturday — so a reviewer sees somebody four months into a programme
+About seventeen weeks of the shipped routine — upper, legs, push, pull,
+legs, Monday to Friday — so a reviewer sees somebody four months into a programme
 rather than an app installed last week.
 
 | Card                   | What the fixture gives it                                                       |
