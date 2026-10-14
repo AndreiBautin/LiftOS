@@ -14,33 +14,16 @@
 
 const PREFIX = import.meta.env.VITE_DEMO_MODE === 'true' ? 'lifeos.demo' : 'lifeos'
 
+/*
+ * Keys only for what this build reads. Four were removed with the
+ * features that wrote them (Firebase sync state, a device id, built-in
+ * program delivery, a storage notice); a device that ran those builds
+ * still holds the values, inert, since nothing reads them.
+ */
 export const STORAGE_KEYS = {
   settings: `${PREFIX}.settings`,
   /** Set once the install prompt has been dismissed, so it is not nagged. */
   installPromptDismissed: `${PREFIX}.install-dismissed`,
-  /** Set once the storage-durability explanation has been acknowledged. */
-  storageNoticeSeen: `${PREFIX}.storage-notice-seen`,
-  /**
-   * Ids of built-in programs this install has already been offered, so an
-   * update can add new ones without resurrecting deleted ones.
-   */
-  deliveredBuiltIns: `${PREFIX}.delivered-built-ins`,
-  /**
-   * Where this device is in its conversation with a sync target.
-   *
-   * Alongside settings rather than in IndexedDB so that a rebuilt
-   * database does not leave a cursor pointing past records the device no
-   * longer holds.
-   */
-  syncState: `${PREFIX}.sync-state`,
-  /**
-   * A stable id for this device, not this account.
-   *
-   * Two devices share an account, and the whole point is that each can
-   * tell its own writes apart from the other one's. Regenerating it per
-   * load would make a device collect back everything it had ever sent.
-   */
-  deviceId: `${PREFIX}.device-id`,
   /**
    * The private repository this device syncs through, and the token for
    * it. Device-local and **never in the backup**: settings travel in the

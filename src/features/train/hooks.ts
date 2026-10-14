@@ -84,10 +84,8 @@ export function useProgram() {
 
 const keys = {
   activeWorkout: ['workout', 'active'] as const,
-  workout: (id: WorkoutId) => ['workout', id] as const,
   recent: (limit: number) => ['workouts', 'recent', limit] as const,
   exercises: ['exercises'] as const,
-  programs: ['programs'] as const,
   previousSet: (exerciseId: ExerciseId, setIndex: number, variant: string) =>
     ['previous-set', exerciseId, setIndex, variant] as const,
 }

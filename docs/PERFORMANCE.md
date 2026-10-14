@@ -120,7 +120,7 @@ reads again for each of them.
 - **Settings.** Its 1.6 s at a 4× slowdown is layout, with one forced
   layout from the section chips that paint would have paid anyway.
 
-- **The date index.** `by-date` already existed and `recent` and `inRange`
+- **The date index.** `by-date` already existed and `recent` and `inRange` (since removed, unused)
   already used it.
 - **The clocks in the player.** The elapsed time, the rest timer and the
   set clock each tick in their own leaf component, so a tick re-renders

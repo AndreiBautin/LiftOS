@@ -13,7 +13,6 @@ const SUBJECTS: Readonly<Record<string, string>> = {
   'previous-set': 'last time’s sets',
   exercises: 'the exercise library',
   program: 'the programme',
-  programs: 'the programme',
   position: 'where you are in the block',
   'storage-status': 'storage status',
   'storage-empty': 'storage status',
