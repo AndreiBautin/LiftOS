@@ -90,6 +90,56 @@ const layerBoundaries = [
       ],
     },
   },
+  /*
+   * The four folders beside the layers. Each held its line by habit until
+   * these rules; a habit is what a hurried import breaks.
+   *
+   *   components/  shared UI any screen may use — never a screen's code
+   *   lib/, config/, shared/  leaves: imported by anything, importing
+   *                none of the app (shared/ is the logger, which config
+   *                may feed)
+   */
+  {
+    files: ['src/components/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/features/*', '@/app/*', '@/application/*', '@/infrastructure/*'],
+              message:
+                'components/ is shared UI any screen may use. It takes data as props rather than reaching into a feature, a use case or storage.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/lib/**/*.ts', 'src/config/**/*.ts', 'src/shared/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: [
+                '@/features/*',
+                '@/app/*',
+                '@/components/*',
+                '@/application/*',
+                '@/infrastructure/*',
+                '@/domain/*',
+              ],
+              message:
+                'lib/, config/ and shared/ are leaves: anything may import them, and they import none of the app. Logic that needs the domain belongs in a layer.',
+            },
+          ],
+        },
+      ],
+    },
+  },
 ]
 
 export default defineConfig([

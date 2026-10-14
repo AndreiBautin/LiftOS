@@ -1610,12 +1610,14 @@ build with a message explaining why.
 features/  →  application/  →  domain/  ←  infrastructure/
 ```
 
-| Layer               | May import         | Never imports                                     |
-| ------------------- | ------------------ | ------------------------------------------------- |
-| `domain/`           | nothing but itself | React, browser APIs, any library, any other layer |
-| `application/`      | `domain/`          | `infrastructure/`, `features/`, React             |
-| `infrastructure/`   | `domain/`          | `features/`, `app/`, React                        |
-| `features/`, `app/` | anything           | —                                                 |
+| Layer                        | May import              | Never imports                                          |
+| ---------------------------- | ----------------------- | ------------------------------------------------------ |
+| `domain/`                    | nothing but itself      | React, browser APIs, any library, any other layer      |
+| `application/`               | `domain/`               | `infrastructure/`, `features/`, React                  |
+| `infrastructure/`            | `domain/`               | `features/`, `app/`, React                             |
+| `features/`, `app/`          | anything                | —                                                      |
+| `components/`                | `lib/`, `domain/` types | `features/`, `app/`, `application/`, `infrastructure/` |
+| `lib/`, `config/`, `shared/` | each other              | any layer — they are leaves anything may import        |
 
 If a use-case needs something concrete — a repository, a clock, an id
 generator — **take it as a parameter** and wire it in `src/app/di.ts`.
