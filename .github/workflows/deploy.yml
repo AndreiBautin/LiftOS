@@ -124,3 +124,29 @@ jobs:
             || { echo "The response did not link the web manifest."; exit 1; }
 
           echo "Live site responded with the app shell and a manifest."
+
+      # **The live score, recorded and never gating.** Mobile Lighthouse
+      # against the page just deployed, written to the run's summary so
+      # each deploy carries its number (docs/PERFORMANCE.md has the
+      # history). Report-only on purpose: a shared runner's timings move
+      # with its neighbours, and a deploy that already passed its smoke
+      # test must not be failed by a noisy measurement.
+      - name: Lighthouse (report only)
+        continue-on-error: true
+        run: |
+          set -uo pipefail
+          url="${{ steps.deployment.outputs.page_url }}"
+          npx -y lighthouse@12.6.1 "$url" --quiet --only-categories=performance \
+            --form-factor=mobile --chrome-flags="--headless=new --no-sandbox" \
+            --output=json --output-path=lighthouse.json
+          node -e '
+            const r = require("./lighthouse.json")
+            const a = r.audits
+            const row = ["first-contentful-paint", "largest-contentful-paint",
+              "total-blocking-time", "cumulative-layout-shift"].map((k) => a[k].displayValue)
+            const score = Math.round(r.categories.performance.score * 100)
+            const line = `| ${score} | ${row.join(" | ")} |`
+            console.log(line)
+            require("fs").appendFileSync(process.env.GITHUB_STEP_SUMMARY,
+              `### Lighthouse, mobile\n\n| Score | FCP | LCP | TBT | CLS |\n| --- | --- | --- | --- | --- |\n${line}\n`)
+          '
