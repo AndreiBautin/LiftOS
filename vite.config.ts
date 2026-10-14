@@ -2,7 +2,7 @@ import { fileURLToPath, URL } from 'node:url'
 
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
-import { defineConfig, loadEnv } from 'vite'
+import { defineConfig, loadEnv, type Plugin } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
 /**
@@ -29,6 +29,39 @@ function readBasePath(env: Record<string, string>): string {
   return typeof value === 'string' && value.length > 0 ? value : '/'
 }
 
+/**
+ * Preloads the two bundled faces from the HTML.
+ *
+ * They were discovered only once the stylesheet had downloaded and been
+ * parsed — about 220 ms into a mobile Lighthouse load — so text painted
+ * in the fallback and then reflowed into Inter and Space Grotesk. The
+ * file names carry a content hash, so the tags are written from the
+ * build's own output rather than by hand.
+ */
+function preloadFonts(base: string): Plugin {
+  return {
+    name: 'liftos:preload-fonts',
+    apply: 'build',
+    transformIndexHtml: {
+      order: 'post',
+      handler(_html, context) {
+        const fonts = Object.keys(context.bundle ?? {}).filter((file) => file.endsWith('.woff2'))
+        return fonts.map((file) => ({
+          tag: 'link',
+          attrs: {
+            rel: 'preload',
+            as: 'font',
+            type: 'font/woff2',
+            href: `${base}${file}`,
+            crossorigin: '',
+          },
+          injectTo: 'head' as const,
+        }))
+      },
+    },
+  }
+}
+
 export default defineConfig(({ mode }) => {
   const base = readBasePath(loadEnv(mode, process.cwd(), ''))
 
@@ -38,6 +71,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       tailwindcss(),
+      preloadFonts(base),
       VitePWA({
         /*
          * **The worker no longer waits, and the banner still asks.**

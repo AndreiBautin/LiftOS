@@ -51,6 +51,7 @@ slow network; that was not measured.
 | ------------------------------------------------------------------------------------- | ----- | ----- | ----- | ---------- | ----- |
 | Baseline                                                                              | 52–54 | 3.3 s | 4.0 s | 320–360 ms | 0.424 |
 | The first paint waits for the hero's own data; the notice strip never animates from 0 | 75–78 | 3.3 s | 4.0 s | 170–250 ms | 0     |
+| Both fonts preloaded from the HTML (`preloadFonts` in `vite.config.ts`)               | 75–77 | 2.8 s | 4.0 s | —          | 0     |
 
 **On the live site** (`https://andreibautin.github.io/LiftOS/`, 2026-10-14,
 after the change above): **87–91**, FCP 2.5 s, LCP 2.9 s, TBT 140–160 ms,
