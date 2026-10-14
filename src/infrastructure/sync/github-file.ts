@@ -165,3 +165,22 @@ export async function writeFile(
   if (response.status === 409 || response.status === 422) return 'conflict'
   throw failureFor(response.status)
 }
+
+/**
+ * Which kind of GitHub token this is, read off its published prefix.
+ *
+ * A fine-grained token (`github_pat_`) can be limited to one repository
+ * and one permission, which is all sync needs. A classic one (`ghp_`)
+ * carries scopes across every repository the account can reach — and it
+ * sits in this browser's storage, so whatever it can reach is what a
+ * leak would cost. The connect form says so rather than refusing: the
+ * account is the lifter's, and so is the decision.
+ */
+export type TokenKind = 'fine-grained' | 'classic' | 'unknown'
+
+export function tokenKind(token: string): TokenKind {
+  const trimmed = token.trim()
+  if (trimmed.startsWith('github_pat_')) return 'fine-grained'
+  if (/^gh[pousr]_/.test(trimmed)) return 'classic'
+  return 'unknown'
+}

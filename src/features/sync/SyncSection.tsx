@@ -1,3 +1,4 @@
+import { tokenKind } from '@/infrastructure/sync/github-file'
 import { Cloud, RefreshCw, Unplug } from 'lucide-react'
 import { useId, useState, useSyncExternalStore } from 'react'
 
@@ -123,6 +124,13 @@ export function SyncSection() {
                   setToken(event.target.value)
                 }}
               />
+              {tokenKind(token) === 'classic' && (
+                <span role="alert" className="text-warn-500 mt-1 block text-xs">
+                  This is a classic token, which can reach every repository on the account. It is
+                  kept in this browser, so a fine-grained token limited to the one repository is the
+                  safer choice.
+                </span>
+              )}
             </label>
 
             <label className="block" htmlFor={ids.path}>

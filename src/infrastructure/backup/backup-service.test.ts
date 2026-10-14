@@ -18,6 +18,9 @@ import {
 } from '@/infrastructure/db/repositories'
 import { anEntry, aPostCheckIn, aWorkout, SQUAT } from '@/test/builders/workout'
 import { countsFor } from '@/domain/backup/envelope'
+import { STORAGE_KEYS } from '@/config/storage-keys'
+import { clearGitHubSync, saveGitHubSync } from '@/infrastructure/storage/github-sync-store'
+import { readSettings } from '@/infrastructure/storage/settings-store'
 
 import {
   applyBackup,
@@ -60,6 +63,34 @@ async function populate(): Promise<void> {
   await repositories.workouts.save(aWorkout({ date: '2026-08-20', notes: 'PR day' }))
   await repositories.checkIns.save(aPostCheckIn({ quads: 'hard' }))
 }
+
+/*
+ * **The sync token never travels in a backup.** The backup is also the
+ * file sync writes to a repository, so a token inside it would be
+ * published to wherever that file goes. It lives under its own storage
+ * key and the backup is built from the repositories and the settings
+ * object; this holds that true with a real token stored beside them.
+ */
+describe('the sync token', () => {
+  it('is in no backup, even with sync connected on this device', async () => {
+    const token = 'github_pat_TEST0000000000000000000000_never-in-a-file'
+    saveGitHubSync(STORAGE_KEYS.githubSync, {
+      owner: 'someone',
+      repo: 'training-data',
+      path: 'lifeos-sync.json',
+      token,
+    })
+    await populate()
+
+    const file = serialiseBackup(
+      await buildBackup(repositories, { ...exportOptions, settings: readSettings().settings }),
+    )
+
+    expect(file).not.toContain(token)
+    expect(file).not.toContain('github_pat_')
+    clearGitHubSync(STORAGE_KEYS.githubSync)
+  })
+})
 
 const exportOptions = { settings: DEFAULT_SETTINGS, appVersion: '1.0.0', now: NOW }
 

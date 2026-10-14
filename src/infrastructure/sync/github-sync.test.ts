@@ -1,3 +1,4 @@
+import { tokenKind } from './github-file'
 import { deleteDB } from 'idb'
 import { afterEach, describe, expect, it } from 'vitest'
 
@@ -242,5 +243,14 @@ describe('where the lifter is, across two devices', () => {
     const { updatedAt: _ignored, ...unstamped } = at(2, 'x')
     expect(isNewerPosition(unstamped, at(0, '2026-09-01T08:00:00.000Z'))).toBe(false)
     expect(isNewerPosition(at(2, '2026-09-01T09:00:00.000Z'), unstamped)).toBe(true)
+  })
+})
+
+describe('telling token kinds apart', () => {
+  it('reads the published prefixes', () => {
+    expect(tokenKind('github_pat_11ABC')).toBe('fine-grained')
+    expect(tokenKind('  ghp_abc  ')).toBe('classic')
+    expect(tokenKind('gho_abc')).toBe('classic')
+    expect(tokenKind('not-a-token')).toBe('unknown')
   })
 })
