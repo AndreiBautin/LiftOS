@@ -12,8 +12,7 @@ import type { AppSettings } from '@/domain/settings/settings'
 import { sbdSummary } from '@/domain/strength/trend'
 import { toDayKey } from '@/domain/time/day'
 import { isDeloadSession } from '@/features/train/hooks'
-import { GitHubSyncError } from '@/infrastructure/sync/github-file'
-import { syncWithGitHub, type SyncStrength } from '@/infrastructure/sync/github-sync'
+import type { SyncStrength } from '@/infrastructure/sync/github-sync'
 import { logger } from '@/shared/logging/logger'
 
 import { syncStore } from './sync-store'
@@ -109,7 +108,21 @@ export function useGitHubSync(): void {
       state.current.lastRun = now
       syncStore.phase('syncing')
 
+      /*
+       * The engine — the GitHub client, the merge, the backup envelope —
+       * loads on the first round rather than with the app: most devices
+       * never connect, and it was a sizeable part of the entry chunk.
+       */
+      let isSyncError: (error: unknown) => error is Error & { readonly reason: string } = (
+        _error,
+      ): _error is Error & { readonly reason: string } => false
       try {
+        const [{ syncWithGitHub }, { GitHubSyncError }] = await Promise.all([
+          import('@/infrastructure/sync/github-sync'),
+          import('@/infrastructure/sync/github-file'),
+        ])
+        isSyncError = (error): error is Error & { readonly reason: string } =>
+          error instanceof GitHubSyncError
         const settings = latestSettings.current
         const upcoming = await upcomingFor(services, settings, latestAthlete.current)
         const strength = await strengthFor(services, settings)
@@ -130,11 +143,8 @@ export function useGitHubSync(): void {
         // round that changed nothing would be a flicker for no reason.
         if (result.pulled + result.purged > 0) void client.invalidateQueries()
       } catch (error) {
-        const reason = error instanceof GitHubSyncError ? error.reason : 'unexpected'
-        syncStore.phase(
-          'error',
-          error instanceof GitHubSyncError ? error.message : 'Sync failed unexpectedly.',
-        )
+        const reason = isSyncError(error) ? error.reason : 'unexpected'
+        syncStore.phase('error', isSyncError(error) ? error.message : 'Sync failed unexpectedly.')
         logger.warn('sync.failed', { reason })
       } finally {
         state.current.running = false

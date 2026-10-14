@@ -9,7 +9,6 @@ import type {
   WorkoutRepository,
 } from '@/domain/repositories/ports'
 import { DATABASE_NAME, IS_DEMO } from '@/config/storage-keys'
-import { seedDemoData } from '@/application/use-cases/demo/seed'
 import { openDatabase, type AppDatabase } from '@/infrastructure/db/database'
 import {
   createCheckInRepository,
@@ -120,7 +119,18 @@ export async function bootstrap(): Promise<BootstrapResult> {
    * person who chose to begin with nothing would get the sample back on
    * the next open.
    */
-  if (IS_DEMO && (await services.settings.get()).sampleData !== 'cleared') {
+  /*
+   * The fixture is loaded only for an empty database. It is the size of a
+   * screen and was in the entry chunk of every demo open, where it ran
+   * once and then refused for good. `seedDemoData` still makes its own
+   * emptiness check; this one only decides whether to fetch it.
+   */
+  if (
+    IS_DEMO &&
+    (await services.settings.get()).sampleData !== 'cleared' &&
+    (await services.workouts.count()) === 0
+  ) {
+    const { seedDemoData } = await import('@/application/use-cases/demo/seed')
     const seeded = await seedDemoData(services)
     logger.info('demo.seed', { seeded: seeded.seeded, reason: seeded.reason ?? 'none' })
   }

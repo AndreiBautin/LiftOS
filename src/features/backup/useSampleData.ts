@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { useServices, useSettings } from '@/app/context'
-import { seedDemoData } from '@/application/use-cases/demo/seed'
 import { clearAllStores } from '@/infrastructure/db/database'
 import { logger } from '@/shared/logging/logger'
 
@@ -36,8 +35,8 @@ export function useSampleData() {
 
   const loadSample = useMutation({
     mutationFn: async () => {
-      const result = await seedDemoData(services)
-      return result
+      const { seedDemoData } = await import('@/application/use-cases/demo/seed')
+      return seedDemoData(services)
     },
     onSuccess: (result) => {
       /*

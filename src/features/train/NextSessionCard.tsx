@@ -1,5 +1,7 @@
 import { ClipboardList, ListChecks, Pencil } from 'lucide-react'
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
+
+import { lazyNamed } from '@/lib/lazy-named'
 import { Link } from 'react-router-dom'
 
 import { Badge, Card, CardHeading, Empty } from '@/components/shared/primitives'
@@ -8,7 +10,6 @@ import { buttonStyles } from '@/components/shared/styles'
 import { useSettings } from '@/app/context'
 
 import { useExercises, useSessionPreview } from './hooks'
-import { SessionDraftEditor } from './SessionDraftEditor'
 import { SessionOutline } from './SessionOutline'
 import { applyDraft, isEmptyDraft } from '@/domain/programs/session-draft'
 import { useNextSession } from './useNextSession'
@@ -87,7 +88,9 @@ export function NextSessionCard() {
       )}
 
       {editing && on !== undefined && (
-        <SessionDraftEditor day={day} on={on} library={exercises.data ?? []} />
+        <Suspense fallback={null}>
+          <SessionDraftEditor day={day} on={on} library={exercises.data ?? []} />
+        </Suspense>
       )}
       {drafted && !editing && (
         <p className="text-accent-400 mb-2 text-xs font-medium">Edited for this session</p>
@@ -101,3 +104,6 @@ export function NextSessionCard() {
     </Card>
   )
 }
+
+// Opened by Edit only, so it loads on that press.
+const SessionDraftEditor = lazyNamed(() => import('./SessionDraftEditor'), 'SessionDraftEditor')
