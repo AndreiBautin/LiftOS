@@ -55,7 +55,10 @@ slow network; that was not measured.
 
 **On the live site** (`https://andreibautin.github.io/LiftOS/`, 2026-10-14,
 after the change above): **87–91**, FCP 2.5 s, LCP 2.9 s, TBT 140–160 ms,
-CLS 0. Localhost reads lower because `vite preview` serves the chunks
+CLS 0. With the fonts preloaded: **90**, FCP 2.3 s, LCP 2.8–2.9 s,
+TBT 110–200 ms, CLS 0. Every deploy now records its own run in the
+workflow summary (report-only — the shared runner is slow and noisy; its
+first reading was 61 with 2.4 s of blocking time). Localhost reads lower because `vite preview` serves the chunks
 uncompressed; GitHub Pages compresses them. The chunks already download in
 parallel through module preload — no waterfall to break up. A cold deep
 link such as `/today` answers 404 with the app shell as the body (the
