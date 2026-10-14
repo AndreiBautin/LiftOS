@@ -52,6 +52,15 @@ slow network; that was not measured.
 | Baseline                                                                              | 52–54 | 3.3 s | 4.0 s | 320–360 ms | 0.424 |
 | The first paint waits for the hero's own data; the notice strip never animates from 0 | 75–78 | 3.3 s | 4.0 s | 170–250 ms | 0     |
 
+**On the live site** (`https://andreibautin.github.io/LiftOS/`, 2026-10-14,
+after the change above): **87–91**, FCP 2.5 s, LCP 2.9 s, TBT 140–160 ms,
+CLS 0. Localhost reads lower because `vite preview` serves the chunks
+uncompressed; GitHub Pages compresses them. The chunks already download in
+parallel through module preload — no waterfall to break up. A cold deep
+link such as `/today` answers 404 with the app shell as the body (the
+deploy copies `index.html` to `404.html`), so Lighthouse refuses it;
+measure from the root.
+
 The layout shift was the hero sliding down twice: once as the notice
 strip above it grew from a height measured while it was still hidden,
 and once as the session's name, description and medallion arrived after
@@ -99,6 +108,12 @@ is dropped by every write path; `repositories.test.ts` reads, writes and
 reads again for each of them.
 
 ## Checked and left alone
+
+- **Splitting Today's first render.** Mounting all but the first three
+  cards in a transition, to break up the longest task, did not measurably
+  lower blocking time and was reverted; live TBT is already 140–160 ms.
+- **Settings.** Its 1.6 s at a 4× slowdown is layout, with one forced
+  layout from the section chips that paint would have paid anyway.
 
 - **The date index.** `by-date` already existed and `recent` and `inRange`
   already used it.
