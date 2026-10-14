@@ -59,6 +59,27 @@ it had painted. Found by recording `layout-shift` entries with their
 sources in headless Chrome at a 4× CPU slowdown — Lighthouse names the
 element that moved, never what moved it.
 
+## In a session
+
+Timed in headless Chrome at a 4× CPU slowdown against the demo build,
+from the tap to the next screen (scripts in the session that measured them
+were throwaway; the numbers are medians of five or six).
+
+| Moment                         | Before  | After                                                       |
+| ------------------------------ | ------- | ----------------------------------------------------------- |
+| Start → the player's first set | ~630 ms | unchanged — browser layout of the player, no script hotspot |
+| Finish → the report            | ~2.1 s  | ~0.29 s                                                     |
+
+Finishing refetched the active workout, which came back empty before the
+report was set, so Today built its whole dashboard in between — sixteen
+cards and a 440 ms forced layout — only to swap it out. The player now
+stays on screen until the report replaces it (`finishing` in
+`HomePage`).
+
+**Tried and reverted:** prefetching the player's chunk when Today goes
+idle. Start → player moved 635 → 605 ms, inside the noise; on localhost
+the chunk was never the cost.
+
 ## Reads
 
 Counted on a cold load of Today with the demo (78 sessions), by wrapping

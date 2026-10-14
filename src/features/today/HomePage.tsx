@@ -11,6 +11,7 @@ import { WhatsNew } from './WhatsNew'
 import { DeloadSuggestion } from '@/features/train/DeloadSuggestion'
 import { withViewTransition } from '@/app/view-transitions'
 import type { WorkoutReport } from '@/application/use-cases/training/finish-workout'
+import type { WorkoutLog } from '@/domain/logging/workout-log'
 import { useSettings } from '@/app/context'
 import { Masonry } from '@/components/shared/Masonry'
 import {
@@ -122,6 +123,16 @@ export function HomePage() {
   const abandonWorkout = useAbandonWorkout()
 
   const [report, setReport] = useState<WorkoutReport | undefined>(undefined)
+  /*
+   * **The session being finished stays on screen until its report does.**
+   * Finishing refetches the active workout, which comes back empty before
+   * the report is set — and in between this page built the whole
+   * dashboard, sixteen cards and a forced layout, only to replace it with
+   * the report a moment later. Holding the player over that gap is most of
+   * what finishing cost, and it is also what the bar-to-hero morph wants
+   * to snapshot.
+   */
+  const [finishing, setFinishing] = useState<WorkoutLog | undefined>(undefined)
 
   if (report !== undefined) {
     return (
@@ -135,7 +146,7 @@ export function HomePage() {
     )
   }
 
-  const workout = activeWorkout.data
+  const workout = activeWorkout.data ?? finishing
   if (workout != null && exercises.data !== undefined) {
     return (
       <Suspense fallback={<Skeleton label="Opening the session" className="h-96" />}>
@@ -151,10 +162,15 @@ export function HomePage() {
              * `session-hero` transition name, so finishing grows the slim
              * bar into the panel rather than swapping screens.
              */
+            setFinishing(workout)
             finishWorkout.mutate(workout.id, {
+              onError: () => {
+                setFinishing(undefined)
+              },
               onSuccess: (finished) => {
                 withViewTransition(() => {
                   setReport(finished)
+                  setFinishing(undefined)
                   // The report opens at its hero, where the bar was pinned;
                   // left at the player's scroll it opened a screen down.
                   window.scrollTo(0, 0)
