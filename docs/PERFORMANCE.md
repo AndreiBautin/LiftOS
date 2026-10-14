@@ -62,8 +62,10 @@ element that moved, never what moved it.
 ## In a session
 
 Timed in headless Chrome at a 4× CPU slowdown against the demo build,
-from the tap to the next screen (scripts in the session that measured them
-were throwaway; the numbers are medians of five or six).
+from the tap to the next screen, medians of five or six:
+`node scripts/perf/measure.mjs <preview url> [shifts|start|finish|all]`.
+Absolute numbers move with whatever else the machine is doing; compare a
+change against a build without it, run back to back.
 
 | Moment                         | Before  | After                                                       |
 | ------------------------------ | ------- | ----------------------------------------------------------- |
