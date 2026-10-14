@@ -17,7 +17,13 @@ import type {
 import type { Tombstone, TombstonedCollection } from '@/domain/sync/tombstone'
 import { tombstoneKey } from '@/domain/sync/tombstone'
 
-import { fromStored, toStored, type AppDatabase } from './database'
+import {
+  fromStored,
+  toStored,
+  workoutSnapshots,
+  type AppDatabase,
+  type StoredWorkout,
+} from './database'
 
 /**
  * IndexedDB implementations of the domain's repository ports.
@@ -141,6 +147,23 @@ export function createPositionRepository(db: AppDatabase, clock: Clock): Positio
 export function createWorkoutRepository(db: AppDatabase, clock: Clock): WorkoutRepository {
   const newestFirst = (a: WorkoutLog, b: WorkoutLog): number => b.date.localeCompare(a.date)
 
+  /** Oldest first by date, ties by id — the `by-date` index's own order. */
+  const snapshot = (): Promise<readonly StoredWorkout[]> => {
+    let held = workoutSnapshots.get(db)
+    if (held === undefined) {
+      held = db.getAllFromIndex('workouts', 'by-date')
+      workoutSnapshots.set(db, held)
+      // A failed read must not be remembered, or every later one fails too.
+      held.catch(() => {
+        workoutSnapshots.delete(db)
+      })
+    }
+    return held
+  }
+  const changed = (): void => {
+    workoutSnapshots.delete(db)
+  }
+
   return {
     async byId(id: WorkoutId) {
       const stored = await db.get('workouts', id)
@@ -148,71 +171,68 @@ export function createWorkoutRepository(db: AppDatabase, clock: Clock): WorkoutR
     },
 
     async recent(limit: number) {
-      // Walks the date index backwards and stops at `limit`, rather than
-      // loading every workout and slicing. The difference does not matter
-      // at fifty workouts and matters a great deal at five thousand.
-      const results: WorkoutLog[] = []
-      let cursor = await db.transaction('workouts').store.index('by-date').openCursor(null, 'prev')
-
-      while (cursor !== null && results.length < limit) {
-        results.push(fromStored(cursor.value))
-        cursor = await cursor.continue()
-      }
-
-      return results
+      const all = await snapshot()
+      return all
+        .slice(Math.max(0, all.length - limit))
+        .reverse()
+        .map(fromStored)
     },
 
     async inRange(query: WorkoutQuery) {
-      const range =
-        query.from !== undefined && query.to !== undefined
-          ? IDBKeyRange.bound(query.from, query.to)
-          : query.from !== undefined
-            ? IDBKeyRange.lowerBound(query.from)
-            : query.to !== undefined
-              ? IDBKeyRange.upperBound(query.to)
-              : null
-
-      const all = (await db.getAllFromIndex('workouts', 'by-date', range)).map(fromStored)
-      const ordered = all.sort(newestFirst)
+      const { from, to } = query
+      const ordered = (await snapshot())
+        .filter(
+          (one) => (from === undefined || one.date >= from) && (to === undefined || one.date <= to),
+        )
+        .map(fromStored)
+        .sort(newestFirst)
       return query.limit === undefined ? ordered : ordered.slice(0, query.limit)
     },
 
     async onDate(date: string) {
-      return (await db.getAllFromIndex('workouts', 'by-date', date)).map(fromStored)
+      return (await snapshot()).filter((one) => one.date === date).map(fromStored)
     },
 
     async forExercise(exerciseId: ExerciseId, limit?: number) {
-      const matches = (await db.getAllFromIndex('workouts', 'by-exercise', exerciseId)).map(
-        fromStored,
-      )
-      const ordered = matches.sort(newestFirst)
+      const ordered = (await snapshot())
+        .filter((one) => one.exerciseIds.includes(exerciseId))
+        .map(fromStored)
+        .sort(newestFirst)
       return limit === undefined ? ordered : ordered.slice(0, limit)
     },
 
     async inProgress() {
-      const open = await db.getAllFromIndex('workouts', 'by-status', 'in-progress')
-      const newest = open.sort((a, b) => b.startedAt.localeCompare(a.startedAt))[0]
+      const open = (await snapshot()).filter((one) => one.status === 'in-progress')
+      const newest = [...open].sort((a, b) => b.startedAt.localeCompare(a.startedAt))[0]
       return newest === undefined ? undefined : fromStored(newest)
     },
 
     async save(log: WorkoutLog) {
       // The index field is derived here and nowhere else, so it cannot
       // drift from the entries it summarises.
+      changed()
       await db.put('workouts', toStored(stamp(log, clock)))
+      changed()
     },
 
     async restoreMany(logs: readonly WorkoutLog[]) {
+      changed()
       const tx = db.transaction('workouts', 'readwrite')
       await Promise.all([...logs.map((log) => tx.store.put(toStored(log))), tx.done])
+      changed()
     },
 
     async remove(id: WorkoutId) {
+      changed()
       await db.delete('workouts', id)
+      changed()
       await bury(db, clock, 'workouts', id)
     },
 
     async purge(id: WorkoutId) {
+      changed()
       await db.delete('workouts', id)
+      changed()
     },
 
     async count() {

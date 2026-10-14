@@ -68,6 +68,22 @@ export const DB_VERSION = 25
  */
 export type StoredWorkout = WorkoutLog & { readonly exerciseIds: readonly string[] }
 
+/**
+ * Every workout, oldest first by date, held in memory between writes.
+ *
+ * The Home page asks a dozen questions of the history at once — the week,
+ * the balance, the grid, the recency map, the trend — and each walked the
+ * store itself: 78 sessions were deserialized 883 times on one load. The
+ * snapshot is read once and dropped on any write through the repository
+ * or `clearAllStores`, which are the only two paths that touch the store.
+ *
+ * Keyed by the database handle so two handles (a test's, the app's) never
+ * share one. Another tab's write is not seen until this tab writes or
+ * reloads — the same staleness React Query's infinite `staleTime` already
+ * has, so nothing new is lost.
+ */
+export const workoutSnapshots = new WeakMap<AppDatabase, Promise<readonly StoredWorkout[]>>()
+
 export function toStored(log: WorkoutLog): StoredWorkout {
   return { ...log, exerciseIds: [...new Set(log.entries.map((entry) => entry.exerciseId))] }
 }
@@ -794,6 +810,7 @@ export async function closeAppDatabase(): Promise<void> {
  * receive a wipe instead.
  */
 export async function clearAllStores(db: AppDatabase): Promise<void> {
+  workoutSnapshots.delete(db)
   const tx = db.transaction(
     [
       'exercises',

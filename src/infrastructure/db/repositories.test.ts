@@ -6,7 +6,7 @@ import type { Exercise } from '@/domain/exercises/exercise'
 import { asExerciseId } from '@/domain/ids/ids'
 import { anEntry, aWorkout, BENCH, SQUAT } from '@/test/builders/workout'
 
-import { closeAppDatabase, openDatabase, type AppDatabase } from './database'
+import { clearAllStores, closeAppDatabase, openDatabase, type AppDatabase } from './database'
 import {
   createExerciseRepository,
   createPositionRepository,
@@ -124,6 +124,46 @@ describe('the workout repository', () => {
     await workouts.save(aWorkout({ status: 'in-progress', title: 'Today' }))
 
     expect((await workouts.inProgress())?.title).toBe('Today')
+  })
+
+  /*
+   * The history is held in memory between writes, so each of these reads
+   * first — filling the snapshot — and then writes. A snapshot that
+   * survived the write would show the old history with nothing failing.
+   */
+  it('sees a session saved after the history was read', async () => {
+    const workouts = createWorkoutRepository(db, testClock)
+    await workouts.save(aWorkout({ date: '2026-08-01' }))
+    expect(await workouts.recent(10)).toHaveLength(1)
+
+    await workouts.save(aWorkout({ date: '2026-08-02', status: 'in-progress', title: 'Now' }))
+
+    expect((await workouts.recent(10)).map((log) => log.date)).toEqual(['2026-08-02', '2026-08-01'])
+    expect((await workouts.inProgress())?.title).toBe('Now')
+  })
+
+  it('forgets a deleted session, and a cleared database, after reading them', async () => {
+    const workouts = createWorkoutRepository(db, testClock)
+    const kept = aWorkout({ date: '2026-08-01' })
+    const gone = aWorkout({ date: '2026-08-02' })
+    await workouts.restoreMany([kept, gone])
+    expect(await workouts.recent(10)).toHaveLength(2)
+
+    await workouts.remove(gone.id)
+    expect((await workouts.recent(10)).map((log) => log.id)).toEqual([kept.id])
+
+    await clearAllStores(db)
+    expect(await workouts.recent(10)).toEqual([])
+  })
+
+  it('shares one snapshot between two repositories on the same database', async () => {
+    const reader = createWorkoutRepository(db, testClock)
+    const writer = createWorkoutRepository(db, testClock)
+    expect(await reader.recent(10)).toEqual([])
+
+    await writer.save(aWorkout({ date: '2026-08-03' }))
+
+    expect(await reader.recent(10)).toHaveLength(1)
   })
 
   it('returns undefined when nothing is in progress', async () => {
