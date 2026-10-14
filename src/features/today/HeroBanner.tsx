@@ -1,12 +1,12 @@
 import { CheckCircle2, Dumbbell, LayoutGrid, Play, Plus, Settings } from 'lucide-react'
 import { MoveSession } from './MoveSession'
-import { useCallback, useState } from 'react'
+import { Suspense, useCallback, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 
 import { useServices, useSettings } from '@/app/context'
 import { useCountUp } from '@/features/train/useCountUp'
-import { EverythingSheet } from '@/features/navigation/EverythingSheet'
+import { lazyNamed } from '@/lib/lazy-named'
 import { SyncBadge } from '@/features/sync/SyncBadge'
 import { RestedFor } from './RestedFor'
 import { Button } from '@/components/shared/primitives'
@@ -148,7 +148,11 @@ export function HeroBanner() {
       <div className="-mt-4 mb-2 flex justify-end empty:hidden">
         <SyncBadge />
       </div>
-      {everything && <EverythingSheet onClose={closeEverything} />}
+      {everything && (
+        <Suspense fallback={null}>
+          <EverythingSheet onClose={closeEverything} />
+        </Suspense>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
         <div className="min-w-0">
@@ -453,3 +457,9 @@ function Counted({ value }: { readonly value: number }) {
     </>
   )
 }
+
+// Opened from the grid button only, so it loads on that press.
+const EverythingSheet = lazyNamed(
+  () => import('@/features/navigation/EverythingSheet'),
+  'EverythingSheet',
+)

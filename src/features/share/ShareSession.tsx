@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 
 import { Button } from '@/components/shared/primitives'
 
-import { drawShareCard, type ShareCard } from './session-card'
+import type { ShareCard } from './session-card'
 
 /**
  * A button that turns a session into a picture and offers it.
@@ -22,7 +22,9 @@ import { drawShareCard, type ShareCard } from './session-card'
 export function ShareSession({ card }: { readonly card: ShareCard }) {
   return (
     <SharePicture
-      draw={() => drawShareCard(card)}
+      // The canvas renderer loads on the tap that asks for it: it is the
+      // largest thing here and most sessions are never shared.
+      draw={async () => (await import('./session-card')).drawShareCard(card)}
       fileName={`liftos-${card.date}.png`}
       title={card.title}
       alt={`${card.title}, ${String(card.sets)} sets`}

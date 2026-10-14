@@ -1,0 +1,221 @@
+import { Activity, CalendarDays, Dumbbell, LayoutGrid, Search } from 'lucide-react'
+import { MUSCLE_GROUP_LABELS, type MuscleGroup } from '@/domain/exercises/taxonomy'
+import { useServices, useSettings } from '@/app/context'
+import { toDayKey } from '@/domain/time/day'
+import { nearestLoadable, rackFor } from '@/domain/units/plates'
+import { PlateLoader } from '@/features/train/PlateLoader'
+import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+
+import { withViewTransition } from '@/app/view-transitions'
+import { useExercises, useRecentWorkouts } from '@/features/train/hooks'
+import { cn } from '@/lib/cn'
+
+import { SCREENS, screenPath } from '@/features/navigation/screens'
+
+import { rankItems, type PaletteItem } from './rank'
+
+/** The palette itself, loaded the first time ⌘K or / opens it. */
+export function Palette({ onClose }: { readonly onClose: () => void }) {
+  const navigate = useNavigate()
+  const { settings } = useSettings()
+  const today = toDayKey(useServices().clock.now())
+  const exercises = useExercises()
+  const workouts = useRecentWorkouts(30)
+  const [query, setQuery] = useState('')
+  const [chosen, setChosen] = useState(0)
+
+  const items = useMemo((): readonly PaletteItem[] => {
+    const pageItems = SCREENS.map((screen) => ({
+      id: screen.id,
+      label: screen.label,
+      kind: 'Page',
+      keywords: screen.keywords,
+      to: screenPath(screen, today),
+    }))
+    const exerciseItems = (exercises.data ?? [])
+      .filter((exercise) => !exercise.isArchived)
+      .map((exercise) => ({
+        id: `exercise:${exercise.id}`,
+        label: exercise.name,
+        kind: 'Exercise',
+        to: `/exercise/${exercise.id}`,
+      }))
+    const sessionItems = (workouts.data ?? [])
+      .filter((log) => log.status !== 'in-progress')
+      .map((log) => ({
+        id: `session:${log.id}`,
+        label: log.title,
+        kind: shortDate(log.date),
+        keywords: `session ${log.date} ${shortDate(log.date)}`,
+        to: `/session/${log.id}`,
+      }))
+    const muscleItems = (Object.keys(MUSCLE_GROUP_LABELS) as MuscleGroup[]).map((muscle) => ({
+      id: `muscle:${muscle}`,
+      label: MUSCLE_GROUP_LABELS[muscle],
+      kind: 'Muscle',
+      keywords: 'muscle sets',
+      to: `/muscle/${muscle}`,
+    }))
+    return [...pageItems, ...muscleItems, ...exerciseItems, ...sessionItems]
+  }, [exercises.data, workouts.data, today])
+
+  const shown = rankItems(items, query)
+  /*
+   * **A number is a plate question.** "245" or "plates 245" draws that
+   * load on a bar with the plates you have, above whatever else matches —
+   * the calculator a lifter reaches for at a desk is one keystroke away
+   * here rather than inside a session.
+   */
+  const asked = /^(?:plates?\s+)?(\d{2,4}(?:\.\d+)?)$/i.exec(query.trim())?.[1]
+  const plateLoad = asked === undefined ? undefined : Number(asked)
+  const at = Math.min(chosen, Math.max(0, shown.length - 1))
+
+  const go = (item: PaletteItem | undefined) => {
+    if (item === undefined) return
+    onClose()
+    withViewTransition(() => {
+      void navigate(item.to)
+    })
+  }
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Go to"
+      className="bg-ink-950/70 fixed inset-0 z-50 flex items-start justify-center p-4 pt-[12vh] backdrop-blur-sm"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose()
+      }}
+    >
+      <div className="palette-panel w-full max-w-lg overflow-hidden rounded-2xl">
+        <label className="border-ink-800 flex items-center gap-3 border-b px-4">
+          <Search size={16} className="text-ink-500 shrink-0" aria-hidden />
+          <span className="sr-only">Go to</span>
+          <input
+            autoFocus
+            value={query}
+            placeholder="Go to a page, an exercise, a session — or type a weight"
+            role="combobox"
+            aria-expanded="true"
+            aria-controls="palette-results"
+            aria-activedescendant={shown[at] === undefined ? undefined : `palette-${String(at)}`}
+            onChange={(event) => {
+              setQuery(event.target.value)
+              setChosen(0)
+            }}
+            onKeyDown={(event) => {
+              if (event.key === 'ArrowDown') {
+                event.preventDefault()
+                setChosen(Math.min(shown.length - 1, at + 1))
+              } else if (event.key === 'ArrowUp') {
+                event.preventDefault()
+                setChosen(Math.max(0, at - 1))
+              } else if (event.key === 'Enter') {
+                event.preventDefault()
+                go(shown[at])
+              } else if (event.key === 'Escape') {
+                onClose()
+              }
+            }}
+            className="text-ink-50 placeholder:text-ink-500 h-14 w-full bg-transparent text-base outline-none"
+          />
+          <kbd className="border-ink-700 text-ink-500 rounded border px-1.5 text-[0.65rem]">
+            Esc
+          </kbd>
+        </label>
+        {plateLoad !== undefined && (
+          <div className="border-ink-800 border-b px-4 pt-3 pb-1">
+            <PlateLoader
+              load={plateLoad}
+              unit={settings.units}
+              available={rackFor(settings.plates, settings.units, settings.platePairs)}
+            />
+            {(() => {
+              // A load the plates cannot make offers the nearest that they can.
+              const near = nearestLoadable(
+                plateLoad,
+                settings.units,
+                'barbell',
+                rackFor(settings.plates, settings.units, settings.platePairs),
+              )
+              const options = [near?.below, near?.above].filter(
+                (value): value is number => value !== undefined,
+              )
+              return options.length === 0 ? null : (
+                <p className="mt-1 flex items-center gap-2 text-xs">
+                  <span className="text-ink-500">The plates make</span>
+                  {options.map((value) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => {
+                        setQuery(String(value))
+                      }}
+                      className="border-ink-700 text-ink-100 hover:border-accent-500 tap-target numeric rounded-full border px-3 font-medium"
+                    >
+                      {value}
+                    </button>
+                  ))}
+                </p>
+              )
+            })()}
+          </div>
+        )}
+        <ul id="palette-results" role="listbox" className="max-h-[50vh] overflow-y-auto p-2">
+          {shown.length === 0 && plateLoad === undefined && (
+            <li className="text-ink-500 px-3 py-6 text-center text-sm">Nothing by that name.</li>
+          )}
+          {shown.map((item, index) => (
+            <li
+              key={item.id}
+              id={`palette-${String(index)}`}
+              role="option"
+              aria-selected={index === at}
+              onMouseEnter={() => {
+                setChosen(index)
+              }}
+              onClick={() => {
+                go(item)
+              }}
+              className={cn(
+                'palette-option flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm',
+                index === at ? 'palette-option-on text-ink-50' : 'text-ink-300',
+              )}
+            >
+              <span
+                className="bg-ink-850 text-ink-300 flex size-7 shrink-0 items-center justify-center rounded-lg"
+                aria-hidden
+              >
+                {item.kind === 'Page' ? (
+                  <LayoutGrid size={14} />
+                ) : item.kind === 'Exercise' ? (
+                  <Dumbbell size={14} />
+                ) : item.kind === 'Muscle' ? (
+                  <Activity size={14} />
+                ) : (
+                  <CalendarDays size={14} />
+                )}
+              </span>
+              <span className="min-w-0 flex-1 truncate">{item.label}</span>
+              <span className="text-ink-500 shrink-0 text-xs">{item.kind}</span>
+              {index === at && (
+                <kbd className="text-ink-300 border-ink-700 hidden rounded border px-1 text-[0.65rem] sm:inline">
+                  ↵
+                </kbd>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  )
+}
+
+function shortDate(day: string): string {
+  return new Date(`${day}T00:00:00`).toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+  })
+}

@@ -4,10 +4,11 @@ Measured with `pnpm build && node scripts/chunk-sizes.mjs` (raw / gzip).
 Each change records its before and after; a change that moved nothing is
 reverted rather than listed.
 
-| Change                                                          | Entry chunk         |
-| --------------------------------------------------------------- | ------------------- |
-| Baseline                                                        | 522.4 kB / 158.9 kB |
-| Home cards below the fold and the session player load on demand | 386.9 kB / 121.9 kB |
+| Change                                                             | Entry chunk         |
+| ------------------------------------------------------------------ | ------------------- |
+| Baseline                                                           | 522.4 kB / 158.9 kB |
+| Home cards below the fold and the session player load on demand    | 386.9 kB / 121.9 kB |
+| Palette, Everything sheet and the share renderer load on first use | 369.4 kB / 115.8 kB |
 
 What is left in the entry chunk is mostly framework: React DOM, React
 Router, TanStack Query and the IndexedDB layer the first screen reads
