@@ -11,7 +11,6 @@ import type {
   ExerciseRepository,
   PositionRepository,
   TombstoneRepository,
-  WorkoutQuery,
   WorkoutRepository,
 } from '@/domain/repositories/ports'
 import type { Tombstone, TombstonedCollection } from '@/domain/sync/tombstone'
@@ -64,9 +63,6 @@ export function createTombstoneRepository(db: AppDatabase): TombstoneRepository 
     async all() {
       return db.getAll('tombstones')
     },
-    async since(deletedAt: string) {
-      return db.getAllFromIndex('tombstones', 'by-deleted', IDBKeyRange.lowerBound(deletedAt, true))
-    },
     async record(tombstones: readonly Tombstone[]) {
       const tx = db.transaction('tombstones', 'readwrite')
       await Promise.all([
@@ -89,25 +85,14 @@ export function createTombstoneRepository(db: AppDatabase): TombstoneRepository 
  * between them still could not deliver an edit to an exercise that
  * already existed.
  */
-export function createExerciseRepository(db: AppDatabase, clock: Clock): ExerciseRepository {
+export function createExerciseRepository(db: AppDatabase): ExerciseRepository {
   return {
     async all() {
       return resolveLibrary(builtInExercises(), await db.getAll('exercises'))
     },
-    async byId(id: ExerciseId) {
-      const library = await this.all()
-      return library.find((exercise) => exercise.id === id)
-    },
-    async save(exercise: Exercise) {
-      await db.put('exercises', stamp(exercise, clock))
-    },
     async restoreMany(exercises: readonly Exercise[]) {
       const tx = db.transaction('exercises', 'readwrite')
       await Promise.all([...exercises.map((exercise) => tx.store.put(exercise)), tx.done])
-    },
-    async remove(id: ExerciseId) {
-      await db.delete('exercises', id)
-      await bury(db, clock, 'exercises', id)
     },
     async purge(id: ExerciseId) {
       await db.delete('exercises', id)
@@ -137,9 +122,6 @@ export function createPositionRepository(db: AppDatabase, clock: Clock): Positio
     },
     async restore(position: ProgramPosition) {
       await db.put('position', position, POSITION_KEY)
-    },
-    async clear() {
-      await db.delete('position', POSITION_KEY)
     },
   }
 }
@@ -176,21 +158,6 @@ export function createWorkoutRepository(db: AppDatabase, clock: Clock): WorkoutR
         .slice(Math.max(0, all.length - limit))
         .reverse()
         .map(fromStored)
-    },
-
-    async inRange(query: WorkoutQuery) {
-      const { from, to } = query
-      const ordered = (await snapshot())
-        .filter(
-          (one) => (from === undefined || one.date >= from) && (to === undefined || one.date <= to),
-        )
-        .map(fromStored)
-        .sort(newestFirst)
-      return query.limit === undefined ? ordered : ordered.slice(0, query.limit)
-    },
-
-    async onDate(date: string) {
-      return (await snapshot()).filter((one) => one.date === date).map(fromStored)
     },
 
     async forExercise(exerciseId: ExerciseId, limit?: number) {
@@ -245,38 +212,11 @@ export function createWorkoutRepository(db: AppDatabase, clock: Clock): WorkoutR
   }
 }
 
-export function createCheckInRepository(db: AppDatabase, clock: Clock): CheckInRepository {
+export function createCheckInRepository(db: AppDatabase): CheckInRepository {
   return {
-    async byId(id: CheckInId) {
-      return db.get('checkIns', id)
-    },
-    async forWorkout(workoutId: WorkoutId) {
-      return db.getAllFromIndex('checkIns', 'by-workout', workoutId)
-    },
-    async recent(limit: number) {
-      const results: CheckIn[] = []
-      let cursor = await db
-        .transaction('checkIns')
-        .store.index('by-recorded')
-        .openCursor(null, 'prev')
-
-      while (cursor !== null && results.length < limit) {
-        results.push(cursor.value)
-        cursor = await cursor.continue()
-      }
-
-      return results
-    },
-    async save(checkIn: CheckIn) {
-      await db.put('checkIns', stamp(checkIn, clock))
-    },
     async restoreMany(checkIns: readonly CheckIn[]) {
       const tx = db.transaction('checkIns', 'readwrite')
       await Promise.all([...checkIns.map((checkIn) => tx.store.put(checkIn)), tx.done])
-    },
-    async remove(id: CheckInId) {
-      await db.delete('checkIns', id)
-      await bury(db, clock, 'checkIns', id)
     },
     async purge(id: CheckInId) {
       await db.delete('checkIns', id)

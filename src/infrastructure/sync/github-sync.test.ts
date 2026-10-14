@@ -73,9 +73,9 @@ async function device(name: string): Promise<SyncRepositories> {
   const db: AppDatabase = await openDatabase(name)
   opened.push(name)
   return {
-    exercises: createExerciseRepository(db, clock),
+    exercises: createExerciseRepository(db),
     workouts: createWorkoutRepository(db, clock),
-    checkIns: createCheckInRepository(db, clock),
+    checkIns: createCheckInRepository(db),
     tombstones: createTombstoneRepository(db),
     position: createPositionRepository(db, clock),
   }

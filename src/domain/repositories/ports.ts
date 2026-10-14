@@ -21,8 +21,6 @@ import type { Tombstone } from '@/domain/sync/tombstone'
 
 export interface ExerciseRepository {
   all(): Promise<readonly Exercise[]>
-  byId(id: ExerciseId): Promise<Exercise | undefined>
-  save(exercise: Exercise): Promise<void>
   /**
    * Writes records exactly as given, without stamping `updatedAt`.
    *
@@ -34,7 +32,6 @@ export interface ExerciseRepository {
    * ask to save and receive a restore.
    */
   restoreMany(exercises: readonly Exercise[]): Promise<void>
-  remove(id: ExerciseId): Promise<void>
   /**
    * Deletes without recording a tombstone.
    *
@@ -67,21 +64,12 @@ export interface PositionRepository {
   save(position: ProgramPosition): Promise<void>
   /** Writes the position exactly as given — the other device's, from sync. */
   restore(position: ProgramPosition): Promise<void>
-  clear(): Promise<void>
-}
-
-export interface WorkoutQuery {
-  readonly from?: string
-  readonly to?: string
-  readonly limit?: number
 }
 
 export interface WorkoutRepository {
   byId(id: WorkoutId): Promise<WorkoutLog | undefined>
   /** Most recent first. */
   recent(limit: number): Promise<readonly WorkoutLog[]>
-  inRange(query: WorkoutQuery): Promise<readonly WorkoutLog[]>
-  onDate(date: string): Promise<readonly WorkoutLog[]>
   /**
    * Every workout containing an exercise, newest first. Backs both the
    * previous-performance placeholder and the estimated-max chart, and is
@@ -123,10 +111,6 @@ export interface WorkoutRepository {
 }
 
 export interface CheckInRepository {
-  byId(id: CheckInId): Promise<CheckIn | undefined>
-  forWorkout(workoutId: WorkoutId): Promise<readonly CheckIn[]>
-  recent(limit: number): Promise<readonly CheckIn[]>
-  save(checkIn: CheckIn): Promise<void>
   /**
    * Writes records exactly as given, without stamping `updatedAt`.
    *
@@ -138,7 +122,6 @@ export interface CheckInRepository {
    * ask to save and receive a restore.
    */
   restoreMany(checkIns: readonly CheckIn[]): Promise<void>
-  remove(id: CheckInId): Promise<void>
   /**
    * Deletes without recording a tombstone.
    *
@@ -168,8 +151,6 @@ export interface CheckInRepository {
  */
 export interface TombstoneRepository {
   all(): Promise<readonly Tombstone[]>
-  /** Deletions strictly after this timestamp, for an incremental pull. */
-  since(deletedAt: string): Promise<readonly Tombstone[]>
   /**
    * Records tombstones that came from elsewhere — a backup file, or
    * another device. Deleting locally goes through the owning

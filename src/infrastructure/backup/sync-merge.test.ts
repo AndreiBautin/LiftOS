@@ -27,9 +27,9 @@ let repositories: BackupRepositories
 beforeEach(async () => {
   db = await openDatabase(TEST_DB)
   repositories = {
-    exercises: createExerciseRepository(db, testClock),
+    exercises: createExerciseRepository(db),
     workouts: createWorkoutRepository(db, testClock),
-    checkIns: createCheckInRepository(db, testClock),
+    checkIns: createCheckInRepository(db),
     tombstones: createTombstoneRepository(db),
   }
 })

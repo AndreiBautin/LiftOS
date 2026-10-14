@@ -92,7 +92,7 @@ let program: ReturnType<typeof deriveProgram>
 function services() {
   return {
     db,
-    exercises: createExerciseRepository(db, testClock),
+    exercises: createExerciseRepository(db),
     position: createPositionRepository(db, clock),
     workouts: createWorkoutRepository(db, testClock),
     ids: counterIds(),

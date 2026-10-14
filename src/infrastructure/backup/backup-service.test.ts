@@ -44,9 +44,9 @@ let repositories: BackupRepositories
 beforeEach(async () => {
   db = await openDatabase(TEST_DB)
   repositories = {
-    exercises: createExerciseRepository(db, testClock),
+    exercises: createExerciseRepository(db),
     workouts: createWorkoutRepository(db, testClock),
-    checkIns: createCheckInRepository(db, testClock),
+    checkIns: createCheckInRepository(db),
     tombstones: createTombstoneRepository(db),
   }
 })
@@ -61,7 +61,7 @@ async function populate(): Promise<void> {
     aWorkout({ date: '2026-08-01', entries: [anEntry({ exerciseId: SQUAT })] }),
   )
   await repositories.workouts.save(aWorkout({ date: '2026-08-20', notes: 'PR day' }))
-  await repositories.checkIns.save(aPostCheckIn({ quads: 'hard' }))
+  await repositories.checkIns.restoreMany([aPostCheckIn({ quads: 'hard' })])
 }
 
 /*

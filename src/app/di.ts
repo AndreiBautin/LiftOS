@@ -82,10 +82,10 @@ export async function bootstrap(): Promise<BootstrapResult> {
 
   const services: AppServices = {
     db,
-    exercises: withChosenSteps(createExerciseRepository(db, systemClock), settings),
+    exercises: withChosenSteps(createExerciseRepository(db), settings),
     position: createPositionRepository(db, systemClock),
     workouts: createWorkoutRepository(db, systemClock),
-    checkIns: createCheckInRepository(db, systemClock),
+    checkIns: createCheckInRepository(db),
     tombstones: createTombstoneRepository(db),
     settings,
     ids: cryptoIds,
@@ -165,15 +165,7 @@ function withChosenSteps(
 ): ExerciseRepository {
   return {
     all: async () => withLoadSteps(await repository.all(), (await settings.get()).loadSteps),
-    byId: async (id) => {
-      const found = await repository.byId(id)
-      return found === undefined
-        ? undefined
-        : withLoadSteps([found], (await settings.get()).loadSteps)[0]
-    },
-    save: (exercise) => repository.save(exercise),
     restoreMany: (exercises) => repository.restoreMany(exercises),
-    remove: (id) => repository.remove(id),
     purge: (id) => repository.purge(id),
     count: () => repository.count(),
   }

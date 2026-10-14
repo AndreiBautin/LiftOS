@@ -106,17 +106,6 @@ describe('the workout repository', () => {
     expect(recent[0]?.date).toBe('2026-08-30')
   })
 
-  it('filters by date range', async () => {
-    const workouts = createWorkoutRepository(db, testClock)
-
-    await workouts.save(aWorkout({ date: '2026-07-15' }))
-    await workouts.save(aWorkout({ date: '2026-08-05' }))
-    await workouts.save(aWorkout({ date: '2026-08-25' }))
-
-    const august = await workouts.inRange({ from: '2026-08-01', to: '2026-08-31' })
-    expect(august.map((log) => log.date)).toEqual(['2026-08-25', '2026-08-05'])
-  })
-
   it('finds the single workout still in progress', async () => {
     const workouts = createWorkoutRepository(db, testClock)
 
@@ -226,40 +215,50 @@ describe('the exercise library', () => {
    * sync and no retirement list to keep in step.
    */
   it('resolves the whole catalogue with nothing stored at all', async () => {
-    const exercises = createExerciseRepository(db, testClock)
+    const exercises = createExerciseRepository(db)
 
     expect(await exercises.count()).toBe(builtInExercises().length)
-    expect((await exercises.byId(asExerciseId('bench-press')))?.name).toBe('Bench Press')
+    expect(
+      (await exercises.all()).find((one) => one.id === asExerciseId('bench-press'))?.name,
+    ).toBe('Bench Press')
   })
 
   it('prefers the catalogue over a stale copy on the device', async () => {
     // The failure this replaces: a device went on showing 'Pull-Ups' and
     // a 12-20 lateral raise long after the catalogue said otherwise,
     // because every delivery mechanism was additive.
-    const exercises = createExerciseRepository(db, testClock)
-    await exercises.save(anExercise({ id: asExerciseId('bench-press'), name: 'Bench Presses' }))
+    const exercises = createExerciseRepository(db)
+    await exercises.restoreMany([
+      anExercise({ id: asExerciseId('bench-press'), name: 'Bench Presses' }),
+    ])
 
-    expect((await exercises.byId(asExerciseId('bench-press')))?.name).toBe('Bench Press')
+    expect(
+      (await exercises.all()).find((one) => one.id === asExerciseId('bench-press'))?.name,
+    ).toBe('Bench Press')
   })
 
   it('keeps a withdrawn built-in, archived, so history still resolves', async () => {
-    const exercises = createExerciseRepository(db, testClock)
-    await exercises.save(
+    const exercises = createExerciseRepository(db)
+    await exercises.restoreMany([
       anExercise({ id: asExerciseId('lunge'), isBuiltIn: true, isArchived: false }),
-    )
+    ])
 
     // Archived by construction rather than by a hand-written list: an
     // exercise leaving the catalogue *is* its retirement.
-    expect((await exercises.byId(asExerciseId('lunge')))?.isArchived).toBe(true)
+    expect(
+      (await exercises.all()).find((one) => one.id === asExerciseId('lunge'))?.isArchived,
+    ).toBe(true)
   })
 
   it('leaves a lifter’s own exercise alone', async () => {
-    const exercises = createExerciseRepository(db, testClock)
-    await exercises.save(
+    const exercises = createExerciseRepository(db)
+    await exercises.restoreMany([
       anExercise({ id: asExerciseId('my-own-movement'), isBuiltIn: false, isArchived: false }),
-    )
+    ])
 
-    expect((await exercises.byId(asExerciseId('my-own-movement')))?.isArchived).toBe(false)
+    expect(
+      (await exercises.all()).find((one) => one.id === asExerciseId('my-own-movement'))?.isArchived,
+    ).toBe(false)
   })
 })
 
@@ -294,23 +293,6 @@ describe('where the lifter is', () => {
 
     // Saved again, not appended.
     expect((await position.get())?.weekIndex).toBe(4)
-  })
-
-  it('clears back to having none', async () => {
-    const position = createPositionRepository(db, {
-      now: () => new Date('2026-08-01T09:00:00.000Z'),
-    })
-    await position.save({
-      cycleNumber: 1,
-      blockIndex: 0,
-      weekIndex: 0,
-      dayIndex: 0,
-      startedAt: '2026-08-01T00:00:00.000Z',
-    })
-
-    await position.clear()
-
-    expect(await position.get()).toBeUndefined()
   })
 })
 
