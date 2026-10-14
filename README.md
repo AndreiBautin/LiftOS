@@ -186,17 +186,18 @@ More than **800 tests** across over a hundred files, run on every push
 
 ## Documentation
 
-|                                                                         |                                                             |
-| ----------------------------------------------------------------------- | ----------------------------------------------------------- |
-| [ARCHITECTURE.md](docs/ARCHITECTURE.md)                                 | Layers, the prescription model, a request traced end to end |
-| [DEMO_DATA.md](docs/DEMO_DATA.md)                                       | What the deployed fixture contains, and what keeps it safe  |
-| [PERSISTENCE.md](docs/PERSISTENCE.md)                                   | Where data lives and what destroys it                       |
-| [SECURITY.md](docs/SECURITY.md)                                         | Threat model for an app with no server                      |
-| [DEPLOYMENT.md](docs/DEPLOYMENT.md)                                     | Hosting, CI/CD, and the base-path trap                      |
-| [TESTING.md](docs/TESTING.md)                                           | Strategy, and what is deliberately **not** tested           |
-| [PRODUCTIONIZATION_ASSESSMENT.md](docs/PRODUCTIONIZATION_ASSESSMENT.md) | The honest audit this was hardened against                  |
-| [INTERVIEW_GUIDE.md](docs/INTERVIEW_GUIDE.md)                           | What is worth talking about here, and what not to claim     |
-| [REPOSITORY_ARCHAEOLOGY.md](docs/REPOSITORY_ARCHAEOLOGY.md)             | The eight apps this replaces, and what survived             |
+|                                                                         |                                                                             |
+| ----------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md)                                 | Layers, the prescription model, a request traced end to end                 |
+| [DEMO_DATA.md](docs/DEMO_DATA.md)                                       | What the deployed fixture contains, and what keeps it safe                  |
+| [PERSISTENCE.md](docs/PERSISTENCE.md)                                   | Where data lives and what destroys it                                       |
+| [SECURITY.md](docs/SECURITY.md)                                         | Threat model for an app with no server                                      |
+| [DEPLOYMENT.md](docs/DEPLOYMENT.md)                                     | Hosting, CI/CD, and the base-path trap                                      |
+| [TESTING.md](docs/TESTING.md)                                           | Strategy, and what is deliberately **not** tested                           |
+| [HISTORY.md](docs/HISTORY.md)                                           | The life hub and the Firebase era this grew out of, and why each piece went |
+| [PRODUCTIONIZATION_ASSESSMENT.md](docs/PRODUCTIONIZATION_ASSESSMENT.md) | The honest audit this was hardened against                                  |
+| [INTERVIEW_GUIDE.md](docs/INTERVIEW_GUIDE.md)                           | What is worth talking about here, and what not to claim                     |
+| [REPOSITORY_ARCHAEOLOGY.md](docs/REPOSITORY_ARCHAEOLOGY.md)             | The eight apps this replaces, and what survived                             |
 
 ## Origins
 
