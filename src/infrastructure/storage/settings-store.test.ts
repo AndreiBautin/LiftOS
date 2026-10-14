@@ -324,3 +324,46 @@ describe('accepted resets', () => {
     })
   })
 })
+
+/*
+ * **Configuration is parsed totally**: bad input degrades to the defaults
+ * with a warning, never a crash at startup. The field-by-field tests
+ * above each drop one bad value; these hold the whole read.
+ */
+describe('settings that cannot be read', () => {
+  it('fall back to the defaults, with a warning, when storage refuses access', () => {
+    const refusing = memoryStorage()
+    refusing.getItem = () => {
+      throw new DOMException('denied')
+    }
+    const result = readSettings(refusing)
+    expect(result.settings).toEqual(DEFAULT_SETTINGS)
+    expect(result.recovered).toBe(true)
+    expect(result.warning).toMatch(/unavailable/)
+  })
+
+  it('fall back to the defaults, with a warning, when the text is not JSON', () => {
+    const store = memoryStorage()
+    store.setItem(STORAGE_KEYS.settings, '{"units": "kg",')
+    const result = readSettings(store)
+    expect(result.settings).toEqual(DEFAULT_SETTINGS)
+    expect(result.warning).toMatch(/reset to defaults/)
+  })
+
+  it('read as the defaults when every field is the wrong type', () => {
+    const store = memoryStorage()
+    const junk = Object.fromEntries(Object.keys(DEFAULT_SETTINGS).map((key) => [key, { nope: [] }]))
+    store.setItem(STORAGE_KEYS.settings, JSON.stringify(junk))
+    const { settings } = readSettings(store)
+    for (const [key, value] of Object.entries(DEFAULT_SETTINGS)) {
+      if (key === 'updatedAt') continue
+      expect([key, settings[key as keyof typeof settings]]).toEqual([key, value])
+    }
+  })
+
+  it('read as the defaults when the JSON is not an object at all', () => {
+    const store = memoryStorage()
+    store.setItem(STORAGE_KEYS.settings, '[1, 2, 3]')
+    expect(readSettings(store).settings).toEqual(DEFAULT_SETTINGS)
+  })
+})

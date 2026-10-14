@@ -163,16 +163,7 @@ function mergeWithDefaults(parsed: unknown): AppSettings {
      * and stops the moment a paused estimate exists, so a correction is
      * never overwritten — see `migrateBenchEstimate`.
      */
-    estimatedMaxes: migrateBenchEstimate(
-      hasEntries(stored.estimatedMaxes)
-        ? Object.fromEntries(
-            Object.entries(stored.estimatedMaxes).filter(
-              (entry): entry is [string, number] =>
-                typeof entry[1] === 'number' && Number.isFinite(entry[1]) && entry[1] > 0,
-            ),
-          )
-        : DEFAULT_SETTINGS.estimatedMaxes,
-    ),
+    estimatedMaxes: migrateBenchEstimate(validMaxesOr(stored.estimatedMaxes)),
     excludedExercises: Array.isArray(stored.excludedExercises)
       ? (stored.excludedExercises as AppSettings['excludedExercises'])
       : DEFAULT_SETTINGS.excludedExercises,
@@ -277,8 +268,21 @@ function bodyweightOf(stored: unknown): { bodyweight?: number } {
     : { bodyweight: DEFAULT_SETTINGS.bodyweight }
 }
 
-function hasEntries(value: unknown): value is Record<string, unknown> {
-  return isRecord(value) && Object.keys(value).length > 0
+/**
+ * The stored maxes that are usable, or the defaults when none are.
+ *
+ * **Emptiness is judged after the bad entries are dropped**, not before.
+ * It was checked first, so a record holding only junk passed as "has
+ * entries", filtered down to `{}`, and shadowed the seeded maxes — the
+ * very failure the rule above exists to prevent, by a second route.
+ */
+function validMaxesOr(stored: unknown): AppSettings['estimatedMaxes'] {
+  if (!isRecord(stored)) return DEFAULT_SETTINGS.estimatedMaxes
+  const valid = Object.entries(stored).filter(
+    (entry): entry is [string, number] =>
+      typeof entry[1] === 'number' && Number.isFinite(entry[1]) && entry[1] > 0,
+  )
+  return valid.length > 0 ? Object.fromEntries(valid) : DEFAULT_SETTINGS.estimatedMaxes
 }
 
 /**
