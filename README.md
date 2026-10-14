@@ -175,7 +175,7 @@ layout stranded in the middle of a monitor.
   unbounded, and "what did I lift last time" needs to be an index scan.
 - **TanStack Query** with `staleTime: Infinity` — there is no server of
   ours, so nothing goes stale on its own.
-- **Tailwind v4 + Radix** for styling and accessible primitives.
+- **Tailwind v4** for styling; controls are built on native elements.
 - **Vitest + fake-indexeddb** so tests exercise real database semantics,
   migrations included.
 

@@ -74,13 +74,8 @@ export default defineConfig(({ mode }) => {
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
 
-          /*
-           * Leaflet is precached with everything else, deliberately. It
-           * is about 190 kB, and the map is wanted outdoors on poor signal
-           * — exactly when a chunk fetched on demand would fail to arrive.
-           * The fog and the markers draw without a network; only tiles
-           * need one.
-           */
+          // Every lazy chunk is precached too, so a card or the player
+          // loaded on demand still opens offline.
           cleanupOutdatedCaches: true,
           // A client-side route requested cold must return the shell
           // rather than a 404 from the static host.

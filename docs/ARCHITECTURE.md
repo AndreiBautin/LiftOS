@@ -309,7 +309,7 @@ only ever produce a session dated today — the file says why in place.
 | **Vite**                    | Fast, and `vite-plugin-pwa` gives Workbox without hand-writing a service worker                                                             |
 | **IndexedDB via `idb`**     | ~1 KB promise wrapper. The repository port is already the seam; a heavier ORM behind it earns nothing                                       |
 | **TanStack Query**          | Caching and invalidation with `staleTime: Infinity` — there is no server of ours, so nothing goes stale on its own                          |
-| **Tailwind v4 + Radix**     | Utility styling with accessible primitives where behaviour matters                                                                          |
+| **Tailwind v4**             | Utility styling; controls are hand-built on native elements                                                                                 |
 | **Vitest + fake-indexeddb** | Real database semantics in tests, including migrations, without a browser                                                                   |
 
 ## What is deliberately absent
