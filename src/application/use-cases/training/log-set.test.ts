@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { asExerciseId, asWorkoutId } from '@/domain/ids/ids'
 import type { WorkoutLog } from '@/domain/logging/workout-log'
 import type { Clock, WorkoutRepository } from '@/domain/repositories/ports'
-import { previousSetFor, withSetResult } from '@/application/use-cases/training/log-set'
+import { clearSet, previousSetFor, withSetResult } from '@/application/use-cases/training/log-set'
 import { anEntry, aSet, aWorkout } from '@/test/builders/workout'
 
 /**
@@ -157,5 +157,50 @@ describe('a niggle on a set', () => {
     expect(log()).toBe('knee')
     expect(log('elbow')).toBe('elbow')
     expect(log(null)).toBeUndefined()
+  })
+})
+
+/*
+ * Undo runs this. A set it left half-cleared — the numbers gone but the
+ * outcome still completed, or a note left behind — would count as work
+ * done in every total and the volume, and nothing on screen would say so.
+ */
+describe('clearing a set back to pending', () => {
+  it('removes everything performed and keeps everything planned', async () => {
+    const done = aSet({
+      plannedLoad: 185,
+      plannedReps: 5,
+      actualLoad: 185,
+      actualReps: 5,
+      outcome: 'completed',
+      notes: 'belt',
+      niggle: 'knee',
+      completedAt: '2026-08-25T09:10:00.000Z',
+    })
+    let saved = aWorkout({
+      id: asWorkoutId('open'),
+      status: 'in-progress',
+      entries: [anEntry({ exerciseId: SQUAT, sets: [done] })],
+    })
+    const workouts = {
+      byId: () => Promise.resolve(saved),
+      save: (log: WorkoutLog) => {
+        saved = log
+        return Promise.resolve()
+      },
+    } as unknown as WorkoutRepository
+
+    await clearSet(
+      { workoutId: saved.id, entryIndex: 0, setIndex: 0 },
+      { ...repositoryOf(), workouts },
+    )
+
+    expect(saved.entries[0]?.sets[0]).toEqual({
+      prescription: done.prescription,
+      plannedLoad: 185,
+      plannedReps: 5,
+      outcome: 'pending',
+      isWarmup: false,
+    })
   })
 })
