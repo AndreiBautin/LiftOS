@@ -10,6 +10,7 @@ import { PageSkeleton } from '@/components/shared/PageSkeleton'
 import { Card, CardHeading } from '@/components/shared/primitives'
 import { useExercises, useProgram, useRecentWorkouts, useSchedule } from '@/features/train/hooks'
 import { cn } from '@/lib/cn'
+import { formatDate } from '@/lib/format-date'
 
 /** Lines drawn in the fan; the rest are listed beneath it. */
 const FAN_LINES = 8
@@ -285,7 +286,7 @@ function shortName(name: string): string {
 
 function range(start: string, end: string, today: string): string {
   const show = (day: string) =>
-    new Date(`${day}T00:00:00`).toLocaleDateString(undefined, {
+    formatDate(new Date(`${day}T00:00:00`), {
       month: 'short',
       day: 'numeric',
       ...(day.slice(0, 4) === today.slice(0, 4) ? {} : { year: 'numeric' }),

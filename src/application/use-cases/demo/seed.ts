@@ -34,6 +34,9 @@ import type { DemoDeps } from './deps'
  * for a given clock.
  */
 
+/** Built once: the seed titles about eighty sessions. */
+const WEEKDAY = new Intl.DateTimeFormat('en-US', { weekday: 'long' })
+
 export interface SeedResult {
   readonly seeded: boolean
   /** Why not, when it declined. */
@@ -310,7 +313,7 @@ async function seedTraining(deps: DemoDeps): Promise<void> {
        * "Friday", which is the exact rot relative dates exist to avoid,
        * reintroduced in the label.
        */
-      title: `${on.toLocaleDateString('en-US', { weekday: 'long' })} — ${session.title}`,
+      title: `${WEEKDAY.format(on)} — ${session.title}`,
       entries: timed.entries,
     }
     await deps.workouts.save(log)

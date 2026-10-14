@@ -1,0 +1,55 @@
+<!--
+  Cold-start timing for Today. Build the demo, copy this beside it and open it
+  through `pnpm preview`:
+    pnpm exec vite build --mode demo && cp scripts/measure-start.html dist/
+  then open /measure.html. It loads Today fifteen times in a phone-sized iframe,
+  unregistering the service worker before each run, and reports the fastest
+  time to the hero ("Start session") and to every card (14 headings).
+  The fastest rather than the median: each run re-registers the worker, and
+  its precache competes with the page often enough to swamp a median.
+-->
+<!doctype html><meta charset="utf-8" />
+<body>
+  <pre id="o"></pre>
+  <script>
+    async function clean() {
+      for (const r of await navigator.serviceWorker.getRegistrations()) await r.unregister()
+      for (const k of await caches.keys()) await caches.delete(k)
+    }
+    async function run(i) {
+      await clean()
+      return new Promise((res) => {
+        const f = document.createElement('iframe')
+        f.style.cssText = 'width:390px;height:844px'
+        const t0 = performance.now()
+        let hero, cards
+        f.src = '/today?r=' + i + Math.random()
+        document.body.append(f)
+        const poll = () => {
+          const d = f.contentDocument
+          const t = performance.now() - t0
+          if (d) {
+            if (!hero && d.body && d.body.innerText.includes('Start session')) hero = t
+            const n = d.querySelectorAll('h2').length
+            if (!cards && n >= 14) cards = t
+          }
+          if (cards && hero) {
+            f.remove()
+            res({ hero: Math.round(hero), cards: Math.round(cards) })
+          } else if (t > 15000) {
+            f.remove()
+            res({ hero, cards, timeout: true })
+          } else setTimeout(poll, 5)
+        }
+        poll()
+      })
+    }
+    ;(async () => {
+      const r = []
+      for (let i = 0; i < 15; i++) r.push(await run(i))
+      const med = (k) => r.map((x) => x[k]).sort((a, b) => a - b)[0]
+      window.result = { runs: r, heroMedian: med('hero'), cardsMedian: med('cards') }
+      o.textContent = JSON.stringify(window.result)
+    })()
+  </script>
+</body>

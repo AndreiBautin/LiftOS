@@ -16,6 +16,7 @@ import { PageSkeleton } from '@/components/shared/PageSkeleton'
 import { Card } from '@/components/shared/primitives'
 import { useExercises, useProgram, useRecentWorkouts } from '@/features/train/hooks'
 import { cn } from '@/lib/cn'
+import { formatDate } from '@/lib/format-date'
 
 type Show = 'all' | 'week' | 'done'
 
@@ -198,7 +199,7 @@ function lastLabel(day: string, today: string): string {
   if (days <= 0) return 'today'
   if (days === 1) return 'yesterday'
   if (days < 7) return `${String(days)} days ago`
-  return new Date(`${day}T00:00:00`).toLocaleDateString(undefined, {
+  return formatDate(new Date(`${day}T00:00:00`), {
     month: 'short',
     day: 'numeric',
     ...(day.slice(0, 4) === today.slice(0, 4) ? {} : { year: 'numeric' }),

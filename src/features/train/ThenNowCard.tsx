@@ -10,6 +10,7 @@ import { Card, CardHeading } from '@/components/shared/primitives'
 import { LIFT_COLOURS } from '@/features/charts/palette'
 
 import { useExercises, useRecentWorkouts } from './hooks'
+import { formatDate } from '@/lib/format-date'
 
 /** Rows shown: the competition lifts lead, then the most trained now. */
 const ROWS = 5
@@ -147,7 +148,7 @@ function perWeek(sessions: number): string {
 }
 
 function monthOf(day: string): string {
-  return parseDay(day).toLocaleDateString(undefined, {
+  return formatDate(parseDay(day), {
     month: 'short',
     year: 'numeric',
     timeZone: 'UTC',

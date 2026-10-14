@@ -16,6 +16,7 @@ import { useExercises, useRecentWorkouts } from '@/features/train/hooks'
 import { SharePicture } from '@/features/share/ShareSession'
 import { drawWallCard } from '@/features/share/wall-card'
 import { cn } from '@/lib/cn'
+import { formatDate } from '@/lib/format-date'
 
 /**
  * A best set this week wears gold; one untouched for eight weeks reads as
@@ -186,7 +187,7 @@ export function RecordsPage() {
 }
 
 function shortDate(day: string, today: string): string {
-  return new Date(`${day}T00:00:00`).toLocaleDateString(undefined, {
+  return formatDate(new Date(`${day}T00:00:00`), {
     month: 'short',
     day: 'numeric',
     ...(day.slice(0, 4) === today.slice(0, 4) ? {} : { year: 'numeric' }),

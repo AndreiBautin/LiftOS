@@ -7,6 +7,7 @@ import type { SessionRecord } from '@/domain/logging/records'
 import type { WorkoutLog } from '@/domain/logging/workout-log'
 
 import { SessionCrest } from './SessionCrest'
+import { formatDate } from '@/lib/format-date'
 
 /**
  * Every session as its crest, a month at a time — the history read as a
@@ -72,14 +73,14 @@ export function CrestWall({
 }
 
 function monthName(month: string): string {
-  return new Date(`${month}-01T00:00:00`).toLocaleDateString(undefined, {
+  return formatDate(new Date(`${month}-01T00:00:00`), {
     month: 'long',
     year: 'numeric',
   })
 }
 
 function dayLabel(day: string): string {
-  return new Date(`${day}T00:00:00`).toLocaleDateString(undefined, {
+  return formatDate(new Date(`${day}T00:00:00`), {
     month: 'short',
     day: 'numeric',
   })

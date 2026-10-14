@@ -10,6 +10,7 @@ import { formatLoad, type WeightUnit } from '@/domain/units/weight'
 import { useExercises, useRecentWorkouts } from '@/features/train/hooks'
 import { useCountUp } from '@/features/train/useCountUp'
 import { cn } from '@/lib/cn'
+import { formatDate } from '@/lib/format-date'
 
 /** How long a card holds before the story moves on by itself. */
 const CARD_MS = 5500
@@ -376,11 +377,11 @@ function Big({
 function periodLabel(key: string): string {
   if (key.length === 4) return key
   if (key.length === 10) return `Week of ${dayLabel(key)}`
-  return new Date(`${key}-01T00:00:00`).toLocaleDateString(undefined, { month: 'long' })
+  return formatDate(new Date(`${key}-01T00:00:00`), { month: 'long' })
 }
 
 function dayLabel(day: string): string {
-  return new Date(`${day}T00:00:00`).toLocaleDateString(undefined, {
+  return formatDate(new Date(`${day}T00:00:00`), {
     month: 'short',
     day: 'numeric',
   })

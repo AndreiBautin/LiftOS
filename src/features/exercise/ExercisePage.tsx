@@ -22,6 +22,7 @@ import { StepCard } from './StepCard'
 import { RepMaxCard } from './RepMaxCard'
 import { WeeklySetsCard } from './WeeklySetsCard'
 import { splitDayLabel } from '@/features/train/useNextSession'
+import { formatDate } from '@/lib/format-date'
 
 /**
  * One exercise, across every session that did it.
@@ -397,7 +398,7 @@ function summarise(sets: readonly Performance[], units: WeightUnit, bodyweight: 
 }
 
 function shortDate(day: string): string {
-  return new Date(`${day}T00:00:00`).toLocaleDateString(undefined, {
+  return formatDate(new Date(`${day}T00:00:00`), {
     weekday: 'short',
     month: 'short',
     day: 'numeric',
@@ -405,7 +406,7 @@ function shortDate(day: string): string {
 }
 
 function monthYear(day: string): string {
-  return new Date(`${day}T00:00:00`).toLocaleDateString(undefined, {
+  return formatDate(new Date(`${day}T00:00:00`), {
     month: 'long',
     year: 'numeric',
   })

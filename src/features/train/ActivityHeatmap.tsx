@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/shared/Skeleton'
 import type { ActivityDay } from '@/application/use-cases/training/activity'
 import { parseDay } from '@/domain/time/day'
 import { cn } from '@/lib/cn'
+import { formatDate } from '@/lib/format-date'
 
 import { useActivity } from './hooks'
 
@@ -35,19 +36,18 @@ const BAND_FILL = [
 const WEEKDAY_LABELS = ['Mon', '', 'Wed', '', 'Fri', '', ''] as const
 
 function describe(day: ActivityDay): string {
-  const date = parseDay(day.day).toLocaleDateString('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-    timeZone: 'UTC',
-  })
+  const date = formatDate(
+    parseDay(day.day),
+    { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' },
+    'en-US',
+  )
   return day.sets > 0
     ? `${date} · ${String(day.sets)} working ${day.sets === 1 ? 'set' : 'sets'}`
     : `${date} · nothing logged`
 }
 
 function monthOf(day: string): string {
-  return parseDay(day).toLocaleDateString('en-US', { month: 'short', timeZone: 'UTC' })
+  return formatDate(parseDay(day), { month: 'short', timeZone: 'UTC' }, 'en-US')
 }
 
 export function ActivityHeatmap() {

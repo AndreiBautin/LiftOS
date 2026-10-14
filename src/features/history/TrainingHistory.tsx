@@ -30,6 +30,7 @@ import { Link } from 'react-router-dom'
 
 import { useDeleteWorkout, useReopenWorkout, useRestoreWorkout } from './hooks'
 import { UndoToast } from '@/features/train/UndoToast'
+import { formatDate } from '@/lib/format-date'
 
 /**
  * The sessions logged, newest first, with the ways to take one back.
@@ -382,7 +383,7 @@ function SessionRow({
   const unfinished = remainingSets(workout)
   const when = new Date(`${workout.date}T00:00:00`)
   const name = splitDayLabel(workout.title).name
-  const described = `${name} on ${when.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}`
+  const described = `${name} on ${formatDate(when, { weekday: 'long', month: 'long', day: 'numeric' })}`
 
   return (
     <div
@@ -408,7 +409,7 @@ function SessionRow({
             aria-hidden
           >
             <span className="text-ink-500 text-[0.65rem] font-semibold tracking-wider uppercase">
-              {when.toLocaleDateString(undefined, { month: 'short' })}
+              {formatDate(when, { month: 'short' })}
             </span>
             <span className="numeric text-ink-50 text-lg leading-none font-semibold">
               {when.getDate()}
@@ -441,9 +442,8 @@ function SessionRow({
               )}
             </p>
             <p className="text-ink-500 numeric mt-0.5 text-xs">
-              {when.toLocaleDateString(undefined, { weekday: 'long' })} · {sets}{' '}
-              {sets === 1 ? 'set' : 'sets'} · {Math.round(totalTonnage(workout)).toLocaleString()}{' '}
-              {units}
+              {formatDate(when, { weekday: 'long' })} · {sets} {sets === 1 ? 'set' : 'sets'} ·{' '}
+              {Math.round(totalTonnage(workout)).toLocaleString()} {units}
             </p>
           </div>
           <SessionCrest

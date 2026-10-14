@@ -26,6 +26,7 @@ import {
   useWeekSummary,
 } from '@/features/train/hooks'
 import { splitDayLabel, useNextSession } from '@/features/train/useNextSession'
+import { formatDate } from '@/lib/format-date'
 
 /**
  * The top of the page: what the app is, what is next, and the button that
@@ -85,7 +86,7 @@ export function HeroBanner() {
   const leadId = leadSlot?.exercise.kind === 'specific' ? leadSlot.exercise.exerciseId : undefined
   const lead = exercises.data?.find((one) => one.id === leadId)
   const label = day === undefined ? undefined : splitDayLabel(day.label)
-  const today = clock.now().toLocaleDateString(undefined, {
+  const today = formatDate(clock.now(), {
     weekday: 'long',
     month: 'long',
     day: 'numeric',

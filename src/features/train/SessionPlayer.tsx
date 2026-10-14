@@ -73,6 +73,7 @@ import { primeRestSounds } from './rest-sounds'
 import { SessionMap } from './SessionMap'
 import { SetRow } from './SetRow'
 import { WarmupBlock } from './WarmupBlock'
+import { formatTime } from '@/lib/format-date'
 
 /**
  * Working through a session, one exercise at a time.
@@ -1252,7 +1253,7 @@ function FinishAt({
 
   const left = remainingSeconds(workout, (entry) => restWorkOf(entry, exercises))
   if (left <= 0) return null
-  const at = new Date(now + left * 1000).toLocaleTimeString(undefined, {
+  const at = formatTime(new Date(now + left * 1000), {
     hour: 'numeric',
     minute: '2-digit',
   })

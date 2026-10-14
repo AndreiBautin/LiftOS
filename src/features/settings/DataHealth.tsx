@@ -8,6 +8,7 @@ import { parseDay } from '@/domain/time/day'
 import { Button, Card, CardHeading } from '@/components/shared/primitives'
 import { useDeleteWorkout } from '@/features/history/hooks'
 import { useAbandonWorkout, useExercises, useRecentWorkouts } from '@/features/train/hooks'
+import { formatDate } from '@/lib/format-date'
 
 /**
  * What the history holds and anything in it that looks wrong (`dataHealth`):
@@ -116,7 +117,7 @@ function describe(finding: Finding): string {
 }
 
 function shortDate(day: string): string {
-  return parseDay(day).toLocaleDateString(undefined, {
+  return formatDate(parseDay(day), {
     month: 'short',
     day: 'numeric',
     year: 'numeric',

@@ -8,6 +8,7 @@ import { exerciseNotes, type ExerciseNote } from '@/domain/logging/exercise-note
 import { formatLoad, type WeightUnit } from '@/domain/units/weight'
 import { Card, CardHeading } from '@/components/shared/primitives'
 import { useRecentWorkouts } from '@/features/train/hooks'
+import { formatDate } from '@/lib/format-date'
 
 const SHOWN = 4
 
@@ -80,7 +81,7 @@ function setLabel(set: NonNullable<ExerciseNote['set']>, units: WeightUnit): str
 }
 
 function dayLabel(day: string): string {
-  return new Date(`${day}T00:00:00`).toLocaleDateString(undefined, {
+  return formatDate(new Date(`${day}T00:00:00`), {
     weekday: 'short',
     month: 'short',
     day: 'numeric',

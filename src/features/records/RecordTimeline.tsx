@@ -8,6 +8,7 @@ import type { WorkoutLog } from '@/domain/logging/workout-log'
 import { formatLoad, type WeightUnit } from '@/domain/units/weight'
 import { Card } from '@/components/shared/primitives'
 import { cn } from '@/lib/cn'
+import { formatDate } from '@/lib/format-date'
 
 /** Months drawn before "Older" is asked for. */
 const SHOWN_MONTHS = 3
@@ -137,14 +138,14 @@ export function RecordTimeline({
 }
 
 function monthName(month: string): string {
-  return new Date(`${month}-01T00:00:00`).toLocaleDateString(undefined, {
+  return formatDate(new Date(`${month}-01T00:00:00`), {
     month: 'long',
     year: 'numeric',
   })
 }
 
 function dayLabel(day: string): string {
-  return new Date(`${day}T00:00:00`).toLocaleDateString(undefined, {
+  return formatDate(new Date(`${day}T00:00:00`), {
     weekday: 'short',
     month: 'short',
     day: 'numeric',

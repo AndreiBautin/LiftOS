@@ -15,6 +15,7 @@ import { Card, CardHeading } from '@/components/shared/primitives'
 import { ShareSession } from '@/features/share/ShareSession'
 import { useExercises, useRecentWorkouts } from '@/features/train/hooks'
 import { cn } from '@/lib/cn'
+import { formatDate } from '@/lib/format-date'
 
 const LIFT_NAMES = { squat: 'Squat', bench: 'Bench press', deadlift: 'Deadlift' } as const
 
@@ -357,14 +358,14 @@ function heftLine(tonnage: number, units: WeightUnit): { readonly heft?: string 
 }
 
 function monthName(month: string, today: string): string {
-  return new Date(`${month}-01T00:00:00`).toLocaleDateString(undefined, {
+  return formatDate(new Date(`${month}-01T00:00:00`), {
     month: 'long',
     ...(month.slice(0, 4) === today.slice(0, 4) ? {} : { year: 'numeric' }),
   })
 }
 
 function shortDay(day: string): string {
-  return new Date(`${day}T00:00:00`).toLocaleDateString(undefined, {
+  return formatDate(new Date(`${day}T00:00:00`), {
     month: 'short',
     day: 'numeric',
   })

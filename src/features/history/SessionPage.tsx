@@ -32,6 +32,7 @@ import { RecordChip } from '@/features/train/RecordChip'
 import { VersusChip } from '@/features/train/VersusChip'
 
 import { useSessionDetail } from './hooks'
+import { formatDate } from '@/lib/format-date'
 
 /**
  * A past session, opened from the history list.
@@ -99,7 +100,7 @@ export function SessionPage() {
         }
         subtitle={
           <span className="flex flex-wrap items-center gap-2">
-            {when.toLocaleDateString(undefined, {
+            {formatDate(when, {
               weekday: 'long',
               month: 'long',
               day: 'numeric',

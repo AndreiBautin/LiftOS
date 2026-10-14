@@ -11,6 +11,7 @@ import { Button, Card, CardHeading } from '@/components/shared/primitives'
 import { cn } from '@/lib/cn'
 
 import { useRecentWorkouts } from './hooks'
+import { formatDate } from '@/lib/format-date'
 
 /**
  * A goal per competition lift, with a date, and whether the lift is on
@@ -386,7 +387,7 @@ function sentence(standing: GoalStanding, goal: LiftGoal, today: string): string
 
 /** "Mar 1", or "Mar 1, 2027" once it is another year. */
 function shortDay(day: string, today: string): string {
-  return new Date(`${day}T00:00:00`).toLocaleDateString(undefined, {
+  return formatDate(new Date(`${day}T00:00:00`), {
     month: 'short',
     day: 'numeric',
     ...(day.slice(0, 4) === today.slice(0, 4) ? {} : { year: 'numeric' }),

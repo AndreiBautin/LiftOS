@@ -8,6 +8,7 @@ import { Card, CardHeading } from '@/components/shared/primitives'
 import { cn } from '@/lib/cn'
 
 import { useProgram, useRecentWorkouts, useSchedule } from './hooks'
+import { formatDate } from '@/lib/format-date'
 
 /** Missed days named under the card; the rest are counted. */
 const NAMED = 3
@@ -165,7 +166,7 @@ function Hole({ day }: { readonly day: AdherenceDay }) {
 }
 
 function shortDate(on: string): string {
-  return parseDay(on).toLocaleDateString(undefined, {
+  return formatDate(parseDay(on), {
     month: 'short',
     day: 'numeric',
     timeZone: 'UTC',

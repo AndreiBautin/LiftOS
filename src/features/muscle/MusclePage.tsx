@@ -11,6 +11,7 @@ import { PageSkeleton } from '@/components/shared/PageSkeleton'
 import { Card, CardHeading } from '@/components/shared/primitives'
 import { NIGGLE_LABELS, nigglesForMuscle, recentNiggles } from '@/domain/logging/niggles'
 import { useExercises, useRecentWorkouts } from '@/features/train/hooks'
+import { formatDate } from '@/lib/format-date'
 
 /**
  * One muscle, twelve weeks (`muscleHistory`): its sets as a tide — a
@@ -232,7 +233,7 @@ function since(day: string, today: string): string {
   if (days <= 0) return 'today'
   if (days === 1) return 'yesterday'
   if (days < 14) return `${String(days)} days ago`
-  return new Date(`${day}T00:00:00`).toLocaleDateString(undefined, {
+  return formatDate(new Date(`${day}T00:00:00`), {
     month: 'short',
     day: 'numeric',
   })

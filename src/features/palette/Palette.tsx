@@ -14,6 +14,7 @@ import { cn } from '@/lib/cn'
 import { SCREENS, screenPath } from '@/features/navigation/screens'
 
 import { rankItems, type PaletteItem } from './rank'
+import { formatDate } from '@/lib/format-date'
 
 /** The palette itself, loaded the first time ⌘K or / opens it. */
 export function Palette({ onClose }: { readonly onClose: () => void }) {
@@ -214,7 +215,7 @@ export function Palette({ onClose }: { readonly onClose: () => void }) {
 }
 
 function shortDate(day: string): string {
-  return new Date(`${day}T00:00:00`).toLocaleDateString(undefined, {
+  return formatDate(new Date(`${day}T00:00:00`), {
     month: 'short',
     day: 'numeric',
   })

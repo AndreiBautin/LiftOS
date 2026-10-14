@@ -11,6 +11,7 @@ import { DAY_VERSIONS } from '@/domain/splits/rp-splits'
 import { formatLoad, type WeightUnit } from '@/domain/units/weight'
 
 import { useExerciseHistory } from './hooks'
+import { formatDate } from '@/lib/format-date'
 
 /** Sessions drawn in the peek: enough to see a direction, few enough to read. */
 const SHOWN = 6
@@ -174,7 +175,7 @@ function Sparkline({
               {short(point.top, bodyweight)}
             </text>
             <text x={x(at)} y={93} textAnchor="middle" className="fill-ink-500 text-[8px]">
-              {new Date(`${point.date}T00:00:00`).toLocaleDateString(undefined, {
+              {formatDate(new Date(`${point.date}T00:00:00`), {
                 month: 'short',
                 day: 'numeric',
               })}

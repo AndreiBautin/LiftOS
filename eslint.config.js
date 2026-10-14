@@ -194,6 +194,17 @@ export default defineConfig([
           message:
             'This is the UTC date, and a day key in this app is local. Use `toDayKey(date)` from `@/domain/time/day`, or compare instants rather than date prefixes.',
         },
+        {
+          /*
+           * With options, each of these builds a new `Intl.DateTimeFormat`
+           * — a quarter of a millisecond a call. The training grid made
+           * hundreds of them per render and was the slowest card on Today.
+           */
+          selector:
+            'CallExpression[callee.property.name=/^toLocale(Date|Time)String$/][arguments.length>0]',
+          message:
+            'Use `formatDate` / `formatTime` from `@/lib/format-date`: they read the same and reuse one formatter instead of building one per call.',
+        },
       ],
     },
   },

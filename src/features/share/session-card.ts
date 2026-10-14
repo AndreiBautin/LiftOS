@@ -1,3 +1,5 @@
+import { formatDate } from '@/lib/format-date'
+
 /**
  * A finished session as a picture: 1080 × 1350, the 4:5 a phone's feed
  * and its photo roll both take without cropping.
@@ -311,7 +313,7 @@ export function wrap(
 }
 
 function longDate(day: string): string {
-  return new Date(`${day}T00:00:00`).toLocaleDateString(undefined, {
+  return formatDate(new Date(`${day}T00:00:00`), {
     weekday: 'long',
     month: 'long',
     day: 'numeric',

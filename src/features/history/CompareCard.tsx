@@ -10,6 +10,7 @@ import { formatLoad, type WeightUnit } from '@/domain/units/weight'
 import { Card, CardHeading } from '@/components/shared/primitives'
 import { useRecentWorkouts } from '@/features/train/hooks'
 import { VersusChip } from '@/features/train/VersusChip'
+import { formatDate } from '@/lib/format-date'
 
 /**
  * This session against another, exercise by exercise (`compareSessions`).
@@ -120,7 +121,7 @@ function describeTop(top: Performance | undefined, units: WeightUnit): string {
 }
 
 function shortDate(day: string): string {
-  return new Date(`${day}T00:00:00`).toLocaleDateString(undefined, {
+  return formatDate(new Date(`${day}T00:00:00`), {
     month: 'short',
     day: 'numeric',
   })

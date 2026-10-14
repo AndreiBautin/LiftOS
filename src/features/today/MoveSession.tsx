@@ -6,6 +6,7 @@ import { liveMoves, mondayOf, moveSession, sessionOn } from '@/domain/programs/s
 import { parseDay, shiftDay } from '@/domain/time/day'
 import { useSchedule } from '@/features/train/hooks'
 import { cn } from '@/lib/cn'
+import { formatDate } from '@/lib/format-date'
 
 /**
  * Moves the session in view to another day of its week (`moveSession`):
@@ -91,5 +92,5 @@ export function MoveSession({
 }
 
 function weekdayOf(day: string): string {
-  return parseDay(day).toLocaleDateString(undefined, { weekday: 'short', timeZone: 'UTC' })
+  return formatDate(parseDay(day), { weekday: 'short', timeZone: 'UTC' })
 }

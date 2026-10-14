@@ -11,6 +11,7 @@ import { useRecentWorkouts } from '@/features/train/hooks'
 import { SharePicture } from '@/features/share/ShareSession'
 import { drawYearCard } from '@/features/share/year-card'
 import { cn } from '@/lib/cn'
+import { formatDate } from '@/lib/format-date'
 
 /** The training grid's own bands, so a lit square means the same on both. */
 const BANDS = [1, 10, 20, 30] as const
@@ -193,5 +194,5 @@ function Figure({
 }
 
 function monthName(month: string): string {
-  return new Date(`${month}-01T00:00:00`).toLocaleDateString(undefined, { month: 'short' })
+  return formatDate(new Date(`${month}-01T00:00:00`), { month: 'short' })
 }

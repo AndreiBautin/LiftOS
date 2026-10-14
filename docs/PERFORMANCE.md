@@ -17,6 +17,27 @@ first screen on a phone. The session report stays eager on purpose: it is
 entered through a view transition run inside `flushSync`, and a lazy
 component would suspend in the middle of it.
 
+## Cold start
+
+Timed with `scripts/measure-start.html` against the production demo build
+on a desktop: the fastest of fifteen loads, to the hero and to every card.
+
+| Change                                                               | Hero   | All cards |
+| -------------------------------------------------------------------- | ------ | --------- |
+| Baseline                                                             | 102 ms | 452 ms    |
+| Dates formatted through cached formatters (`src/lib/format-date.ts`) | 77 ms  | 416 ms    |
+
+`toLocaleDateString` with options builds a new `Intl.DateTimeFormat` per
+call — 0.26 ms each, against 0.002 ms reusing one. The training grid made
+several hundred per render. A lint rule now refuses the call with
+arguments.
+
+**Tried and reverted:** starting the Home card chunks' download as the
+page module loads, rather than on first render. On localhost it made
+both numbers worse (hero 135 ms, cards 523 ms) — the downloads cost
+nothing and their evaluation competed with the hero. It may help on a
+slow network; that was not measured.
+
 ## Reads
 
 Counted on a cold load of Today with the demo (78 sessions), by wrapping

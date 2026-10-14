@@ -10,6 +10,7 @@ import { toDayKey } from '@/domain/time/day'
 import { Card, CardHeading } from '@/components/shared/primitives'
 
 import { isDeloadSession, useProgram, useRecentWorkouts } from './hooks'
+import { formatDate } from '@/lib/format-date'
 
 /**
  * Where each lift stands against the published bodyweight standards: the
@@ -115,7 +116,7 @@ export function StrengthStandards() {
 /** "December", or "March 2027" once it is another year. */
 function whenOf(day: string, today: string): string {
   const date = new Date(`${day}T00:00:00`)
-  return date.toLocaleDateString(undefined, {
+  return formatDate(date, {
     month: 'long',
     ...(day.slice(0, 4) === today.slice(0, 4) ? {} : { year: 'numeric' }),
   })

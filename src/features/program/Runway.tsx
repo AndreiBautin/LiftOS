@@ -9,6 +9,7 @@ import { cn } from '@/lib/cn'
 import { splitDayLabel } from '@/features/train/useNextSession'
 
 import { CalendarExport } from './CalendarExport'
+import { formatDate } from '@/lib/format-date'
 
 const WEEKS = 4
 const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
@@ -153,7 +154,7 @@ function initials(name: string): string {
 }
 
 function shortDay(day: string): string {
-  return new Date(`${day}T00:00:00`).toLocaleDateString(undefined, {
+  return formatDate(new Date(`${day}T00:00:00`), {
     month: 'short',
     day: 'numeric',
   })

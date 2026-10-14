@@ -8,6 +8,7 @@ import { strengthTrend, type TrendLift, type TrendPoint } from '@/domain/strengt
 import { parseDay } from '@/domain/time/day'
 
 import { useRecentWorkouts } from './hooks'
+import { formatDate } from '@/lib/format-date'
 
 /**
  * Each lift's estimated max over the months, as three lines.
@@ -82,7 +83,7 @@ export function StrengthTrendCard() {
 
   const gridValues = [low, (low + high) / 2, high]
   const month = (date: string): string =>
-    parseDay(date).toLocaleDateString('en-US', { month: 'short', timeZone: 'UTC' })
+    formatDate(parseDay(date), { month: 'short', timeZone: 'UTC' }, 'en-US')
   const dates = [...new Set(all.map((point) => point.date))].sort()
   const valueAt = (points: readonly TrendPoint[], date: string): number | undefined =>
     points.filter((point) => point.date <= date).at(-1)?.value
@@ -96,7 +97,7 @@ export function StrengthTrendCard() {
     setAt(nearest)
   }
   const day = (date: string): string =>
-    parseDay(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })
+    formatDate(parseDay(date), { month: 'short', day: 'numeric', timeZone: 'UTC' }, 'en-US')
 
   const firstDate = all.reduce((a, b) => (a.date < b.date ? a : b)).date
   const lastDate = all.reduce((a, b) => (a.date > b.date ? a : b)).date
