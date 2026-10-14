@@ -12,7 +12,7 @@ import { workingSets, type WorkoutLog } from './workout-log'
  * In this session's order, then anything only the other session had —
  * an exercise dropped is part of the comparison, not a gap in it.
  */
-export interface ComparedExercise {
+interface ComparedExercise {
   readonly exerciseId: ExerciseId
   readonly here?: { readonly volume: number; readonly top?: Performance }
   readonly there?: { readonly volume: number; readonly top?: Performance }

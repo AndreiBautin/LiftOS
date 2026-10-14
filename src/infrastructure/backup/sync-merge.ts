@@ -22,7 +22,7 @@ import { COLLECTIONS, COLLECTION_KEYS, type BackupRepositories } from './collect
  *
  * Walked ground merges by union, as everywhere else.
  */
-export interface SyncMergeResult {
+interface SyncMergeResult {
   /** Records taken from the other device, new or newer than ours. */
   readonly pulled: number
   /** Records removed here because the other device deleted them. */

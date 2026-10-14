@@ -6,13 +6,13 @@ import type { SlotRole } from '@/domain/programs/program'
 import type { ExerciseRepository, WorkoutRepository } from '@/domain/repositories/ports'
 import { convertWeight, type WeightUnit } from '@/domain/units/weight'
 
-export interface ImportTrainingDeps {
+interface ImportTrainingDeps {
   readonly workouts: WorkoutRepository
   readonly exercises: ExerciseRepository
   readonly ids: IdGenerator
 }
 
-export interface ImportTrainingRequest {
+interface ImportTrainingRequest {
   readonly exported: ImportedExport
   /** The other app's exercise name to a library exercise; absent or null leaves it out. */
   readonly mapping: Readonly<Record<string, ExerciseId | null>>

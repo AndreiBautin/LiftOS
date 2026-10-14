@@ -22,8 +22,8 @@ import { shiftDay } from '@/domain/time/day'
  * answer to a double-progression stall; the lifter may know better (a
  * bad week, a cut), which is why it waits to be asked for.
  */
-export const STALL_SESSIONS = 3
-export const RESET_SHARE = 0.9
+const STALL_SESSIONS = 3
+const RESET_SHARE = 0.9
 
 /**
  * How many sessions in a row, ending with the latest, did not beat the

@@ -2,7 +2,7 @@ import { mondayOf, shiftDay } from '@/domain/time/day'
 
 import { totalWorkingSets, type WorkoutLog } from './workout-log'
 
-export interface YearInSquares {
+interface YearInSquares {
   readonly year: string
   /** Working sets per trained day key. */
   readonly days: Readonly<Record<string, number>>

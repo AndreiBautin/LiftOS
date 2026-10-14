@@ -18,9 +18,9 @@ import type { E1rmFormula } from './one-rep-max'
  * the opposite. Past ten reps every formula drifts, which is why the
  * table stops at twelve.
  */
-export const REP_COUNTS = [1, 3, 5, 8, 10, 12] as const
+const REP_COUNTS = [1, 3, 5, 8, 10, 12] as const
 
-export interface RepMaxRow {
+interface RepMaxRow {
   readonly reps: number
   readonly predicted: number
   /** The heaviest load done for this row's reps (up to the next row's), if any. */

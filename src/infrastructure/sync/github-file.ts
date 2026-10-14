@@ -21,17 +21,16 @@ export interface GitHubTarget {
   readonly token: string
 }
 
-export interface RemoteFile {
+interface RemoteFile {
   readonly text: string
   /** The blob id the next write must name, so it cannot clobber a newer one. */
   readonly sha: string
 }
 
-export type WriteOutcome = 'written' | 'conflict'
+type WriteOutcome = 'written' | 'conflict'
 
 /** A failure the Settings screen can put into words. */
-export type GitHubSyncReason =
-  'unauthorised' | 'not-found' | 'rate-limited' | 'network' | 'unexpected'
+type GitHubSyncReason = 'unauthorised' | 'not-found' | 'rate-limited' | 'network' | 'unexpected'
 
 export class GitHubSyncError extends Error {
   readonly reason: GitHubSyncReason
@@ -214,7 +213,7 @@ export async function writeFile(
  * leak would cost. The connect form says so rather than refusing: the
  * account is the lifter's, and so is the decision.
  */
-export type TokenKind = 'fine-grained' | 'classic' | 'unknown'
+type TokenKind = 'fine-grained' | 'classic' | 'unknown'
 
 export function tokenKind(token: string): TokenKind {
   const trimmed = token.trim()

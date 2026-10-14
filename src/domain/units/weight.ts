@@ -1,4 +1,4 @@
-import { DomainError, invariant } from '@/domain/errors/domain-error'
+import { invariant } from '@/domain/errors/domain-error'
 
 export type WeightUnit = 'lb' | 'kg'
 
@@ -60,14 +60,4 @@ export function formatLoad(value: number, unit: WeightUnit): string {
   const rounded = Number(value.toFixed(2))
   const text = Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1)
   return `${text} ${unit}`
-}
-
-export function assertPositiveLoad(value: number): number {
-  if (!Number.isFinite(value) || value < 0) {
-    throw new DomainError(
-      `Load must be a non-negative number, received ${String(value)}.`,
-      'LOAD_NEGATIVE',
-    )
-  }
-  return value
 }

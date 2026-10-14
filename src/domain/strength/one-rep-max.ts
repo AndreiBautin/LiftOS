@@ -26,7 +26,7 @@ export const E1RM_FORMULA_LABELS: Record<E1rmFormula, string> = {
 }
 
 /** Past this many reps an estimate is reported as low confidence. */
-export const RELIABLE_REP_CEILING = 10
+const RELIABLE_REP_CEILING = 10
 
 export interface E1rmEstimate {
   readonly value: number
@@ -161,47 +161,6 @@ export function bestEstimate(
 }
 
 /* -------------------------------------------------------------------- */
-/* Training max                                                          */
-/* -------------------------------------------------------------------- */
-
-/**
- * The training max: a deliberately conservative number that percentages
- * are taken from, so the prescribed work stays submaximal even on a bad
- * day.
- *
- * Wendler's original recommendation was 90% of a true max; his later
- * position is that most lifters do better at 85%, because the AMRAP sets
- * are where the progress comes from and they only work if there is
- * something left in the tank. Configurable for that reason.
- */
-export function trainingMaxFrom(oneRepMax: number, percent: number): number {
-  invariant(
-    Number.isFinite(oneRepMax) && oneRepMax > 0,
-    'TM_MAX_INVALID',
-    `Cannot derive a training max from a one-rep max of ${String(oneRepMax)}.`,
-  )
-  invariant(
-    Number.isFinite(percent) && percent > 0 && percent <= 100,
-    'TM_PERCENT_INVALID',
-    `A training max percentage must fall between 0 and 100, received ${String(percent)}.`,
-  )
-  return oneRepMax * (percent / 100)
-}
-
-/**
- * The reps an AMRAP set needs to beat for the current training max to
- * still be justified.
- *
- * Wendler's rule of thumb is that the top set of week 3 should be good
- * for at least the prescribed reps; falling short means the training max
- * has outrun the lifter. Expressed here so the progression rule that
- * resets a max has a number to compare against.
- */
-export function amrapMeetsExpectation(achievedReps: number, prescribedMinimum: number): boolean {
-  return achievedReps >= prescribedMinimum
-}
-
-/* -------------------------------------------------------------------- */
 /* RPE                                                                   */
 /* -------------------------------------------------------------------- */
 
@@ -231,8 +190,8 @@ const RPE_CHART: Readonly<Record<number, readonly number[]>> = {
   12: [68, 66.7, 65.3, 64, 62.6, 61.3, 60, 58.7, 57.4],
 }
 
-export const RPE_CHART_MIN = 6
-export const RPE_CHART_MAX = 10
+const RPE_CHART_MIN = 6
+const RPE_CHART_MAX = 10
 
 /**
  * The most reps the chart covers.
@@ -250,7 +209,7 @@ export const RPE_CHART_MAX_REPS = 12
  * combination falls outside the chart. Undefined is the honest answer —
  * interpolating past the edges produces numbers with no basis.
  */
-export function percentOfMaxAtRpe(reps: number, rpe: number): number | undefined {
+function percentOfMaxAtRpe(reps: number, rpe: number): number | undefined {
   const row = RPE_CHART[reps]
   if (row === undefined) return undefined
   if (rpe < RPE_CHART_MIN || rpe > RPE_CHART_MAX) return undefined

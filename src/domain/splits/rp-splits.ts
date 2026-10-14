@@ -355,7 +355,7 @@ const LEGS_B: readonly RoutineEntry[] = [
  * lift is in its competition version — low bar, touch-and-go bench,
  * sumo — once a week, spread Monday, Tuesday and Friday.
  */
-export const ULPPL_SPLIT: RpSplit = {
+const ULPPL_SPLIT: RpSplit = {
   id: 'ulppl-5',
   name: 'Upper, legs, push, pull, legs',
   description: 'Monday to Friday, the weekend off.',
@@ -410,9 +410,7 @@ export const ULPPL_SPLIT: RpSplit = {
 }
 
 /** The week the app runs. */
-export const RP_SPLIT: RpSplit = ULPPL_SPLIT
-
-export const RP_SPLITS: readonly RpSplit[] = [ULPPL_SPLIT, FULL_BODY_SPLIT]
+const RP_SPLIT: RpSplit = ULPPL_SPLIT
 
 /**
  * The split, which no longer depends on anything.

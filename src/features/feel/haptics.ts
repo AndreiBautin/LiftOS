@@ -13,7 +13,7 @@ import { useSettings } from '@/app/context'
  * is what a dial feels like. Android buzzes; iOS has no web vibration and
  * stays silent, which is why nothing here carries meaning alone.
  */
-export const HAPTICS = {
+const HAPTICS = {
   detent: 4,
   press: 8,
   logged: 14,
@@ -23,9 +23,9 @@ export const HAPTICS = {
   restOver: [90, 70, 90],
 } as const satisfies Record<string, number | readonly number[]>
 
-export type Haptic = keyof typeof HAPTICS
+type Haptic = keyof typeof HAPTICS
 
-export function buzz(kind: Haptic, enabled: boolean): void {
+function buzz(kind: Haptic, enabled: boolean): void {
   if (!enabled || typeof navigator === 'undefined' || !('vibrate' in navigator)) return
   const pattern = HAPTICS[kind]
   navigator.vibrate(typeof pattern === 'number' ? pattern : [...pattern])

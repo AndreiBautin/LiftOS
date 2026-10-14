@@ -104,20 +104,3 @@ export function validateLiftSessions(sessions: LiftSessions): void {
     )
   }
 }
-
-/**
- * Fills in any lift a saved setting does not mention.
- *
- * Settings are written once and never overwritten, which is right — they
- * are the lifter's choices — and it means anything added later exists in
- * the app and not in their stored copy. The old `completeTiers` existed
- * for exactly this and the failure it caught was worth having: a muscle
- * belonging to no tier read as maintenance volume by luck while every
- * screen showing a *tier* had nothing to display, so the number and the
- * explanation disagreed.
- */
-export function completeLiftSessions(saved: Partial<LiftSessions>): LiftSessions {
-  return Object.fromEntries(
-    STRENGTH_LIFTS.map((lift) => [lift, saved[lift] ?? DEFAULT_LIFT_SESSIONS[lift]]),
-  ) as LiftSessions
-}

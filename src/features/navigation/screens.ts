@@ -14,11 +14,11 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 
-export type ScreenGroup = 'Train' | 'Progress' | 'Look back' | 'App'
+type ScreenGroup = 'Train' | 'Progress' | 'Look back' | 'App'
 
 export const SCREEN_GROUPS: readonly ScreenGroup[] = ['Train', 'Progress', 'Look back', 'App']
 
-export interface Screen {
+interface Screen {
   readonly id: string
   readonly label: string
   /** One line on the tile: what the screen answers, not what it is called. */

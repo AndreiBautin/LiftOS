@@ -15,7 +15,7 @@ import type { VolumeMap } from './accounting'
  * squat-heavy; what this says is which way and how far, and whether it
  * is moving. Even is within a tenth either side.
  */
-export interface BalanceSide {
+interface BalanceSide {
   readonly label: string
   readonly muscles: readonly MuscleGroup[]
 }
@@ -39,7 +39,7 @@ const UPPER: readonly MuscleGroup[] = [
   'forearms',
 ]
 
-export const BALANCE_PAIRS: readonly BalancePair[] = [
+const BALANCE_PAIRS: readonly BalancePair[] = [
   {
     key: 'push-pull',
     left: { label: 'Push', muscles: ['chest', 'front-delts', 'triceps'] },

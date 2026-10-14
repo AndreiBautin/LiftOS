@@ -13,7 +13,7 @@ import { workingSets, type WorkoutLog } from './workout-log'
  * knows has no fix: the sets are real, and the exercise may come back with
  * a later build.
  */
-export interface HealthCounts {
+interface HealthCounts {
   readonly sessions: number
   readonly abandoned: number
   readonly sets: number
@@ -31,7 +31,7 @@ export type Finding =
   /** Sets filed under exercises the library does not hold. */
   | { readonly kind: 'unknown-exercise'; readonly exerciseIds: readonly ExerciseId[] }
 
-export interface DataHealth {
+interface DataHealth {
   readonly counts: HealthCounts
   readonly findings: readonly Finding[]
 }

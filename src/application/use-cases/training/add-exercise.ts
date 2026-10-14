@@ -7,12 +7,12 @@ import type { ExerciseRepository, WorkoutRepository } from '@/domain/repositorie
 
 import { planFromHistory } from './start-workout'
 
-export interface AddExerciseDeps {
+interface AddExerciseDeps {
   readonly workouts: WorkoutRepository
   readonly exercises: ExerciseRepository
 }
 
-export interface AddExerciseRequest {
+interface AddExerciseRequest {
   readonly workoutId: WorkoutId
   /** The entry the new one goes after. */
   readonly afterIndex: number

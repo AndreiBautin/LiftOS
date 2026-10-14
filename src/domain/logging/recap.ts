@@ -13,7 +13,7 @@ import { mondayOf, shiftDay } from '@/domain/time/day'
  * it, by the same rule the set rows and the report use, so the recap
  * cannot tell a different story from the screens that were there.
  */
-export interface WeekTotals {
+interface WeekTotals {
   readonly monday: string
   readonly sessions: number
   readonly sets: number
@@ -22,7 +22,7 @@ export interface WeekTotals {
   readonly byDay: readonly number[]
 }
 
-export interface WeekRecap {
+interface WeekRecap {
   readonly last: WeekTotals
   readonly before: WeekTotals
   /** Exercises whose top set last week beat the session before it. */

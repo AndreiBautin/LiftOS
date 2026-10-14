@@ -30,7 +30,7 @@ import { STORAGE_KEYS } from '@/config/storage-keys'
  * cannot be parsed must not be able to prevent the app from opening.
  */
 
-export interface SettingsReadResult {
+interface SettingsReadResult {
   readonly settings: AppSettings
   readonly recovered: boolean
   readonly warning?: string

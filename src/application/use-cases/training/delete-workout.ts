@@ -29,7 +29,7 @@ import type { WorkoutRepository } from '@/domain/repositories/ports'
  * two — the second invisible.
  */
 
-export interface DeleteWorkoutDeps {
+interface DeleteWorkoutDeps {
   readonly workouts: WorkoutRepository
 }
 

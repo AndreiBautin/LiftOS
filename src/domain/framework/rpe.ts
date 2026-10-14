@@ -20,7 +20,7 @@
  * speed is a thing they can see.
  */
 
-export interface RpeGuide {
+interface RpeGuide {
   /** The RPE this describes. */
   readonly rpe: number
   /** Reps in reserve, as text — a range where the RPE is a half step. */

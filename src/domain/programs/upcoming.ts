@@ -29,7 +29,7 @@ export interface UpcomingExercise {
   readonly reps?: number
 }
 
-export const UPCOMING_DAYS = 7
+const UPCOMING_DAYS = 7
 
 function slotName(slot: Slot, exercises: ReadonlyMap<string, Exercise>): string {
   return slot.exercise.kind === 'query'

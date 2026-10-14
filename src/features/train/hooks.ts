@@ -487,8 +487,6 @@ export function usePreviousSet(
   })
 }
 
-export const trainingKeys = keys
-
 /**
  * Moves the block to the start of a chosen week.
  *

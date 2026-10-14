@@ -21,9 +21,9 @@ import { countsAsHypertrophy, countsAsWorking, slotVolume } from '@/domain/volum
  * the breakdown that makes the total checkable.
  */
 
-export type ContributionKind = 'primary' | 'secondary'
+type ContributionKind = 'primary' | 'secondary'
 
-export interface Contribution {
+interface Contribution {
   readonly exerciseId: ExerciseId
   readonly name: string
   readonly role: SlotRole
@@ -36,7 +36,7 @@ export interface Contribution {
   readonly kind: ContributionKind
 }
 
-export interface MuscleAttribution {
+interface MuscleAttribution {
   readonly muscle: MuscleGroup
   readonly label: string
   readonly total: number

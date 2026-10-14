@@ -31,7 +31,7 @@ export const SYNCED_SETTING_KEYS = [
   'e1rmFormula',
 ] as const
 
-export type SyncedSettingKey = (typeof SYNCED_SETTING_KEYS)[number]
+type SyncedSettingKey = (typeof SYNCED_SETTING_KEYS)[number]
 
 /**
  * The travelling half, with the stamp that lets two copies be ordered.
@@ -42,7 +42,7 @@ export type SyncedSettingKey = (typeof SYNCED_SETTING_KEYS)[number]
  * settings object is a worse outcome than an older one, because the
  * program it derives would match neither device.
  */
-export type SyncedSettings = Pick<AppSettings, SyncedSettingKey> & {
+type SyncedSettings = Pick<AppSettings, SyncedSettingKey> & {
   readonly updatedAt?: string
 }
 

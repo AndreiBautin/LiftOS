@@ -30,7 +30,7 @@ export const PLATES: Readonly<Record<WeightUnit, readonly number[]>> = {
   kg: [25, 20, 15, 10, 5, 2.5, 1.25],
 }
 
-export interface Loading {
+interface Loading {
   /** The bar alone. */
   readonly bar: number
   /** Plates for one side, heaviest first — the order they go on. */

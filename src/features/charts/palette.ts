@@ -9,5 +9,3 @@ export const LIFT_COLOURS = {
   bench: 'var(--color-cool-500)',
   deadlift: 'var(--color-warn-500)',
 } as const
-
-export type ChartLift = keyof typeof LIFT_COLOURS

@@ -2,13 +2,7 @@ import type { ExerciseId } from '@/domain/ids/ids'
 import { asCheckInId, asExerciseId, asWorkoutId } from '@/domain/ids/ids'
 import type { LogEntry, LoggedSet, WorkoutLog } from '@/domain/logging/workout-log'
 import type { SetPrescription } from '@/domain/programs/prescription'
-import type {
-  PostWorkoutCheckIn,
-  PreWorkoutCheckIn,
-  ReadinessFactors,
-  RecoveryState,
-  WorkloadState,
-} from '@/domain/autoregulation/check-in'
+import type { PostWorkoutCheckIn, WorkloadState } from '@/domain/autoregulation/check-in'
 import type { MuscleGroup } from '@/domain/exercises/taxonomy'
 
 /**
@@ -23,10 +17,6 @@ let counter = 0
 const nextId = (): string => {
   counter += 1
   return `test-${String(counter)}`
-}
-
-export function resetIdCounter(): void {
-  counter = 0
 }
 
 export function aSet(overrides: Partial<LoggedSet> = {}): LoggedSet {
@@ -46,20 +36,6 @@ export function aSet(overrides: Partial<LoggedSet> = {}): LoggedSet {
     completedAt: '2026-08-24T10:00:00.000Z',
     ...overrides,
   }
-}
-
-/** A set taken to failure, with the reps actually achieved. */
-export function anAmrapSet(minimum: number, achieved: number, load = 270): LoggedSet {
-  return aSet({
-    prescription: {
-      load: { kind: 'rpe', target: 9 },
-      reps: { kind: 'amrap', minimum },
-    },
-    plannedLoad: load,
-    plannedReps: minimum,
-    actualLoad: load,
-    actualReps: achieved,
-  })
 }
 
 export function anEntry(overrides: Partial<LogEntry> = {}): LogEntry {
@@ -85,44 +61,6 @@ export function aWorkout(overrides: Partial<WorkoutLog> = {}): WorkoutLog {
   }
 }
 
-export const GOOD_READINESS: ReadinessFactors = {
-  sleep: 'good',
-  nutrition: 'good',
-  hydration: 'good',
-  stress: 'good',
-  motivation: 'good',
-}
-
-export const NEUTRAL_READINESS: ReadinessFactors = {
-  sleep: 'ok',
-  nutrition: 'ok',
-  hydration: 'ok',
-  stress: 'ok',
-  motivation: 'ok',
-}
-
-export const POOR_READINESS: ReadinessFactors = {
-  sleep: 'poor',
-  nutrition: 'poor',
-  hydration: 'poor',
-  stress: 'poor',
-  motivation: 'ok',
-}
-
-export function aPreCheckIn(
-  recovery: Partial<Record<MuscleGroup, RecoveryState>>,
-  readiness: ReadinessFactors = NEUTRAL_READINESS,
-): PreWorkoutCheckIn {
-  return {
-    id: asCheckInId(nextId()),
-    kind: 'pre',
-    workoutId: asWorkoutId(nextId()),
-    recordedAt: '2026-08-24T09:25:00.000Z',
-    recovery,
-    readiness,
-  }
-}
-
 export function aPostCheckIn(
   workload: Partial<Record<MuscleGroup, WorkloadState>>,
 ): PostWorkoutCheckIn {
@@ -137,5 +75,3 @@ export function aPostCheckIn(
 
 export const SQUAT: ExerciseId = asExerciseId('back-squat')
 export const BENCH: ExerciseId = asExerciseId('bench-press')
-export const DEADLIFT: ExerciseId = asExerciseId('conventional-deadlift')
-export const PRESS: ExerciseId = asExerciseId('overhead-press')

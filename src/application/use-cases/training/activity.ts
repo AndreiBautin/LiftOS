@@ -27,7 +27,7 @@ export interface ActivityDay {
   readonly workoutId?: WorkoutId
 }
 
-export interface Activity {
+interface Activity {
   /** Monday-first weeks, oldest first; each is seven days. */
   readonly weeks: readonly (readonly ActivityDay[])[]
   readonly sessions: number

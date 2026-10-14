@@ -218,17 +218,3 @@ export const DEFAULT_MUSCLE_VOLUMES: MuscleVolumes = Object.fromEntries(
         : { sessionsPerWeek: 0, level: 'low' },
   ]),
 ) as MuscleVolumes
-
-/**
- * Fills in any muscle a saved setting does not mention.
- *
- * The same trap `completeTiers` existed for: `MUSCLE_GROUP_LABELS` is a
- * `Record<MuscleGroup, …>` so a new muscle group fails the build, but a
- * *stored* volume map is just data and a new group silently arrives
- * missing. Typecheck passed with traps untiered once already.
- */
-export function completeMuscleVolumes(saved: Partial<MuscleVolumes>): MuscleVolumes {
-  return Object.fromEntries(
-    MUSCLE_GROUPS.map((muscle) => [muscle, saved[muscle] ?? DEFAULT_MUSCLE_VOLUMES[muscle]]),
-  ) as MuscleVolumes
-}

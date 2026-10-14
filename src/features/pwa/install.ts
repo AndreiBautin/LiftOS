@@ -63,7 +63,7 @@ export function isIos(): boolean {
   )
 }
 
-export type InstallOffer = 'none' | 'prompt' | 'ios'
+type InstallOffer = 'none' | 'prompt' | 'ios'
 
 /**
  * Whether to offer installing, and how.

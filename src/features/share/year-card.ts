@@ -19,7 +19,7 @@ import {
  * weeks trained and the best and current streaks above. Days to come are
  * left out rather than drawn faint: a shared year is the year so far.
  */
-export interface YearCard {
+interface YearCard {
   readonly year: string
   /** Working sets per day key. */
   readonly days: Readonly<Record<string, number>>

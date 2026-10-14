@@ -18,7 +18,7 @@ export interface LibraryRow {
   readonly weeks: readonly number[]
 }
 
-export interface LibraryShelf {
+interface LibraryShelf {
   readonly muscle: MuscleGroup
   readonly rows: readonly LibraryRow[]
 }

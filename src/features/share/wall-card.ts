@@ -22,7 +22,7 @@ import {
  * the reason the session card is: a screenshot of a scrolling grid is a
  * picture of a web page.
  */
-export interface WallTile {
+interface WallTile {
   readonly name: string
   /** Already formatted: "315 lb". */
   readonly load: string

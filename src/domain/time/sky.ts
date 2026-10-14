@@ -9,7 +9,7 @@
  * The stops are the app's own taste, not a claim about the sun: nothing
  * reads them but the backdrop.
  */
-export interface Sky {
+interface Sky {
   /** Horizontal centre of the glow, percent of the screen width. */
   readonly x: number
   /** Vertical centre, percent of the screen height (may sit off screen). */
@@ -20,7 +20,7 @@ export interface Sky {
   readonly strength: number
 }
 
-export type SkyPhase = 'night' | 'dawn' | 'day' | 'dusk'
+type SkyPhase = 'night' | 'dawn' | 'day' | 'dusk'
 
 interface Stop extends Sky {
   readonly hour: number

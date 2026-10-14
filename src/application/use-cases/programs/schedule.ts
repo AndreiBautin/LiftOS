@@ -16,7 +16,7 @@ import { localDayOf, shiftDay, toDayKey } from '@/domain/time/day'
  * done, and what to offer next. See `domain/programs/schedule.ts` for why
  * the day comes from the date.
  */
-export interface Schedule {
+interface Schedule {
   readonly today: string
   /** The Monday the block began, as a day key. */
   readonly blockStartedOn: string

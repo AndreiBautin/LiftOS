@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react'
 
 import { cn } from '@/lib/cn'
 
-export interface SettingsSection {
+interface SettingsSection {
   /** The `id` of the section's element on the page. */
   readonly id: string
   readonly label: string

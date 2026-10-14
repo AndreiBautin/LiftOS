@@ -215,9 +215,9 @@ export const DEFAULT_SETTINGS: AppSettings = {
 }
 
 /** Days since the last export before the line starts saying so. */
-export const BACKUP_STALE_DAYS = 14
+const BACKUP_STALE_DAYS = 14
 
-export interface BackupAge {
+interface BackupAge {
   /** Whole days since the last export, absent if there has never been one. */
   readonly days?: number
   /** True once an export is old enough — or missing — to be worth saying. */

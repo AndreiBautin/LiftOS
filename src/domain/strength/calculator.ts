@@ -4,11 +4,11 @@ import { estimateOneRepMax, type E1rmEstimate, type E1rmFormula } from './one-re
 import { loadForReps } from './rep-max'
 
 /** The rep counts the calculator lists. */
-export const CALCULATOR_REPS = [1, 2, 3, 4, 5, 6, 8, 10, 12] as const
+const CALCULATOR_REPS = [1, 2, 3, 4, 5, 6, 8, 10, 12] as const
 /** The percentages it lists, of the estimated max. */
-export const CALCULATOR_PERCENTS = [100, 95, 90, 85, 80, 75, 70, 65, 60, 50] as const
+const CALCULATOR_PERCENTS = [100, 95, 90, 85, 80, 75, 70, 65, 60, 50] as const
 
-export interface StrengthTable {
+interface StrengthTable {
   readonly estimate: E1rmEstimate
   readonly reps: readonly { readonly reps: number; readonly load: number }[]
   readonly percents: readonly { readonly percent: number; readonly load: number }[]

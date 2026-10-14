@@ -12,8 +12,8 @@
  *      `console` everywhere else in the codebase.
  */
 
-export const LOG_LEVELS = ['debug', 'info', 'warn', 'error', 'silent'] as const
-export type LogLevel = (typeof LOG_LEVELS)[number]
+const LOG_LEVELS = ['debug', 'info', 'warn', 'error', 'silent'] as const
+type LogLevel = (typeof LOG_LEVELS)[number]
 
 const SEVERITY: Record<LogLevel, number> = {
   debug: 10,
@@ -24,7 +24,7 @@ const SEVERITY: Record<LogLevel, number> = {
 }
 
 /** Scalars only — the type is the enforcement. */
-export type LogFields = Record<string, string | number | boolean | null | undefined>
+type LogFields = Record<string, string | number | boolean | null | undefined>
 
 function configuredLevel(): LogLevel {
   const raw: unknown = import.meta.env.VITE_LOG_LEVEL
@@ -37,15 +37,7 @@ function configuredLevel(): LogLevel {
   return import.meta.env.DEV ? 'debug' : 'warn'
 }
 
-let level: LogLevel = configuredLevel()
-
-export function setLogLevel(next: LogLevel): void {
-  level = next
-}
-
-export function getLogLevel(): LogLevel {
-  return level
-}
+const level: LogLevel = configuredLevel()
 
 function shouldLog(candidate: LogLevel): boolean {
   return SEVERITY[candidate] >= SEVERITY[level]

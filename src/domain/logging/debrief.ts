@@ -32,7 +32,7 @@ export interface Moved {
   readonly versus: Versus
 }
 
-export interface Next {
+interface Next {
   readonly exerciseId: ExerciseId
   /**
    * `up`: every set reached the top, the bar goes up. `repeat`: a set fell
@@ -44,7 +44,7 @@ export interface Next {
   readonly load?: number | undefined
 }
 
-export interface Debrief {
+interface Debrief {
   readonly moved: readonly Moved[]
   readonly held: readonly Moved[]
   readonly next: readonly Next[]

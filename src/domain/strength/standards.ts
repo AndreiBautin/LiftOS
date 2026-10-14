@@ -18,7 +18,7 @@ import { asExerciseId } from '@/domain/ids/ids'
  * matters is that they are fixed and external — a scale the app could
  * move would mean nothing.
  */
-export const STRENGTH_STANDARDS: Readonly<Record<string, readonly number[]>> = {
+const STRENGTH_STANDARDS: Readonly<Record<string, readonly number[]>> = {
   [STRENGTH_LIFT_SLUGS.squat]: [0.75, 1.25, 1.5, 2.25, 2.75],
   [STRENGTH_LIFT_SLUGS.bench]: [0.5, 0.75, 1.25, 1.75, 2.0],
   [STRENGTH_LIFT_SLUGS.deadlift]: [1.0, 1.5, 2.0, 2.5, 3.0],
@@ -59,7 +59,7 @@ export interface LiftStanding {
   readonly reached?: number
 }
 
-export interface StandardsInputs {
+interface StandardsInputs {
   readonly estimatedMaxes: Readonly<Partial<Record<ExerciseId, number>>>
   readonly bodyweight?: number
 }

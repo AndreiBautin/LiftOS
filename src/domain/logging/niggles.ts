@@ -44,7 +44,7 @@ export const NIGGLE_LABELS: Readonly<Record<NiggleRegion, string>> = {
 }
 
 /** The muscles whose work loads each joint. */
-export const NIGGLE_MUSCLES: Readonly<Record<NiggleRegion, readonly MuscleGroup[]>> = {
+const NIGGLE_MUSCLES: Readonly<Record<NiggleRegion, readonly MuscleGroup[]>> = {
   neck: ['traps'],
   shoulder: ['chest', 'front-delts', 'side-delts', 'rear-delts'],
   elbow: ['biceps', 'triceps', 'forearms'],
@@ -56,7 +56,7 @@ export const NIGGLE_MUSCLES: Readonly<Record<NiggleRegion, readonly MuscleGroup[
 }
 
 /** How far back a niggle is still worth showing. */
-export const NIGGLE_DAYS = 21
+const NIGGLE_DAYS = 21
 
 export function isNiggleRegion(value: unknown): value is NiggleRegion {
   return typeof value === 'string' && (NIGGLE_REGIONS as readonly string[]).includes(value)

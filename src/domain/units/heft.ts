@@ -14,7 +14,7 @@ import { convertWeight, type WeightUnit } from './weight'
  * kilo total land on the same object.
  */
 
-export interface Heft {
+interface Heft {
   readonly name: string
   readonly plural: string
   readonly kg: number
@@ -31,7 +31,7 @@ export const HEFTS: readonly Heft[] = [
   { name: 'Boeing 737', plural: 'Boeing 737s', kg: 41_000 },
 ]
 
-export interface HeftComparison {
+interface HeftComparison {
   readonly heft: Heft
   /** One decimal under ten, whole above — "2.3 elephants", "14 pianos". */
   readonly count: number

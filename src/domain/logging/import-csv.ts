@@ -3,13 +3,13 @@ import { shiftDay } from '@/domain/time/day'
 import type { WeightUnit } from '@/domain/units/weight'
 
 /** One set as another app exported it. */
-export interface ImportedSet {
+interface ImportedSet {
   readonly load?: number
   readonly reps?: number
   readonly warmup: boolean
 }
 
-export interface ImportedEntry {
+interface ImportedEntry {
   /** The exercise's name in the other app, the key a mapping is made on. */
   readonly name: string
   readonly sets: readonly ImportedSet[]

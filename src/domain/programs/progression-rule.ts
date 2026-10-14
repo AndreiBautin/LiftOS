@@ -111,32 +111,3 @@ export type ProgressionRule =
       readonly condition: ProgressionCondition
       readonly label: string
     }
-
-export function matchesSelector(
-  selector: SlotSelector,
-  slot: { readonly id: string; readonly role: SlotRole; readonly exerciseId?: ExerciseId },
-): boolean {
-  switch (selector.kind) {
-    case 'all':
-      return true
-    case 'role':
-      return slot.role === selector.role
-    case 'exercise':
-      return slot.exerciseId === selector.exerciseId
-    case 'slot':
-      return slot.id === selector.slotId
-  }
-}
-
-export function applyDelta(value: number, delta: Delta): number {
-  switch (delta.kind) {
-    case 'absolute':
-      return value + delta.amount
-    case 'percent':
-      return value * (1 + delta.amount / 100)
-  }
-}
-
-export function describeRule(rule: ProgressionRule): string {
-  return rule.label
-}

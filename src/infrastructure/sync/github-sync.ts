@@ -32,7 +32,7 @@ import { GitHubSyncError, readFile, writeFile, type GitHubTarget } from './githu
  * fresh read and merges what it missed. Three attempts is generous for
  * two devices one person uses.
  */
-export interface SyncRun {
+interface SyncRun {
   readonly pulled: number
   readonly purged: number
   readonly uploaded: boolean
@@ -70,7 +70,7 @@ function isPosition(value: unknown): value is ProgramPosition {
 }
 
 /** The position a sync file carries, read as untrusted input. */
-export function positionInFile(text: string): ProgramPosition | undefined {
+function positionInFile(text: string): ProgramPosition | undefined {
   try {
     const parsed: unknown = JSON.parse(text)
     const position = (parsed as { readonly position?: unknown } | null)?.position
@@ -94,7 +94,7 @@ export function isNewerPosition(
  * one more: it is written for readers that are not LiftOS (Jarvis shows
  * today's session from it). Never read back — each device derives its own.
  */
-export interface SyncOptions extends ExportOptions {
+interface SyncOptions extends ExportOptions {
   readonly upcoming?: readonly UpcomingSession[]
   /**
    * The SBD total as this app computes it, and which sessions were

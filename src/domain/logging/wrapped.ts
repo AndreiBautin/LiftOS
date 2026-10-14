@@ -9,7 +9,7 @@ import { totalWorkingSets, workingSets, type WorkoutLog } from './workout-log'
  * `YYYY-MM-DD`, read from its Monday), a month (`YYYY-MM`) or a year
  * (`YYYY`).
  */
-export interface WrappedPeriod {
+interface WrappedPeriod {
   readonly start: string
   readonly end: string
 }

@@ -1,14 +1,14 @@
 import { shiftDay } from '@/domain/time/day'
 
 /** One session to put in a calendar. */
-export interface CalendarSession {
+interface CalendarSession {
   /** Local day key. */
   readonly on: string
   readonly title: string
   readonly description?: string
 }
 
-export interface CalendarTimes {
+interface CalendarTimes {
   /** Local start, `HH:MM`. */
   readonly start: string
   readonly minutes: number

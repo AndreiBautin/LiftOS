@@ -5,7 +5,7 @@ import type { Clock, ExerciseRepository, WorkoutRepository } from '@/domain/repo
 import { toDayKey } from '@/domain/time/day'
 import { muscleRecency, type MuscleRecency } from '@/domain/volume/recency'
 
-export interface RecencyDeps {
+interface RecencyDeps {
   readonly workouts: WorkoutRepository
   readonly exercises: ExerciseRepository
   readonly clock: Clock

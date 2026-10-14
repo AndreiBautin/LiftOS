@@ -122,15 +122,3 @@ export const MOVEMENT_PATTERNS = [
 ] as const
 
 export type MovementPattern = (typeof MOVEMENT_PATTERNS)[number]
-
-/**
- * The three assistance categories 5/3/1 actually names, expressed over
- * movement patterns so any exercise can satisfy one.
- */
-export const ASSISTANCE_CATEGORIES = {
-  push: ['horizontal-push', 'vertical-push'],
-  pull: ['horizontal-pull', 'vertical-pull'],
-  'single-leg-core': ['lunge', 'core', 'carry'],
-} as const satisfies Record<string, readonly MovementPattern[]>
-
-export type AssistanceCategory = keyof typeof ASSISTANCE_CATEGORIES

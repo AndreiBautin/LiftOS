@@ -2,7 +2,7 @@
 export type RestCue = 'tick' | 'done'
 
 /** The seconds left at which a tick sounds. */
-export const TICK_AT = [3, 2, 1] as const
+const TICK_AT = [3, 2, 1] as const
 
 /**
  * Which cues sound between two readings of the time left, in milliseconds.

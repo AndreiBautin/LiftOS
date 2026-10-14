@@ -24,7 +24,7 @@ export interface AdherenceDay {
   readonly state: 'done' | 'missed' | 'today' | 'ahead'
 }
 
-export interface AdherenceWeek {
+interface AdherenceWeek {
   readonly monday: string
   /** Zero-based week of the block. */
   readonly weekIndex: number
@@ -35,7 +35,7 @@ export interface AdherenceWeek {
   readonly extra: number
 }
 
-export interface Adherence {
+interface Adherence {
   readonly weeks: readonly AdherenceWeek[]
   /**
    * Weeks in a row with every scheduled session done, counted back from

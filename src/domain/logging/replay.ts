@@ -3,7 +3,7 @@ import type { ExerciseId } from '@/domain/ids/ids'
 import type { WorkoutLog } from './workout-log'
 
 /** One logged set, placed in time from the session's start. */
-export interface ReplayFrame {
+interface ReplayFrame {
   /** Milliseconds since the session started. */
   readonly at: number
   readonly entryIndex: number

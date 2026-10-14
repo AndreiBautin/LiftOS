@@ -86,7 +86,7 @@ export function slotVolume(exercise: Exercise, sets: readonly SetPrescription[])
   return volume
 }
 
-export function addVolume(a: VolumeMap, b: VolumeMap): VolumeMap {
+function addVolume(a: VolumeMap, b: VolumeMap): VolumeMap {
   const total = emptyVolumeMap()
   for (const muscle of Object.keys(total) as MuscleGroup[]) {
     total[muscle] = a[muscle] + b[muscle]
@@ -98,16 +98,7 @@ export function sumVolume(maps: readonly VolumeMap[]): VolumeMap {
   return maps.reduce<VolumeMap>(addVolume, emptyVolumeMap())
 }
 
-/** Subtracts, floored at zero — a muscle cannot owe negative sets. */
-export function subtractVolume(target: VolumeMap, spent: VolumeMap): VolumeMap {
-  const remaining = emptyVolumeMap()
-  for (const muscle of Object.keys(remaining) as MuscleGroup[]) {
-    remaining[muscle] = Math.max(0, target[muscle] - spent[muscle])
-  }
-  return remaining
-}
-
-export interface CountableSlot {
+interface CountableSlot {
   readonly exerciseId: ExerciseId
   readonly sets: readonly SetPrescription[]
 }

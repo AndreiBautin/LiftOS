@@ -6,9 +6,9 @@ import { sumVolume } from '@/domain/volume/accounting'
 import { balanceOf, type PairBalance } from '@/domain/volume/balance'
 
 /** Calendar weeks the balance reads: this one and the three before. */
-export const BALANCE_WEEKS = 4
+const BALANCE_WEEKS = 4
 
-export interface BalanceDeps {
+interface BalanceDeps {
   readonly workouts: WorkoutRepository
   readonly exercises: ExerciseRepository
   readonly clock: Clock

@@ -24,21 +24,8 @@ import type { CheckInId, WorkoutId } from '@/domain/ids/ids'
 export const RECOVERY_STATES = ['not-recovered', 'recovered-on-time', 'recovered-early'] as const
 export type RecoveryState = (typeof RECOVERY_STATES)[number]
 
-export const RECOVERY_LABELS: Record<RecoveryState, string> = {
-  'not-recovered': 'Still sore',
-  'recovered-on-time': 'Recovered on time',
-  'recovered-early': 'Recovered a while ago',
-}
-
 export const WORKLOAD_STATES = ['easy', 'moderate', 'hard', 'too-much'] as const
 export type WorkloadState = (typeof WORKLOAD_STATES)[number]
-
-export const WORKLOAD_LABELS: Record<WorkloadState, string> = {
-  easy: 'Easy',
-  moderate: 'About right',
-  hard: 'Hard but manageable',
-  'too-much': 'Too much',
-}
 
 /**
  * Lifestyle factors, asked before a session.
@@ -49,8 +36,7 @@ export const WORKLOAD_LABELS: Record<WorkloadState, string> = {
  * has changed. StrengthFlow ran both through the same code path, so a bad
  * night's sleep permanently reduced the program.
  */
-export const READINESS_SCALE = ['poor', 'ok', 'good'] as const
-export type ReadinessLevel = (typeof READINESS_SCALE)[number]
+export type ReadinessLevel = 'poor' | 'ok' | 'good'
 
 export interface ReadinessFactors {
   readonly sleep: ReadinessLevel
@@ -108,41 +94,3 @@ export interface PostWorkoutCheckIn {
 }
 
 export type CheckIn = PreWorkoutCheckIn | PostWorkoutCheckIn
-
-/* -------------------------------------------------------------------- */
-/* Today's session                                                       */
-/* -------------------------------------------------------------------- */
-
-/*
- * **The readiness scoring is gone, and it never reached a session.**
- *
- * `sessionAdjustmentFor` returned a set multiplier and a sentence
- * explaining it, and the only thing that ever called it was its own
- * test — the same shape as `proposeLandmarks` before it, and the same
- * removal. What the comment here used to claim, that a bad night trims
- * the session, was never true of the shipped app.
- *
- * It is also not wanted. Sleep, nutrition and hydration are quantities
- * and belong in something that counts them; stress and motivation are a
- * mood, and a mood deciding how much you lift is a second
- * autoregulation competing with the one that works. RTS already answers
- * this set by set — reps at an RPE move the load on a bad day without
- * anybody rating the day first.
- *
- * `ReadinessFactors` stays because `PreWorkoutCheckIn` holds one. The
- * check-in is its own separate unwired feature and is not what was
- * removed here.
- */
-
-/**
- * Muscles the lifter reported as still sore going into a session.
- *
- * Used to *suggest* dropping the accessory work for those muscles today.
- * A suggestion, not an edit: the lifter may know something the app does
- * not, and silently removing exercises is how an app loses trust.
- */
-export function unrecoveredMuscles(checkIn: PreWorkoutCheckIn): readonly MuscleGroup[] {
-  return (Object.keys(checkIn.recovery) as MuscleGroup[]).filter(
-    (muscle) => checkIn.recovery[muscle] === 'not-recovered',
-  )
-}

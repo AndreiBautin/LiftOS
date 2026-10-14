@@ -8,7 +8,7 @@ import { totalTonnage, totalWorkingSets, workingSets, type WorkoutLog } from './
 const WEEK_MS = 7 * 86_400_000
 
 /** One run through the program: its first Monday and its last Sunday. */
-export interface BlockWindow {
+interface BlockWindow {
   readonly start: string
   readonly end: string
   readonly weeks: number
@@ -52,7 +52,7 @@ export interface BlockLift {
   readonly change: number
 }
 
-export interface BlockReport {
+interface BlockReport {
   readonly window: BlockWindow
   /** The last day counted: the block's end, or today while it runs. */
   readonly through: string

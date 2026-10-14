@@ -4,7 +4,7 @@ import type { ExerciseBests } from './bests'
 import { previousTopSet } from './versus-last'
 import type { WorkoutLog } from './workout-log'
 
-export interface RipeLift {
+interface RipeLift {
   readonly exerciseId: ExerciseId
   readonly variant: string | undefined
   /** The bar the session opens at, and the reps it asks for. */

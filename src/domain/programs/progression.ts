@@ -180,8 +180,8 @@ export function plannedRepsFor(
  * `loadStep` overrides it where a movement genuinely differs, which is
  * the same escape hatch `repRange` is.
  */
-export const UPPER_STEP = 5
-export const LOWER_STEP = 10
+const UPPER_STEP = 5
+const LOWER_STEP = 10
 
 /** The muscles a ten-pound jump belongs to. */
 const LOWER_MUSCLES: readonly string[] = ['quads', 'hamstrings', 'glutes', 'calves']
@@ -258,7 +258,7 @@ export function ladderState(
  * Shared by Start and the first-run setup's preview, so the number the
  * setup promises is the number the session opens on.
  */
-export const FIRST_SESSION_SHARE = 0.85
+const FIRST_SESSION_SHARE = 0.85
 
 export function firstSessionLoad(max: number): number {
   return max * FIRST_SESSION_SHARE

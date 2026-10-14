@@ -267,35 +267,6 @@ export function estimateFromWorkout(
 }
 
 /**
- * The reps achieved on the AMRAP set of a given role, if there was one.
- *
- * This is the input to 5/3/1's conditional progression: beat the
- * prescribed minimum and the training max goes up; miss it and the max is
- * cut rather than held.
- */
-export function amrapResult(
-  log: WorkoutLog,
-  role: SlotRole,
-):
-  { readonly exerciseId: ExerciseId; readonly reps: number; readonly minimum: number } | undefined {
-  for (const entry of log.entries) {
-    if (entry.role !== role) continue
-
-    for (const set of entry.sets) {
-      if (set.prescription.reps.kind !== 'amrap') continue
-      if (set.outcome !== 'completed' || set.actualReps === undefined) continue
-
-      return {
-        exerciseId: entry.exerciseId,
-        reps: set.actualReps,
-        minimum: set.prescription.reps.minimum,
-      }
-    }
-  }
-  return undefined
-}
-
-/**
  * Whether a logged set matched or beat the same set last time.
  *
  * StrengthFlow's post-workout report, which compared each set index

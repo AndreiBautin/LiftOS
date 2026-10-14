@@ -48,7 +48,7 @@ export interface AthleteState {
   readonly units: WeightUnit
 }
 
-export interface ResolutionContext {
+interface ResolutionContext {
   readonly athlete: AthleteState
   readonly exerciseId: ExerciseId
   readonly roundingIncrement: number
@@ -63,10 +63,10 @@ export interface ResolutionContext {
  * is what LiftTracker rendered when its exercise query matched nothing —
  * is the worst of the three options, because it looks like an answer.
  */
-export type UnresolvedReason =
+type UnresolvedReason =
   'no-estimated-max' | 'no-bodyweight' | 'rpe-outside-chart' | 'open-prescription'
 
-export interface ResolvedSet {
+interface ResolvedSet {
   /** The prescribed load, rounded to the gym's increment. Undefined if unresolved. */
   readonly load?: number
   readonly reps: RepTarget

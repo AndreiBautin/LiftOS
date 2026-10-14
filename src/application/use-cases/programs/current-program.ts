@@ -53,10 +53,7 @@ function deterministicIds(): IdGenerator {
  */
 const DERIVED_AT = '1970-01-01T00:00:00.000Z'
 
-export function recipeFromSettings(
-  settings: AppSettings,
-  overrides: Partial<RpRecipe> = {},
-): RpRecipe {
+function recipeFromSettings(settings: AppSettings, overrides: Partial<RpRecipe> = {}): RpRecipe {
   /*
    * **Four of these used to come from settings and are constants now.**
    * The muscle volumes, the per-lift session counts, the sets-per-level
@@ -123,7 +120,7 @@ export function clampPosition(
   return { ...position, blockIndex, weekIndex, dayIndex }
 }
 
-export interface JumpToWeekDeps {
+interface JumpToWeekDeps {
   readonly position: PositionRepository
   readonly clock: Clock
 }

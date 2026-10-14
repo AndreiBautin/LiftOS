@@ -18,7 +18,7 @@ import { sumVolume, type VolumeMap } from '@/domain/volume/accounting'
  * abandoned session's sets are real, but a week "with three sessions" in
  * which one was walked away from has not had three.
  */
-export interface WeekSummary {
+interface WeekSummary {
   /** The Monday this week began on, as a day key. */
   readonly monday: string
   readonly sessions: number

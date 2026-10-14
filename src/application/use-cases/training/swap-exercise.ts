@@ -28,12 +28,12 @@ import { planFromHistory, rangeOf } from './start-workout'
  * would file work under an exercise that never had it.
  */
 
-export interface SwapExerciseDeps {
+interface SwapExerciseDeps {
   readonly workouts: WorkoutRepository
   readonly exercises: ExerciseRepository
 }
 
-export interface SwapExerciseRequest {
+interface SwapExerciseRequest {
   readonly workoutId: WorkoutId
   readonly entryIndex: number
   readonly exerciseId: ExerciseId
@@ -163,7 +163,7 @@ export function replanned(
 }
 
 /** What a swap offers, best first, with what each did last time. */
-export interface SwapOption {
+interface SwapOption {
   readonly exercise: Exercise
   /** The programmed exercise, offered to undo a swap. */
   readonly programmed: boolean

@@ -93,7 +93,7 @@ export function exerciseHistory(
 }
 
 /** One calendar week of an exercise: its working sets, and their volume. */
-export interface ExerciseWeek {
+interface ExerciseWeek {
   readonly monday: string
   readonly sets: number
   readonly volume: number

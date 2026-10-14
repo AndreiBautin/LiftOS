@@ -29,7 +29,7 @@
  * real status rather than implying the data is safe.
  */
 
-export type PersistenceState =
+type PersistenceState =
   /** Granted: exempt from automatic eviction. */
   | 'persisted'
   /** Storage works, but the origin may be evicted under disk pressure. */
@@ -37,7 +37,7 @@ export type PersistenceState =
   /** The browser does not implement the Storage API. */
   | 'unsupported'
 
-export interface StorageStatus {
+interface StorageStatus {
   readonly state: PersistenceState
   /** Running as an installed app rather than in a browser tab. */
   readonly installed: boolean

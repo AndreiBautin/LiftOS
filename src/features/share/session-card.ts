@@ -287,7 +287,7 @@ function drawStaircase(
 }
 
 /** Wraps a heading onto as many lines as it needs; returns the last baseline. */
-export function wrap(
+function wrap(
   ctx: CanvasRenderingContext2D,
   text: string,
   x: number,

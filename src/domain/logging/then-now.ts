@@ -27,7 +27,7 @@ export interface Window {
   readonly volumePerWeek: number
 }
 
-export interface ThenNow {
+interface ThenNow {
   readonly exerciseId: ExerciseId
   readonly then: Window
   readonly now: Window

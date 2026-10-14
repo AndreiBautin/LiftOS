@@ -16,7 +16,7 @@ import type { WorkoutLog } from '@/domain/logging/workout-log'
  * written before sets were stamped, or filed in one go so that every set
  * shares an instant, has no timeline to draw.
  */
-export interface TimelineBand {
+interface TimelineBand {
   readonly exerciseId: ExerciseId
   readonly from: number
   readonly to: number
@@ -25,7 +25,7 @@ export interface TimelineBand {
   readonly warmup: boolean
 }
 
-export interface Timeline {
+interface Timeline {
   /** Milliseconds from start to finish. */
   readonly length: number
   readonly bands: readonly TimelineBand[]

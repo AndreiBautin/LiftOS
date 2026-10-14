@@ -996,21 +996,6 @@ export function builtInExercises(): readonly Exercise[] {
   }))
 }
 
-/** Exercises that build the total, in the order a session runs them. */
-export function strengthLifts(): readonly Exercise[] {
-  return builtInExercises().filter((exercise) => exercise.intent === 'strength')
-}
-
-/** Everything that counts toward per-muscle volume. */
-export function hypertrophyExercises(): readonly Exercise[] {
-  return builtInExercises().filter((exercise) => exercise.intent === 'hypertrophy')
-}
-
-/** Warm-ups and cardio: prescribed, performed, and worth zero volume. */
-export function conditioningExercises(): readonly Exercise[] {
-  return builtInExercises().filter((exercise) => exercise.intent === 'conditioning')
-}
-
 /**
  * The warm-up before each kind of day, with the reps actually prescribed.
  *
@@ -1083,5 +1068,3 @@ export const WARM_UP_SLUGS = {
     'roll-hips',
   ],
 } as const
-
-export const BUILT_IN_EXERCISE_COUNT = ENTRIES.length

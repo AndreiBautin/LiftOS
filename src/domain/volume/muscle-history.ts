@@ -7,14 +7,14 @@ import { mondayOf, shiftDay } from '@/domain/time/day'
 /** Calendar weeks a muscle page reads: this one and the eleven before. */
 export const MUSCLE_WEEKS = 12
 
-export interface MuscleExercise {
+interface MuscleExercise {
   readonly exerciseId: ExerciseId
   readonly sets: number
   readonly sessions: number
   readonly lastDay: string
 }
 
-export interface MuscleHistory {
+interface MuscleHistory {
   /** Working sets per calendar week, oldest first, this week last. */
   readonly weeks: readonly number[]
   readonly sets: number

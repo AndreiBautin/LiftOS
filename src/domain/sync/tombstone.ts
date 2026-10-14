@@ -61,7 +61,7 @@ export function tombstoneKey(collection: TombstonedCollection, id: string): stri
   return `${collection}:${id}`
 }
 
-export interface TombstoneIndex {
+interface TombstoneIndex {
   /** When this record was deleted, if it was. */
   deletedAt(collection: TombstonedCollection, id: string): string | undefined
 }

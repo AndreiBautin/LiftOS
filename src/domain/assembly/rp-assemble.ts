@@ -24,7 +24,7 @@ import {
 } from '@/domain/priority/tiers'
 import { describeBlock } from '@/domain/priority/explain'
 import type { RpDay, RpSplit } from '@/domain/splits/rp-splits'
-import { rpFrequency, rpSplit } from '@/domain/splits/rp-splits'
+import { rpSplit } from '@/domain/splits/rp-splits'
 import { MUSCLE_GROUPS } from '@/domain/exercises/taxonomy'
 import {
   countsAsHypertrophy,
@@ -181,7 +181,7 @@ export function defaultRpRecipe(overrides: Partial<RpRecipe> = {}): RpRecipe {
   }
 }
 
-export interface RpAssembleDeps {
+interface RpAssembleDeps {
   readonly exercises: readonly Exercise[]
   readonly ids: IdGenerator
   readonly now: Date
@@ -2171,5 +2171,3 @@ function addInto(target: VolumeMap, addition: VolumeMap): VolumeMap {
   }
   return result
 }
-
-export { rpFrequency }

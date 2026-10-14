@@ -13,7 +13,7 @@ export const TEMPOS: readonly { readonly label: string; readonly tempo: Tempo }[
   { label: '4-0-2', tempo: { lower: 4, hold: 0, lift: 2 } },
 ]
 
-export interface TempoReading {
+interface TempoReading {
   /** The rep under way, from 1. */
   readonly rep: number
   readonly phase: TempoPhase

@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { cn } from '@/lib/cn'
 
 /** How long the way back stays on screen. */
-export const UNDO_MS = 5000
+const UNDO_MS = 5000
 
 /**
  * The way back from a tap that went wrong: "Logged 215 × 3 · Undo" for

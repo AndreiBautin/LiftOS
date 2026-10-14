@@ -1,5 +1,6 @@
 import type { DBSchema, IDBPDatabase } from 'idb'
 import { openDB } from 'idb'
+import { logger } from '@/shared/logging/logger'
 
 import type { CheckIn } from '@/domain/autoregulation/check-in'
 import type { Tombstone } from '@/domain/sync/tombstone'
@@ -44,14 +45,14 @@ import type { ProgramPosition } from '@/domain/programs/position'
  * meant writing a migration, or living with a database called `lift`
  * inside an app called LifeOS forever.
  */
-export const DB_NAME = 'lifeos'
+const DB_NAME = 'lifeos'
 
 /**
  * Bump this and add an upgrade step below. Never edit an existing step —
  * a device that already ran it will not run it again, so changing one
  * leaves two devices with different schemas and no way to tell.
  */
-export const DB_VERSION = 25
+const DB_VERSION = 25
 
 /**
  * A workout as it is stored, which is not quite a workout as the domain
@@ -107,12 +108,12 @@ export function fromStored(stored: StoredWorkout): WorkoutLog {
  * recurring tracking moved to a calendar; that does not make the history
  * untrue, and a backup taken before the move still holds it.
  */
-export interface RetiredDaily {
+interface RetiredDaily {
   readonly id: string
   readonly updatedAt?: string
 }
 
-export type StoredDaily = RetiredDaily
+type StoredDaily = RetiredDaily
 
 /**
  * The shape rows in the two retired day-keyed stores were written in.
@@ -772,10 +773,13 @@ export function openDatabase(name = DB_NAME): Promise<AppDatabase> {
     },
 
     blocked() {
-      // Another tab is holding the old version open. The app shows a
-      // prompt rather than failing silently, because the alternative is a
-      // tab that appears to work and writes to a stale schema.
-      reportBlocked()
+      // Another tab is holding the old version open, so this open waits
+      // until that tab closes or reloads. **Nothing on screen says so** —
+      // this comment used to claim a prompt, and the hook for one was
+      // exported and never called. The other tab's `blocking` below
+      // closes its connection, which normally ends the wait at once; the
+      // log line is for the case where it does not.
+      logger.warn('db.upgrade-blocked', {})
     },
 
     blocking() {
@@ -870,17 +874,4 @@ export async function clearAllStores(db: AppDatabase): Promise<void> {
     tx.objectStore('goals').clear(),
     tx.done,
   ])
-}
-
-type BlockedHandler = () => void
-
-let blockedHandler: BlockedHandler | undefined
-
-/** Lets the app surface an upgrade blocked by another tab. */
-export function onUpgradeBlocked(handler: BlockedHandler): void {
-  blockedHandler = handler
-}
-
-function reportBlocked(): void {
-  blockedHandler?.()
 }

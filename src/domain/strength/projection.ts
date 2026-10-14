@@ -27,7 +27,7 @@ const MAX_DAYS_AHEAD = 365
  * thin to fit — fewer than four sessions, or under four weeks of span.
  * The slope may be flat or falling; what to do with that is the caller's.
  */
-export interface TrendFit {
+interface TrendFit {
   readonly slopePerDay: number
   readonly fittedNow: number
   readonly lastDate: string

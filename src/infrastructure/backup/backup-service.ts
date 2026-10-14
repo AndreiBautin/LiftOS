@@ -87,7 +87,7 @@ export function backupFilename(now: Date): string {
 /* Import                                                                */
 /* -------------------------------------------------------------------- */
 
-export interface ParsedBackup {
+interface ParsedBackup {
   readonly preview: ImportPreview
   readonly envelope?: BackupEnvelope
 }
@@ -206,7 +206,7 @@ function emptyCounts(): Record<keyof BackupCounts, number> {
   }
 }
 
-export interface ImportResult {
+interface ImportResult {
   readonly imported: BackupCounts
   readonly settings?: AppSettings
 }

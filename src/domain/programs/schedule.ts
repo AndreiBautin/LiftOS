@@ -26,7 +26,7 @@ import { parseDay, shiftDay } from '@/domain/time/day'
  */
 
 /** Where a date falls in the program. */
-export interface ScheduledSlot {
+interface ScheduledSlot {
   readonly cycleNumber: number
   readonly blockIndex: number
   readonly weekIndex: number
@@ -58,7 +58,7 @@ export function mondayOf(key: string): string {
  * generated week — is laid out from Monday in order, which is how the
  * labels of every generated split already read.
  */
-export function weekdayOf(day: ProgramDay): number {
+function weekdayOf(day: ProgramDay): number {
   return day.weekday ?? (day.index + 1) % 7
 }
 
@@ -227,7 +227,7 @@ export function blockStartFor(program: ProgramTemplate, slot: ScheduledSlot, on:
 }
 
 /** A week of the calendar as the program fills it. */
-export interface WeekAhead {
+interface WeekAhead {
   readonly monday: string
   readonly slot: ScheduledSlot
   readonly isDeload: boolean

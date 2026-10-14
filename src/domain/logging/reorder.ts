@@ -1,7 +1,7 @@
 import type { LogEntry } from './workout-log'
 
 /** Why an entry cannot move that way, for the screen to say. */
-export type MoveRefusal = 'edge' | 'warmup' | 'superset'
+type MoveRefusal = 'edge' | 'warmup' | 'superset'
 
 /**
  * An open session's exercises with one moved a place up or down.

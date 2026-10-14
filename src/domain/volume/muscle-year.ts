@@ -18,14 +18,14 @@ import { mondayOf, shiftDay } from '@/domain/time/day'
  * A muscle never trained in the year is left out of the rows and counted,
  * because a row of empty cells says less than "and 3 others not trained".
  */
-export interface MuscleYearRow {
+interface MuscleYearRow {
   readonly muscle: MuscleGroup
   /** Working sets per week, in the order of `weeks`. */
   readonly sets: readonly number[]
   readonly total: number
 }
 
-export interface MuscleYear {
+interface MuscleYear {
   /** The Monday of every week drawn, oldest first. */
   readonly weeks: readonly string[]
   readonly rows: readonly MuscleYearRow[]

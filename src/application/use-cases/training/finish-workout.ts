@@ -26,7 +26,7 @@ import type { MuscleGroup } from '@/domain/exercises/taxonomy'
  * muscle, counted by exactly the same rules the planner used.
  */
 
-export interface FinishWorkoutDeps {
+interface FinishWorkoutDeps {
   readonly workouts: WorkoutRepository
   readonly exercises: ExerciseRepository
   /** The program, derived by the caller from the lifter's settings. */

@@ -1,5 +1,5 @@
 import type { Exercise } from '@/domain/exercises/exercise'
-import type { ExerciseId, IdGenerator, WorkoutId } from '@/domain/ids/ids'
+import type { ExerciseId, IdGenerator } from '@/domain/ids/ids'
 import { asWorkoutId } from '@/domain/ids/ids'
 import type { LogEntry, LoggedSet, WorkoutLog } from '@/domain/logging/workout-log'
 import type { ProgramDay, ProgramTemplate, Slot } from '@/domain/programs/program'
@@ -39,7 +39,7 @@ import { DAY_VERSIONS, sameVersion } from '@/domain/splits/rp-splits'
  * yesterday's workout says it asked for.
  */
 
-export interface StartWorkoutDeps {
+interface StartWorkoutDeps {
   readonly workouts: WorkoutRepository
   readonly position: PositionRepository
   readonly exercises: ExerciseRepository
@@ -47,7 +47,7 @@ export interface StartWorkoutDeps {
   readonly clock: Clock
 }
 
-export interface StartWorkoutRequest {
+interface StartWorkoutRequest {
   readonly athlete: AthleteState
   readonly roundingIncrement: number
   /** The program, derived by the caller from the lifter's settings. */
@@ -282,7 +282,7 @@ function rangeToday(
 }
 
 /** What an exercise did last time, and whether its load has gone up since. */
-export interface LastTime {
+interface LastTime {
   readonly last: Performance
   readonly bumped: boolean
 }
@@ -415,10 +415,6 @@ export function isoDate(date: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
   return `${String(year)}-${month}-${day}`
-}
-
-export function workoutIdOf(log: WorkoutLog): WorkoutId {
-  return log.id
 }
 
 /**

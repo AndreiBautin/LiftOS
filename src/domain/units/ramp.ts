@@ -16,7 +16,7 @@ import type { WeightUnit } from './weight'
  * before it, or up against the working load, is dropped rather than
  * repeated: two warm-ups at 135 is one warm-up written twice.
  */
-export interface RampStep {
+interface RampStep {
   readonly load: number
   readonly reps: number
 }

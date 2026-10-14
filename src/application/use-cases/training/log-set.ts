@@ -1,7 +1,6 @@
 import type { ExerciseId, WorkoutId } from '@/domain/ids/ids'
 import type { NiggleRegion } from '@/domain/logging/niggles'
 import type { LoggedSet, SetOutcome, WorkoutLog } from '@/domain/logging/workout-log'
-import { comparePerformance } from '@/domain/logging/workout-log'
 import type { Clock, WorkoutRepository } from '@/domain/repositories/ports'
 import { sameVersion } from '@/domain/splits/rp-splits'
 
@@ -16,7 +15,7 @@ import { sameVersion } from '@/domain/splits/rp-splits'
  * microcycle the lifter had ever run, in memory, to find it.
  */
 
-export interface LogSetDeps {
+interface LogSetDeps {
   readonly workouts: WorkoutRepository
   readonly clock: Clock
   /**
@@ -42,7 +41,7 @@ export interface SetResult {
   readonly niggle?: NiggleRegion | null
 }
 
-export interface LogSetRequest {
+interface LogSetRequest {
   readonly workoutId: WorkoutId
   readonly entryIndex: number
   readonly setIndex: number
@@ -251,14 +250,4 @@ export async function previousSetFor(
   }
 
   return undefined
-}
-
-export type Comparison = ReturnType<typeof comparePerformance>
-
-export function compareToPrevious(
-  current: { readonly load?: number; readonly reps?: number },
-  previous: PreviousSet | undefined,
-): Comparison {
-  if (previous === undefined) return 'incomparable'
-  return comparePerformance(current, previous)
 }

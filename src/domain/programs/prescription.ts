@@ -1,5 +1,3 @@
-import { invariant } from '@/domain/errors/domain-error'
-
 /**
  * The low and high of a working range.
  *
@@ -157,107 +155,6 @@ export interface SetPrescription {
   readonly notes?: string
 }
 
-export const MAX_PERCENT = 200
-export const MIN_RPE = 4
-export const MAX_RPE = 10
-
-export function validateLoadSource(load: LoadSource): void {
-  switch (load.kind) {
-    case 'percent-e1rm':
-      invariant(
-        Number.isFinite(load.percent) && load.percent > 0 && load.percent <= MAX_PERCENT,
-        'PERCENT_OUT_OF_RANGE',
-        `A load percentage must be between 0 and ${String(MAX_PERCENT)}, received ${String(load.percent)}.`,
-      )
-      return
-    case 'absolute':
-      invariant(
-        Number.isFinite(load.load) && load.load >= 0,
-        'ABSOLUTE_LOAD_NEGATIVE',
-        `An absolute load must be zero or more, received ${String(load.load)}.`,
-      )
-      return
-    case 'bodyweight':
-      invariant(
-        load.addedLoad === undefined || Number.isFinite(load.addedLoad),
-        'ADDED_LOAD_INVALID',
-        'Added bodyweight load must be a finite number.',
-      )
-      return
-    case 'rpe':
-      invariant(
-        Number.isFinite(load.target) && load.target >= MIN_RPE && load.target <= MAX_RPE,
-        'RPE_OUT_OF_RANGE',
-        `A target RPE must be between ${String(MIN_RPE)} and ${String(MAX_RPE)}, received ${String(load.target)}.`,
-      )
-      return
-    case 'rts-backoff':
-      invariant(
-        Number.isFinite(load.dropPercent) && load.dropPercent >= 0 && load.dropPercent < 100,
-        'BACKOFF_DROP_OUT_OF_RANGE',
-        `A back-off drop must be between 0 and 100 percent, received ${String(load.dropPercent)}.`,
-      )
-      invariant(
-        Number.isFinite(load.topSetRpe) && load.topSetRpe >= MIN_RPE && load.topSetRpe <= MAX_RPE,
-        'RPE_OUT_OF_RANGE',
-        `A top-set RPE must be between ${String(MIN_RPE)} and ${String(MAX_RPE)}, received ${String(load.topSetRpe)}.`,
-      )
-      return
-    /*
-     * Nothing to validate: `working` carries no number of its own. What
-     * it resolves to is checked where it is read, against a history that
-     * cannot be invalid — a load that was lifted is a load that exists.
-     */
-    case 'working':
-      return
-    case 'open':
-      return
-  }
-}
-
-export function validateRepTarget(reps: RepTarget): void {
-  switch (reps.kind) {
-    case 'fixed':
-      invariant(
-        Number.isInteger(reps.reps) && reps.reps > 0,
-        'REPS_NOT_POSITIVE',
-        `A fixed rep target must be a positive whole number, received ${String(reps.reps)}.`,
-      )
-      return
-    case 'range':
-      invariant(
-        Number.isInteger(reps.low) && Number.isInteger(reps.high) && reps.low > 0,
-        'REP_RANGE_NOT_INTEGER',
-        'A rep range must be built from positive whole numbers.',
-      )
-      invariant(
-        reps.low <= reps.high,
-        'REP_RANGE_INVERTED',
-        `A rep range cannot start above where it ends (${String(reps.low)}–${String(reps.high)}).`,
-      )
-      return
-    case 'amrap':
-      invariant(
-        Number.isInteger(reps.minimum) && reps.minimum > 0,
-        'AMRAP_MINIMUM_INVALID',
-        `An AMRAP set needs a positive minimum, received ${String(reps.minimum)}.`,
-      )
-      return
-    case 'time':
-      invariant(
-        Number.isFinite(reps.seconds) && reps.seconds > 0,
-        'TIMED_SET_INVALID',
-        `A timed set needs a positive duration, received ${String(reps.seconds)}.`,
-      )
-      return
-  }
-}
-
-export function validateSetPrescription(set: SetPrescription): void {
-  validateLoadSource(set.load)
-  validateRepTarget(set.reps)
-}
-
 /**
  * Renders a prescription the way a lifter would read it: "5 @ RPE 8".
  *
@@ -319,7 +216,7 @@ export function describePrescription(
   }
 }
 
-export function describeLoad(load: LoadSource): string {
+function describeLoad(load: LoadSource): string {
   switch (load.kind) {
     case 'percent-e1rm':
       return `${String(load.percent)}% e1RM`

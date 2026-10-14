@@ -37,7 +37,7 @@ import type { DemoDeps } from './deps'
 /** Built once: the seed titles about eighty sessions. */
 const WEEKDAY = new Intl.DateTimeFormat('en-US', { weekday: 'long' })
 
-export interface SeedResult {
+interface SeedResult {
   readonly seeded: boolean
   /** Why not, when it declined. */
   readonly reason?: 'already-has-data'

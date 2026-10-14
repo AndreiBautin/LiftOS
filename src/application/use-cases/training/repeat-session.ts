@@ -7,14 +7,14 @@ import type { Clock, ExerciseRepository, WorkoutRepository } from '@/domain/repo
 import { isoDate, planFromHistory, rangeOf } from './start-workout'
 import { replanned } from './swap-exercise'
 
-export interface RepeatSessionDeps {
+interface RepeatSessionDeps {
   readonly workouts: WorkoutRepository
   readonly exercises: ExerciseRepository
   readonly ids: IdGenerator
   readonly clock: Clock
 }
 
-export type RepeatSessionResult =
+type RepeatSessionResult =
   | { readonly kind: 'started'; readonly workout: WorkoutLog }
   | { readonly kind: 'resumed'; readonly workout: WorkoutLog }
 

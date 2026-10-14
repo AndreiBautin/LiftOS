@@ -15,7 +15,7 @@ import type { LogEntry, WorkoutLog } from './workout-log'
  * that session from history must not take the template with it, and a
  * template is a statement about what to do next, which history is not.
  */
-export interface TemplateSet {
+interface TemplateSet {
   readonly prescription: SetPrescription
   readonly isWarmup: boolean
 }

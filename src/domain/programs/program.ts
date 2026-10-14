@@ -60,7 +60,7 @@ export function slotRoleLabel(role: string): string {
   return (SLOT_ROLE_LABELS as Partial<Record<string, string>>)[role] ?? 'Work'
 }
 
-export const SLOT_ROLE_LABELS: Record<SlotRole, string> = {
+const SLOT_ROLE_LABELS: Record<SlotRole, string> = {
   warmup: 'Warm-up',
   main: 'Main lift',
   strength: 'Strength',
@@ -115,7 +115,7 @@ const VARIANT_LABELS: Record<string, string> = {
  * strength slot's position in the pair are not, and those simply show no
  * sub-badge rather than a guessed one.
  */
-export const SLOT_ROLE_VARIANTS: Partial<Record<SlotRole, string>> = {
+const SLOT_ROLE_VARIANTS: Partial<Record<SlotRole, string>> = {
   hypertrophy: 'Compound',
   assistance: 'Isolation',
 }
@@ -128,7 +128,7 @@ export const SLOT_ROLE_VARIANTS: Partial<Record<SlotRole, string>> = {
  * to get through. Every role having the same grey badge meant reading the
  * word every time.
  */
-export type BadgeTone = 'neutral' | 'accent' | 'good' | 'warn' | 'bad' | 'cool'
+type BadgeTone = 'neutral' | 'accent' | 'good' | 'warn' | 'bad' | 'cool'
 
 export function slotRoleTone(role: string): BadgeTone {
   return (SLOT_ROLE_TONES as Partial<Record<string, BadgeTone>>)[role] ?? 'neutral'
@@ -162,7 +162,7 @@ export function sectionTitle(role: string): string {
   return (SECTION_TITLES as Partial<Record<string, string>>)[role] ?? 'Work'
 }
 
-export interface SlotSection<T> {
+interface SlotSection<T> {
   readonly title: string
   readonly slots: readonly T[]
 }
@@ -205,7 +205,7 @@ export function inSections<T extends { readonly role: string }>(
   return sections
 }
 
-export const SLOT_ROLE_TONES: Record<SlotRole, BadgeTone> = {
+const SLOT_ROLE_TONES: Record<SlotRole, BadgeTone> = {
   // Its own hue, on the same level as strength and conditioning. Grey now
   // belongs to the sub-category badges, and a grey warm-up read as one.
   warmup: 'cool',
@@ -315,15 +315,7 @@ export interface ProgramWeek {
  * A phase of training with a coherent goal — LiftTracker's `TrainingBlock`
  * plus `TrainingPhase`, merged, since one never appeared without the other.
  */
-export const TRAINING_PHASES = ['hypertrophy', 'strength', 'peaking', 'general'] as const
-export type TrainingPhase = (typeof TRAINING_PHASES)[number]
-
-export const TRAINING_PHASE_LABELS: Record<TrainingPhase, string> = {
-  hypertrophy: 'Hypertrophy',
-  strength: 'Strength',
-  peaking: 'Peaking',
-  general: 'General',
-}
+type TrainingPhase = 'hypertrophy' | 'strength' | 'peaking' | 'general'
 
 export interface ProgramBlock {
   readonly index: number
@@ -376,48 +368,6 @@ export interface ProgramTemplate {
 }
 
 /* -------------------------------------------------------------------- */
-/* Derived shape                                                         */
-/* -------------------------------------------------------------------- */
-
-export function totalWeeks(program: ProgramTemplate): number {
-  return program.blocks.reduce((sum, block) => {
-    const repeats = block.repeat === 'indefinite' ? 1 : block.repeat
-    return sum + block.weeks.length * repeats
-  }, 0)
-}
-
-export function totalSlots(program: ProgramTemplate): number {
-  return program.blocks.reduce(
-    (blockSum, block) =>
-      blockSum +
-      block.weeks.reduce(
-        (weekSum, week) =>
-          weekSum + week.days.reduce((daySum, day) => daySum + day.slots.length, 0),
-        0,
-      ),
-    0,
-  )
-}
-
-/** Distinct training days per week, taken from the first week of the first block. */
-export function daysPerWeek(program: ProgramTemplate): number {
-  return program.blocks[0]?.weeks[0]?.days.length ?? 0
-}
-
-export function findDay(
-  program: ProgramTemplate,
-  blockIndex: number,
-  weekIndex: number,
-  dayIndex: number,
-): ProgramDay | undefined {
-  return program.blocks[blockIndex]?.weeks[weekIndex]?.days[dayIndex]
-}
-
-export function isIndefinite(program: ProgramTemplate): boolean {
-  return program.blocks.some((block) => block.repeat === 'indefinite')
-}
-
-/* -------------------------------------------------------------------- */
 /* Session length                                                        */
 /* -------------------------------------------------------------------- */
 
@@ -440,10 +390,10 @@ export function isIndefinite(program: ProgramTemplate): boolean {
  * which is the direction to err in for an estimate a person plans an
  * evening around.
  */
-export const SECONDS_PER_REP = 3
+const SECONDS_PER_REP = 3
 
 /** The floor for a set, so a short set still costs its setup. */
-export const MINIMUM_SET_SECONDS = 15
+const MINIMUM_SET_SECONDS = 15
 
 /**
  * Estimated minutes for a day, from set count and prescribed rest.
@@ -488,14 +438,6 @@ export function setSeconds(set: SetPrescription, restSeconds: number): number {
   // Warm-ups are quick and rested through, so they cost the work but not
   // the full interval.
   return set.isWarmup === true ? work : work + restSeconds
-}
-
-/** Estimated minutes for each day of a week, in order. */
-export function estimateWeekMinutes(
-  week: ProgramWeek,
-  defaultRestSeconds = 120,
-): readonly number[] {
-  return week.days.map((day) => estimateDayMinutes(day, defaultRestSeconds))
 }
 
 /**

@@ -1,5 +1,3 @@
-import type { Equipment } from './taxonomy'
-
 /**
  * What a set of an exercise costs, and what it buys.
  *
@@ -36,19 +34,6 @@ export type Sfr = 1 | 2 | 3 | 4 | 5
  */
 export type SystemicCost = number
 
-export const SYSTEMIC_COST_BY_EQUIPMENT: Record<Equipment, number> = {
-  barbell: 0.55,
-  smith: 0.4,
-  dumbbell: 0.3,
-  kettlebell: 0.35,
-  machine: 0.2,
-  cable: 0.15,
-  bodyweight: 0.25,
-  band: 0.1,
-  'ez-bar': 0.2,
-  other: 0.2,
-}
-
 /**
  * How a lifter should treat the exercise, which is not the same as what
  * rep range it lives in.
@@ -62,24 +47,3 @@ export const SYSTEMIC_COST_BY_EQUIPMENT: Record<Equipment, number> = {
  */
 export const TRAINING_INTENTS = ['strength', 'hypertrophy', 'conditioning'] as const
 export type TrainingIntent = (typeof TRAINING_INTENTS)[number]
-
-export const TRAINING_INTENT_LABELS: Record<TrainingIntent, string> = {
-  strength: 'Strength',
-  hypertrophy: 'Hypertrophy',
-  conditioning: 'Conditioning',
-}
-
-/**
- * The RPE at which every hypertrophy work set is prescribed.
- *
- * One rep in reserve, held constant — no ramp across the block. Ramping
- * RPE and ramping volume at the same time makes it impossible to tell
- * which one drove a stall, and proximity to failure is the variable with
- * the least room to move: below about 2 RIR the stimulus falls off a
- * cliff, and at 0 RIR the fatigue does not justify itself on most sets.
- */
-export const HYPERTROPHY_RIR = 1
-export const HYPERTROPHY_RPE = 10 - HYPERTROPHY_RIR
-
-/** The rep band a heavy hypertrophy lift like the overhead press lives in. */
-export const HEAVY_HYPERTROPHY_REPS = { low: 3, high: 6 } as const

@@ -24,7 +24,7 @@ import type { Clock, WorkoutRepository } from '@/domain/repositories/ports'
  * was not finished; the lifter can run it again or skip it.
  */
 
-export interface AbandonWorkoutDeps {
+interface AbandonWorkoutDeps {
   readonly workouts: WorkoutRepository
   readonly clock: Clock
 }

@@ -11,9 +11,9 @@ export const DAY_PARTS = [
   { key: 'night', label: 'Night', from: 21, to: 24 },
 ] as const
 
-export type DayPart = (typeof DAY_PARTS)[number]['key']
+type DayPart = (typeof DAY_PARTS)[number]['key']
 
-export interface TrainingTimes {
+interface TrainingTimes {
   /** Sessions started, by weekday (Monday first) then part of day. */
   readonly grid: readonly (readonly number[])[]
   readonly sessions: number

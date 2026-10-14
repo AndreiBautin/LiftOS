@@ -26,7 +26,7 @@ import type { WorkoutRepository } from '@/domain/repositories/ports'
  * opened in December is judged against November rather than against
  * today.
  */
-export interface SessionDetail {
+interface SessionDetail {
   readonly workout: WorkoutLog
   readonly sets: number
   readonly tonnage: number

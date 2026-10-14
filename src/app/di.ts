@@ -65,7 +65,7 @@ const cryptoIds: IdGenerator = {
         `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`,
 }
 
-export interface BootstrapResult {
+interface BootstrapResult {
   readonly services: AppServices
   /** How many exercises the library resolved to, for the startup log. */
   readonly exerciseCount: number

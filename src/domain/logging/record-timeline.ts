@@ -3,13 +3,13 @@ import type { WorkoutId } from '@/domain/ids/ids'
 import { sessionRecords, type SessionRecord } from './records'
 import type { WorkoutLog } from './workout-log'
 
-export interface TimelineRecord extends SessionRecord {
+interface TimelineRecord extends SessionRecord {
   readonly date: string
   readonly workoutId: WorkoutId
   readonly title: string
 }
 
-export interface RecordMonth {
+interface RecordMonth {
   /** `YYYY-MM`. */
   readonly month: string
   /** Newest first. */

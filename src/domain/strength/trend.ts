@@ -24,7 +24,7 @@ export interface TrendPoint {
   readonly value: number
 }
 
-export type StrengthTrend = Readonly<Record<TrendLift, readonly TrendPoint[]>>
+type StrengthTrend = Readonly<Record<TrendLift, readonly TrendPoint[]>>
 
 /**
  * Each competition lift's max as its **most recent** finished session
@@ -106,7 +106,7 @@ export function strengthTrend(logs: readonly WorkoutLog[]): StrengthTrend {
 }
 
 /** One competition lift as the SBD total reads it. */
-export interface SbdLift {
+interface SbdLift {
   readonly lift: TrendLift
   readonly exerciseId: ExerciseId
   readonly max: number | undefined
