@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { MAX_IMPORT_BYTES, TOO_LARGE_MESSAGE } from '@/lib/file-limits'
 import { useState } from 'react'
 
 import { useServices, useSettings } from '@/app/context'
@@ -70,6 +71,17 @@ export function useBackup() {
     logger.info('backup.inspect', { valid: parsed.preview.valid })
   }
 
+  /** Refuses an outsized file by its size, before reading it. */
+  const inspectFile = (file: File): void => {
+    if (file.size > MAX_IMPORT_BYTES) {
+      setPreview({ valid: false, problems: [{ severity: 'error', message: TOO_LARGE_MESSAGE }] })
+      setPending(undefined)
+      logger.warn('backup.too-large', { bytes: file.size })
+      return
+    }
+    void file.text().then(inspect)
+  }
+
   const runImport = useMutation({
     mutationFn: async (mode: ImportMode) => {
       if (pending === undefined) throw new Error('No backup has been selected.')
@@ -95,6 +107,7 @@ export function useBackup() {
     canImport: pending !== undefined,
     exportBackup,
     inspect,
+    inspectFile,
     runImport,
     clearPreview: () => {
       setPreview(undefined)

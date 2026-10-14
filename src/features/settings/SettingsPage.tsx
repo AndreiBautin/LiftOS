@@ -407,7 +407,7 @@ export function SettingsPage() {
                 onChange={(event) => {
                   const file = event.target.files?.[0]
                   if (file === undefined) return
-                  void file.text().then(backup.inspect)
+                  backup.inspectFile(file)
                   event.target.value = ''
                 }}
               />

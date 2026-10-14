@@ -50,7 +50,21 @@ export function setsCsv(
   return [HEADER, ...rows].map((row) => row.map(cell).join(',')).join('\r\n') + '\r\n'
 }
 
-/** Quoted when it holds a comma, a quote or a line break; quotes doubled. */
+/**
+ * Quoted when it holds a comma, a quote or a line break; quotes doubled.
+ *
+ * **A cell a spreadsheet would run as a formula is defused first.** Text
+ * starting with `=`, `+`, `-`, `@`, a tab or a carriage return is read by
+ * Excel, Sheets and Numbers as a formula, and the notes and exercise
+ * names here are free text — typed, dictated, imported from another app
+ * or arriving through the sync file. A leading apostrophe makes the
+ * spreadsheet show the text as text. A number is left alone, so a load
+ * of -5 (never written, but legal) still reads as a number.
+ */
 function cell(value: string): string {
-  return /[",\r\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value
+  const safe = FORMULA.test(value) && !NUMBER.test(value) ? `'${value}` : value
+  return /[",\r\n]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe
 }
+
+const FORMULA = /^[=+\-@\t\r]/
+const NUMBER = /^-?\d+(\.\d+)?$/

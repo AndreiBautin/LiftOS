@@ -45,3 +45,37 @@ describe('the sets as CSV', () => {
     ).toHaveLength(1)
   })
 })
+
+/*
+ * Notes and names are free text that can arrive from another app or the
+ * sync file; opened in a spreadsheet, one starting with `=` would run.
+ */
+describe('a cell a spreadsheet would run as a formula', () => {
+  const rowFor = (notes: string): string => {
+    const log = aWorkout({
+      date: '2026-09-25',
+      title: 'Friday',
+      entries: [
+        anEntry({
+          exerciseId: asExerciseId('front-squat'),
+          sets: [aSet({ actualLoad: 175, actualReps: 6, notes })],
+        }),
+      ],
+    })
+    return setsCsv([log], () => 'Front Squat').split('\r\n')[1] ?? ''
+  }
+
+  it.each(['=HYPERLINK("http://x","y")', '+1+1', '-2+3', '@SUM(A1)', '\tx'])(
+    'is shown as text when it begins %j',
+    (notes) => {
+      const row = rowFor(notes)
+      const quoted = `,"'${notes.replace(/"/g, '""')}"`
+      expect(row.endsWith(`,'${notes}`) || row.endsWith(quoted)).toBe(true)
+    },
+  )
+
+  it('leaves ordinary text and numbers alone', () => {
+    expect(rowFor('felt strong').endsWith(',felt strong')).toBe(true)
+    expect(rowFor('-5').endsWith(',-5')).toBe(true)
+  })
+})

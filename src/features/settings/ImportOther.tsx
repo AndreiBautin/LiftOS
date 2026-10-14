@@ -1,4 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query'
+import { MAX_IMPORT_BYTES, TOO_LARGE_MESSAGE } from '@/lib/file-limits'
 import { FileUp } from 'lucide-react'
 import { useRef, useState } from 'react'
 
@@ -43,6 +44,11 @@ export function ImportOther() {
 
   const choose = (file: File) => {
     setResult(undefined)
+    if (file.size > MAX_IMPORT_BYTES) {
+      setError(TOO_LARGE_MESSAGE)
+      setRead(undefined)
+      return
+    }
     void file.text().then((text) => {
       const parsed = readTrainingExport(text)
       if ('error' in parsed) {
