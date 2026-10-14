@@ -45,7 +45,37 @@ export class GitHubSyncError extends Error {
 
 type Fetch = typeof fetch
 
+/**
+ * The largest sync file read, in characters. A year of training is well
+ * under a megabyte; the raw route would hand back up to 100 MB, and a
+ * file that size is a mistake or an attack, not a training log — refused
+ * before it is parsed rather than after it has filled the tab's memory.
+ */
+export const MAX_SYNC_FILE_CHARS = 20 * 1024 * 1024
+
+const NAME = /^[A-Za-z0-9_.-]+$/
+
+/**
+ * **Every part of the address is checked before a token is sent with it.**
+ * Encoding a segment does not neutralise `..`: the URL parser resolves dot
+ * segments, so `../../user` in the file path walked out of `/contents/`
+ * to other GitHub endpoints carrying the token. Owner and repository are
+ * GitHub's own name characters; the path is plain segments, none empty,
+ * none a dot.
+ */
+export function checkTarget(target: GitHubTarget): void {
+  const named = (value: string): boolean => NAME.test(value) && value !== '.' && value !== '..'
+  if (!named(target.owner) || !named(target.repo)) {
+    throw new GitHubSyncError('unexpected', 'The account or repository name is not valid.')
+  }
+  const segments = target.path.split('/')
+  if (segments.some((segment) => segment === '' || segment === '.' || segment === '..')) {
+    throw new GitHubSyncError('unexpected', 'The file path is not valid.')
+  }
+}
+
 function urlOf(target: GitHubTarget): string {
+  checkTarget(target)
   const path = target.path.split('/').map(encodeURIComponent).join('/')
   return `https://api.github.com/repos/${encodeURIComponent(target.owner)}/${encodeURIComponent(target.repo)}/contents/${path}`
 }
@@ -114,14 +144,11 @@ export async function readFile(
   if (typeof body !== 'object' || body === null || !('sha' in body)) {
     throw new GitHubSyncError('unexpected', 'That path is not a file.')
   }
-  const { sha, content, encoding } = body as {
-    readonly sha: string
-    readonly content?: string
-    readonly encoding?: string
-  }
+  const { sha, content, encoding } = body as Record<string, unknown>
+  if (typeof sha !== 'string') throw new GitHubSyncError('unexpected', 'That path is not a file.')
 
-  if (encoding === 'base64' && content !== undefined && content !== '') {
-    return { text: fromBase64(content), sha }
+  if (encoding === 'base64' && typeof content === 'string' && content !== '') {
+    return { text: bounded(fromBase64(content)), sha }
   }
 
   /*
@@ -132,7 +159,18 @@ export async function readFile(
     headers: headers(target, 'application/vnd.github.raw+json'),
   })
   if (!raw.ok) throw failureFor(raw.status)
-  return { text: await raw.text(), sha }
+  const declared = Number(raw.headers.get('Content-Length') ?? '0')
+  if (declared > MAX_SYNC_FILE_CHARS) throw tooLarge()
+  return { text: bounded(await raw.text()), sha }
+}
+
+function tooLarge(): GitHubSyncError {
+  return new GitHubSyncError('unexpected', 'The sync file is too large to be a training log.')
+}
+
+function bounded(text: string): string {
+  if (text.length > MAX_SYNC_FILE_CHARS) throw tooLarge()
+  return text
 }
 
 /**
