@@ -47,6 +47,38 @@ attention by flagging them as unnecessary.
 An import shows a preview before writing anything, and the destructive
 option requires typing a confirmation word.
 
+### The sync file is a second import
+
+It arrives from a repository anyone with write access can edit, and it
+goes through the same envelope checks as a backup — plus two more that
+apply to both:
+
+- **Each record is checked**, not only the envelope
+  (`domain/backup/plausible.ts`). A workout whose `entries` was not a list
+  used to merge in, sync to every device, and break the history on all of
+  them. Workouts and exercises are read as `unknown` against the fields
+  screens rely on; one that fails is left out with a warning rather than
+  refusing the whole file. A test holds that every record the demo seed
+  writes passes, so the check cannot quietly drop real data.
+- **Size is bounded.** Either file over 20 MB is refused by `File.size`
+  (or the response's declared length) before it is read.
+
+### The address the token is sent to
+
+`checkTarget` in `infrastructure/sync/github-file.ts` checks the owner,
+the repository and every path segment before any request. Encoding a
+segment does not neutralise `..` — the URL parser resolves dot segments —
+so an unchecked path such as `../../user` sent the token to other GitHub
+endpoints.
+
+### The CSV export
+
+Notes and exercise names are free text that can arrive from another app
+or the sync file. A cell starting with `=`, `+`, `-`, `@`, a tab or a
+carriage return runs as a formula when the export is opened in a
+spreadsheet, so such a cell leads with an apostrophe; numbers are left
+alone.
+
 ### XSS
 
 React escapes by default. The app contains no `dangerouslySetInnerHTML`,
@@ -76,6 +108,17 @@ and a gate people learn to ignore is not a gate.
 Dependabot groups routine bumps into one weekly PR and keeps majors
 separate so they get read rather than rubber-stamped.
 
+**Every workflow action is pinned to a commit**, with its version in a
+comment. A tag can be moved to different code by whoever controls the
+action's repository, and the deploy job can publish the site; a commit
+cannot be moved. Dependabot's github-actions updates keep the pins
+current.
+
+**A dev dependency must pass the same audit as a shipped one.**
+`puppeteer-core` was added for the timing script once and pulled in two
+packages with high advisories, one with no patched release; it now lives
+outside the repository (`scripts/perf/measure.mjs` says how).
+
 ### The sync token
 
 Sync reads and writes one backup file in a private GitHub repository the
@@ -89,6 +132,12 @@ credential the app ever holds, and two rules keep it contained:
   very file it guards.
 - **It never reaches the log.** The logger takes scalars and event names,
   and the token is neither.
+- **It is in no backup** — held by a test (`backup-service.test.ts` →
+  "the sync token") that stores a real config beside the data and asserts
+  no backup contains it.
+- **The service worker never caches a GitHub response.** Its only route
+  is the navigation fallback, the API calls are cross-origin and sent
+  `cache: 'no-store'`.
 
 The demo build ships no token and cannot sync, which is the point: a
 visitor's browser has nothing to leak.
@@ -106,14 +155,31 @@ nobody later assumes the prefix hides anything.
 
 GitHub Pages serves over HTTPS, which a service worker requires anyway.
 
-Pages does not permit custom response headers, so a Content-Security-Policy
-header is unavailable. A `<meta http-equiv>` CSP was considered and
-**deliberately not added**: it cannot express `frame-ancestors`, it is
-easy to write in a form that silently blocks the service worker, and a
-directive that looks like protection while providing little is worse than
-an acknowledged gap. The gap is small here because the app loads no
-third-party code and makes no network requests other than to GitHub,
-and then only when sync is turned on.
+Pages does not permit custom response headers, so the
+Content-Security-Policy travels as a `<meta http-equiv>` tag, added to the
+build by a plugin in `vite.config.ts` (the dev server needs inline scripts
+and a websocket, so it gets none).
+
+**This reverses a decision recorded here earlier**, which declined a meta
+CSP for three reasons. Two are still true and one was checked away:
+
+- It cannot express `frame-ancestors` — still true, and still acceptable:
+  a page framing this one would show the visitor their own data.
+- It "looks like protection while providing little" — no longer true once
+  the app held a credential. The sync token sits in `localStorage`, and
+  the policy is what stops a script that should never have run from
+  reading it _and sending it anywhere_: scripts are this origin's own
+  files, nothing inline, and `connect-src` names only `api.github.com`.
+  Checked by injecting an inline script and a fetch to another host —
+  both refused, both reported.
+- It is "easy to write in a form that silently blocks the service
+  worker" — true in general, and checked here: under the policy the
+  worker registers and controls the page, fifteen screens, the share
+  picture and a full session raise no violations, and both fonts load.
+
+What keeps it from silently going missing is `pnpm check:csp`, in
+`verify` and CI: no policy, an `unsafe-inline` script source, or an
+inline `<script>` in the built page fails the gate.
 
 ## Remaining risks, stated plainly
 
@@ -125,7 +191,18 @@ and then only when sync is turned on.
   field validated — but a lifter importing a file from someone else
   should expect it to replace their training history, because that is what import
   does.
-- **No CSP**, as above.
+- **No `frame-ancestors`, and no CSP reporting**, which a meta policy
+  cannot carry.
+- **The token at rest.** Browser storage has no secret store a web app
+  can use, and encrypting the token with a key kept beside it would be
+  theatre. The CSP limits who could read it; a fine-grained token limits
+  what it is worth, and the connect form warns when a classic one —
+  which reaches every repository on the account — is pasted.
 - **No integrity protection against a compromised host.** If GitHub Pages
   served a modified bundle, the service worker would cache it. This is
   true of every static site and is not separately mitigable here.
+
+## Reporting a problem
+
+Open a private security advisory on the repository (Security → Report a
+vulnerability), or an ordinary issue if it is not sensitive.
