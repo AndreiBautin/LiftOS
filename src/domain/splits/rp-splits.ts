@@ -422,8 +422,3 @@ const RP_SPLIT: RpSplit = ULPPL_SPLIT
 export function rpSplit(): RpSplit {
   return RP_SPLIT
 }
-
-/** How many of a week's sessions train a given muscle. */
-export function rpFrequency(split: RpSplit, muscle: MuscleGroup): number {
-  return split.days.filter((day) => day.muscles.includes(muscle)).length
-}

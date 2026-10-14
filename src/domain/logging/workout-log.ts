@@ -265,33 +265,3 @@ export function estimateFromWorkout(
 
   return bestEstimate(sets)
 }
-
-/**
- * Whether a logged set matched or beat the same set last time.
- *
- * StrengthFlow's post-workout report, which compared each set index
- * against the session before and told you which exercises regressed. Kept
- * because it is the most useful single sentence an app can say after a
- * workout, and pulled into the domain so it is testable — there it lived
- * inside a Firestore query that walked every workout document in the
- * database on every save.
- */
-export function comparePerformance(
-  current: { readonly load?: number; readonly reps?: number },
-  previous: { readonly load?: number; readonly reps?: number },
-): 'better' | 'matched' | 'worse' | 'incomparable' {
-  if (
-    current.load === undefined ||
-    current.reps === undefined ||
-    previous.load === undefined ||
-    previous.reps === undefined
-  ) {
-    return 'incomparable'
-  }
-
-  if (current.load > previous.load) return 'better'
-  if (current.load < previous.load) return 'worse'
-  if (current.reps > previous.reps) return 'better'
-  if (current.reps < previous.reps) return 'worse'
-  return 'matched'
-}

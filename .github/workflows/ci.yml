@@ -50,6 +50,12 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+      # Unused files, exports and dependencies (knip.json). A capability
+      # nothing reaches is how this codebase has repeatedly carried code
+      # that claimed to work; the gate makes the next one fail a build.
+      - name: Dead code
+        run: pnpm knip
+
       - name: Check formatting
         run: pnpm format:check
 

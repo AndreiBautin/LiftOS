@@ -21,8 +21,7 @@ import type { CheckInId, WorkoutId } from '@/domain/ids/ids'
  * reversible after, because the evidence is still there.
  */
 
-export const RECOVERY_STATES = ['not-recovered', 'recovered-on-time', 'recovered-early'] as const
-export type RecoveryState = (typeof RECOVERY_STATES)[number]
+type RecoveryState = 'not-recovered' | 'recovered-on-time' | 'recovered-early'
 
 export const WORKLOAD_STATES = ['easy', 'moderate', 'hard', 'too-much'] as const
 export type WorkloadState = (typeof WORKLOAD_STATES)[number]
@@ -36,9 +35,9 @@ export type WorkloadState = (typeof WORKLOAD_STATES)[number]
  * has changed. StrengthFlow ran both through the same code path, so a bad
  * night's sleep permanently reduced the program.
  */
-export type ReadinessLevel = 'poor' | 'ok' | 'good'
+type ReadinessLevel = 'poor' | 'ok' | 'good'
 
-export interface ReadinessFactors {
+interface ReadinessFactors {
   readonly sleep: ReadinessLevel
   readonly nutrition: ReadinessLevel
   readonly hydration: ReadinessLevel

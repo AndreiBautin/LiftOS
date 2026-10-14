@@ -1,4 +1,4 @@
-import { MAX_SESSIONS_PER_WEEK, MAX_SETS_PER_SESSION } from '@/domain/volume/levels'
+import { MAX_SETS_PER_SESSION } from '@/domain/volume/levels'
 
 /**
  * What is left of a module that used to decide frequency.
@@ -8,11 +8,9 @@ import { MAX_SESSIONS_PER_WEEK, MAX_SETS_PER_SESSION } from '@/domain/volume/lev
  * settings a lifter states directly: sessions a week per muscle, and sets
  * per session per level. There is nothing left to derive.
  *
- * The two constants are re-exported rather than moved so the many call
- * sites that reason about "a session's worth" keep reading naturally;
- * `levels.ts` is where they are defined and where the reasoning lives.
+ * `levels.ts` is where the per-session ceiling is defined and where the
+ * reasoning lives.
  */
-export { MAX_SESSIONS_PER_WEEK, MAX_SETS_PER_SESSION }
 
 /** Kept under its old name: five direct sets is one session's worth. */
 export const MAX_DIRECT_SETS_PER_SESSION = MAX_SETS_PER_SESSION
