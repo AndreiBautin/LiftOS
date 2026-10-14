@@ -6,6 +6,7 @@ import type {
   ImportPreview,
   MergeEffect,
 } from '@/domain/backup/envelope'
+import { isPlausibleExercise, isPlausibleWorkout } from '@/domain/backup/plausible'
 import {
   BACKUP_MAGIC,
   BACKUP_SCHEMA_VERSION,
@@ -134,7 +135,33 @@ export function parseBackup(contents: string): ParsedBackup {
     }
   }
 
-  return { preview, envelope }
+  /*
+   * Records with a shape the screens cannot read are left out, after the
+   * checksum (which covers what was written, not whether it was sane).
+   * See `domain/backup/plausible.ts`.
+   */
+  const workouts = envelope.data.workouts.filter((one: unknown) => isPlausibleWorkout(one))
+  const exercises = envelope.data.exercises.filter((one: unknown) => isPlausibleExercise(one))
+  const dropped =
+    envelope.data.workouts.length -
+    workouts.length +
+    envelope.data.exercises.length -
+    exercises.length
+  if (dropped === 0) return { preview, envelope }
+
+  return {
+    preview: {
+      ...preview,
+      problems: [
+        ...preview.problems,
+        {
+          severity: 'warning',
+          message: `${String(dropped)} record${dropped === 1 ? '' : 's'} in the file could not be read and will be left out.`,
+        },
+      ],
+    },
+    envelope: { ...envelope, data: { ...envelope.data, workouts, exercises } },
+  }
 }
 
 /**

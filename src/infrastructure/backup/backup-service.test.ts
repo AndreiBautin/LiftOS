@@ -145,6 +145,47 @@ describe('export and import round-trip', () => {
   })
 })
 
+describe('records a screen cannot read', () => {
+  /*
+   * The file is checked as an envelope and as a checksum, but a record
+   * inside it is whatever the last writer put there — and the sync file
+   * lives in a repository other hands can edit. One bad workout used to
+   * merge in and break every device's history.
+   */
+  it('are left out with a warning, and the good ones kept', async () => {
+    await populate()
+    const built = await buildBackup(repositories, exportOptions)
+    const broken = {
+      id: 'bad',
+      date: 'yesterday',
+      status: 'completed',
+      title: 'x',
+      entries: 'none',
+    }
+    // Cast on purpose: this is the malformed record a typed writer cannot produce.
+    const data = {
+      ...built.data,
+      workouts: [...built.data.workouts, broken as unknown as (typeof built.data.workouts)[number]],
+    }
+    const file = serialiseBackup({ ...built, data, checksum: checksumOf(data) })
+
+    const { preview, envelope } = parseBackup(file)
+
+    expect(preview.valid).toBe(true)
+    expect(preview.problems.map((one) => one.message).join(' ')).toMatch(/1 record/)
+    expect(envelope?.data.workouts.map((one) => one.id)).toEqual(
+      built.data.workouts.map((one) => one.id),
+    )
+  })
+
+  it('never include a record the app itself wrote', async () => {
+    await populate()
+    const file = serialiseBackup(await buildBackup(repositories, exportOptions))
+    const { preview } = parseBackup(file)
+    expect(preview.problems.filter((one) => one.message.includes('could not be read'))).toEqual([])
+  })
+})
+
 describe('rejecting a file that would corrupt the database', () => {
   it('refuses a truncated backup', async () => {
     // The realistic failure: an interrupted download or a disk that filled

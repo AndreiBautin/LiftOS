@@ -4,6 +4,8 @@ import { describe, expect, it } from 'vitest'
 
 import type { Clock } from '@/domain/repositories/ports'
 
+import { isPlausibleWorkout } from '@/domain/backup/plausible'
+
 import { seedDemoData } from './seed'
 import type { DemoDeps } from './deps'
 
@@ -87,6 +89,19 @@ describe('seeding the demo', () => {
 
     expect(result.seeded).toBe(true)
     expect(services.workouts.rows.size).toBeGreaterThan(30)
+  })
+
+  /*
+   * An import drops any record failing `isPlausibleWorkout`, so a check
+   * that rejected something the app itself writes would quietly lose it
+   * on the next restore or sync. The seed is the widest set of real
+   * records on hand: every one must pass.
+   */
+  it('writes only workouts an import would keep', async () => {
+    const services = deps()
+    await seedDemoData(services)
+    const rejected = [...services.workouts.rows.values()].filter((one) => !isPlausibleWorkout(one))
+    expect(rejected).toEqual([])
   })
 
   /*
