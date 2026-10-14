@@ -130,6 +130,13 @@ in while debugging and forgetting.
 refuses with `already-has-data`. A demo build opened by somebody who has
 since entered their own records must not lose them.
 
+**The double-progression round trip runs through real repositories.**
+`training-flow.test.ts` → "carries the logged load forward" opens a
+strength day on IndexedDB, logs every set at the top of the range,
+finishes, walks the calendar until the lift comes round again and holds
+the next load to one step heavier with the reps back at the bottom. This
+section used to list it as untested; it was not.
+
 ## Deliberately not tested
 
 Naming these is the point of the section.
@@ -166,12 +173,6 @@ Naming these is the point of the section.
   barbell bench press is a barbell bench press catches nothing. What _is_
   tested is that every exercise a programme references exists in the
   library — the failure that would render a blank row.
-- **The double-progression round trip, end to end.** No single test
-  carries a load from one session into the next through the real
-  repositories. It was verified by driving the app — a bench opened at
-  200 from a 238 estimate, three sets of five logged, the session filed,
-  and the same lift opened at **205** the next week. Worth knowing that
-  the arithmetic on each side is tested and the seam between them is not.
 
 ## What the suite has repeatedly failed to catch
 

@@ -9099,7 +9099,9 @@ keeps recording. `explainVolume` stays, because Program still reads it.
 have.** A bench opened at 200 from a 238 estimate, three sets of five
 were logged, the session filed, and the same lift **opened at 205 the
 next week** — the +5 upper step, read out of the log. That round trip is
-the entire redesign and no single test exercises it end to end.
+the entire redesign, and it is also held end to end through the real
+repositories by `training-flow.test.ts` → "carries the logged load
+forward" (this paragraph said it was not, and was wrong).
 
 **One exercise a week, and the two upper days stopped being the same
 day.** Reported as _"I'm noticing redundancy in the exercises — don't

@@ -225,10 +225,12 @@ Starting Monday's session (Upper) and logging the first set of the bench:
     (`application/use-cases/training/activity.ts`) counts its working
     sets on the day it was filed.
 
-Step 5 is the whole redesign, and no single test exercises it end to end:
-a bench opened at 200 from a 238 estimate, three sets of five were
-logged, the session filed, and **the same lift opened at 205 the next
-week**. That round trip was verified by driving the app.
+Step 5 is the whole redesign, and it is tested end to end through the
+real repositories: `training-flow.test.ts` → "carries the logged load
+forward" logs a strength lift at the top of its range, finishes, and holds
+the next session to one step heavier. It was also verified by driving the
+app — a bench opened at 200 from a 238 estimate, three sets of five
+logged, and **the same lift opened at 205 the next week**.
 
 ## Where the records live
 
