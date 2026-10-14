@@ -72,7 +72,8 @@ element that moved, never what moved it.
 
 Timed in headless Chrome at a 4× CPU slowdown against the demo build,
 from the tap to the next screen, medians of five or six:
-`node scripts/perf/measure.mjs <preview url> [shifts|start|finish|all]`.
+`PUPPETEER_CORE=<installed puppeteer-core> node scripts/perf/measure.mjs <preview url> [shifts|start|finish|all]`
+(puppeteer-core is installed outside the repository; the script says why).
 Absolute numbers move with whatever else the machine is doing; compare a
 change against a build without it, run back to back.
 

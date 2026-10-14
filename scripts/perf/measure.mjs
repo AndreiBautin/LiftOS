@@ -10,8 +10,26 @@
 //
 // Chrome is found at CHROME_PATH, else the usual Windows, macOS and Linux
 // places. Each run is a fresh profile, so the demo seeds itself first.
+//
+// **puppeteer-core is not a dependency of this repository, deliberately.**
+// It was, for one commit, and its download helpers pulled in packages with
+// high-severity advisories and no patched release — which fails the audit
+// gate for a script nothing ships. Install it somewhere of its own and
+// point at it:
+//
+//   npm install --prefix ~/.cache/liftos-perf puppeteer-core@24
+//   PUPPETEER_CORE=~/.cache/liftos-perf/node_modules/puppeteer-core node scripts/perf/measure.mjs
 import { existsSync } from 'node:fs'
-import puppeteer from 'puppeteer-core'
+import { pathToFileURL } from 'node:url'
+
+const where = process.env.PUPPETEER_CORE
+if (where === undefined) {
+  console.error('Set PUPPETEER_CORE to an installed puppeteer-core (see the top of this file).')
+  process.exit(1)
+}
+const { default: puppeteer } = await import(
+  pathToFileURL(`${where}/lib/esm/puppeteer/puppeteer-core.js`).href
+)
 
 const base = (process.argv[2] ?? 'http://localhost:5185').replace(/\/$/, '')
 const which = process.argv[3] ?? 'all'
