@@ -18,6 +18,9 @@ import {
   useActiveWorkout,
   useExercises,
   useFinishWorkout,
+  useRecentWorkouts,
+  useProgram,
+  useSchedule,
 } from '@/features/train/hooks'
 import { NextSessionCard } from '@/features/train/NextSessionCard'
 import { SessionReport } from '@/features/train/SessionReport'
@@ -103,6 +106,17 @@ const StrengthTrendCard = lazyNamed(
 export function HomePage() {
   const { settings } = useSettings()
   const activeWorkout = useActiveWorkout()
+  /*
+   * **The first paint waits for what changes the shape above the fold.**
+   * The hero's session name, its description line and its medallion come
+   * from the schedule and the library, and the notices above it read the
+   * latest session; drawn before those, each arrived a beat later and
+   * pushed everything under it down — the page's whole layout shift.
+   * All of them are local reads that land within a few frames.
+   */
+  const latest = useRecentWorkouts(1)
+  const program = useProgram()
+  const schedule = useSchedule()
   const exercises = useExercises()
   const finishWorkout = useFinishWorkout()
   const abandonWorkout = useAbandonWorkout()
@@ -161,7 +175,10 @@ export function HomePage() {
    * than the dashboard on a guess, or a page load straight into a session
    * would flash the plan before snapping back to the player.
    */
-  if (activeWorkout.isPending) return null
+  // A failed program leaves the schedule disabled and pending for good;
+  // the hero shows its own fallback then rather than a blank page.
+  const scheduling = schedule.isPending && !program.isError
+  if (activeWorkout.isPending || latest.isPending || scheduling || exercises.isPending) return null
 
   return (
     <div className="space-y-6">

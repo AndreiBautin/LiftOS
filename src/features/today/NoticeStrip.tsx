@@ -1,5 +1,5 @@
 import { scrollMotion } from '@/lib/motion'
-import { Children, useEffect, useRef, useState, type ReactNode } from 'react'
+import { Children, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 
 import { cn } from '@/lib/cn'
 
@@ -27,7 +27,7 @@ export function NoticeStrip({ children }: { readonly children: ReactNode }) {
    * reads its own data and may render nothing. Watched rather than
    * measured once, because one is dismissed while the strip is on screen.
    */
-  useEffect(() => {
+  useLayoutEffect(() => {
     const strip = track.current
     if (strip === null) return
     const read = () => {
@@ -43,12 +43,22 @@ export function NoticeStrip({ children }: { readonly children: ReactNode }) {
     }
   }, [])
 
-  /* Measured after each turn and each change of what the notices hold. */
-  useEffect(() => {
+  /* Measured after each turn and each change of what the notices hold, before paint. */
+  useLayoutEffect(() => {
     const strip = track.current
     if (strip === null) return
     const measure = () => {
-      setHeight(visible(strip)[at]?.offsetHeight)
+      /*
+       * **A zero is "not measured yet", never a height.** On the first
+       * pass the strip is still `display: none` (no notices counted), so
+       * the slide reads 0 — and stored, the height transition then grew
+       * the strip from 0 to its real height over 300 ms, sliding the hero
+       * down under it. Lighthouse scored that 0.42 of layout shift.
+       * Leaving the height unset instead lets the first real one apply
+       * at once: `auto` has nothing to animate from.
+       */
+      const measured = visible(strip)[at]?.offsetHeight
+      setHeight(measured === undefined || measured === 0 ? undefined : measured)
     }
     measure()
     const watcher = new MutationObserver(measure)

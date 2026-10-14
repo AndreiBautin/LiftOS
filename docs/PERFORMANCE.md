@@ -39,6 +39,23 @@ both numbers worse (hero 135 ms, cards 523 ms) — the downloads cost
 nothing and their evaluation competed with the hero. It may help on a
 slow network; that was not measured.
 
+## Lighthouse (mobile, the demo build)
+
+`npx lighthouse@12.6.1 <url>/today --only-categories=performance
+--form-factor=mobile` against `pnpm preview` of the demo build.
+
+| Change                                                                                | Score | FCP   | LCP   | TBT        | CLS   |
+| ------------------------------------------------------------------------------------- | ----- | ----- | ----- | ---------- | ----- |
+| Baseline                                                                              | 52–54 | 3.3 s | 4.0 s | 320–360 ms | 0.424 |
+| The first paint waits for the hero's own data; the notice strip never animates from 0 | 75–78 | 3.3 s | 4.0 s | 170–250 ms | 0     |
+
+The layout shift was the hero sliding down twice: once as the notice
+strip above it grew from a height measured while it was still hidden,
+and once as the session's name, description and medallion arrived after
+it had painted. Found by recording `layout-shift` entries with their
+sources in headless Chrome at a 4× CPU slowdown — Lighthouse names the
+element that moved, never what moved it.
+
 ## Reads
 
 Counted on a cold load of Today with the demo (78 sessions), by wrapping
