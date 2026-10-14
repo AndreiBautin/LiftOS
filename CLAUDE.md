@@ -1550,7 +1550,7 @@ routine, and is tested against `FULL_BODY_SPLIT`.
 ## Before you finish anything
 
 ```bash
-pnpm verify    # typecheck + lint + format:check + test:run + build
+pnpm verify    # typecheck + lint + knip + format:check + test:run + build + size + check:csp
 ```
 
 **Use `pnpm typecheck`, never `npx tsc --noEmit`.** The root `tsconfig.json`

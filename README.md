@@ -19,7 +19,7 @@ now.
 ## The insight that makes it click
 
 **A prescription is not a number, it is a rule for producing one.**
-"Five sets of 3–5, at whatever you last worked at" is resolved against
+"Four sets of 3–5, at whatever you last worked at" is resolved against
 your own history when the session opens, never written into the
 programme. And the programme itself is **derived from settings rather
 than stored** — so there is no copy of it to edit, and editing it can
@@ -138,7 +138,9 @@ pnpm dev
 pnpm verify
 ```
 
-`verify` is typecheck, lint, format check, tests and build. A pre-push
+`verify` is typecheck, lint, a dead-code check (knip), format check,
+tests and build, then two checks on the built page: the entry chunk
+against its size budget and the Content Security Policy present. A pre-push
 hook runs it and refuses the push if it fails; the same command gates the
 deploy. **If it is green the change is shippable, and if it is not it is
 not** — there is no third state.

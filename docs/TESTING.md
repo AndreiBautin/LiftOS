@@ -137,8 +137,12 @@ Naming these is the point of the section.
 - **Component rendering, almost entirely.** The screens are thin — they
   resolve a hook and lay out what it returns. A render test would mostly
   assert that Tailwind classes are present, which is a test of the test.
-  There are no component tests at all now; the one there was covered the
-  Firebase sign-in gate and went with it.
+  The few that exist each hold a behaviour nothing else could see:
+  `SyncBadge.test.tsx` (a sync failure said in words), `PageSkeleton.test.tsx`
+  (one polite status while a page loads), and `HomePage.test.tsx`, which
+  renders the real Today page on real services and fails if finishing a
+  session ever draws the dashboard before the report — a two-second gap
+  at a phone's speed that left nothing wrong on screen afterwards.
 - **A Tailwind colour class is not evidence a colour was applied.** An
   undefined token compiles to no declaration at all, so `text-ink-600`
   once left twenty call sites rendering near-white — legible, plausible,
@@ -181,6 +185,10 @@ patterns outlived them.
   on the add form, the RTS stopping rule. Each was written, exported,
   tested — and reachable from no screen. A rule that prints advice about
   itself is the worst version, because the user believes it is watching.
+  **This one is a gate now**: `pnpm knip` fails `verify` and CI on an
+  unused file, export or dependency. Its first sweep removed about 120
+  exports, and found a database hook that a comment said showed a prompt
+  and that nothing had ever registered.
 - **A field dropped by a conditional spread**, which defeats
   excess-property checking. `addDaily` lost `timesPerDay` and
   `recordFinance` lost `salaryMinor` by exactly that route: collected by

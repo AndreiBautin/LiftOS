@@ -180,7 +180,7 @@ instead.**
 
 ## A request, traced end to end
 
-Starting Thursday's session (Push B) and logging the first set of the bench:
+Starting Monday's session (Upper) and logging the first set of the bench:
 
 1. **`features/train/NextSessionCard.tsx`**, on the one page, renders the next day and calls
    `useStartWorkout()`.
@@ -200,9 +200,9 @@ Starting Thursday's session (Push B) and logging the first set of the bench:
    `topped(last, range)` asks whether every set reached the top of the
    range; if so `nextLoad` adds `stepFor(exercise)`, which is **5 lb
    upper and 10 lb lower**, derived from the movement rather than written
-   on all fifty exercises. Five sets of 5 at 185 becomes **190** (topped is
-   judged against the sets that session asked for, so older three-set
-   sessions still progress).
+   on all fifty exercises. Four sets of 5 at 185 becomes **190** (topped is
+   judged against the sets that session asked for, so older three- and
+   five-set sessions still progress).
 6. **`domain/resolution/resolve.ts`** — also pure — turns
    `working × range(3,5)` into that number, rounded by
    **`domain/units/weight.ts`** to the gym's increment. With no history
@@ -213,7 +213,9 @@ Starting Thursday's session (Push B) and logging the first set of the bench:
    `plannedLoad`, so an estimate revised next month does not
    retroactively alter what this session says it asked for.
 8. **`infrastructure/db/repositories.ts`** writes it to IndexedDB,
-   wired once in `src/app/di.ts`.
+   wired once in `src/app/di.ts`. The write also drops the in-memory
+   snapshot of the history (`workoutSnapshots` in `database.ts`) that
+   every Today card reads from, so the next read sees it.
 9. The lifter taps the set. **`SetRow.tsx`** opens prefilled with 190 × 5.
 10. **`application/use-cases/training/log-set.ts`** writes `actualLoad`,
     `actualReps` and `completedAt` beside the planned values.
@@ -231,8 +233,8 @@ week**. That round trip was verified by driving the app.
 ## Where the records live
 
 In this browser. `bootstrap()` in `src/app/di.ts` opens the IndexedDB
-database and wires the repositories to it; settings and the programme
-position are `localStorage`.
+database and wires the repositories to it, the programme position
+included; settings are `localStorage`.
 
 **Optional sync is a backup file in a private GitHub repository.**
 `infrastructure/sync/github-sync.ts` runs one round: read the file
