@@ -62,6 +62,51 @@ function preloadFonts(base: string): Plugin {
   }
 }
 
+/**
+ * **The Content Security Policy, as a meta tag in the built page.**
+ *
+ * GitHub Pages sets no response headers, so the policy can only travel in
+ * the document — which is why `frame-ancestors` and reporting are absent:
+ * a meta policy ignores both. It is added to the build only, because the
+ * dev server needs inline scripts and a websocket for hot reload.
+ *
+ * What it buys is containment. The app keeps a GitHub token in
+ * `localStorage` for sync, and any script that ran on this origin could
+ * read it — so scripts are this origin's own files and nothing else, and
+ * the only host anything may be sent to is `api.github.com`. Styles stay
+ * `'self'` too: React writes `style` props through the CSSOM, which a
+ * policy does not police, and nothing here injects a `<style>` element.
+ * `data:` images are the grain texture in `index.css`; `blob:` images
+ * are the share picture before it is saved.
+ */
+const CONTENT_SECURITY_POLICY = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self'",
+  "img-src 'self' data: blob:",
+  "font-src 'self'",
+  "connect-src 'self' https://api.github.com",
+  "manifest-src 'self'",
+  "worker-src 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+].join('; ')
+
+function contentSecurityPolicy(): Plugin {
+  return {
+    name: 'liftos:content-security-policy',
+    apply: 'build',
+    transformIndexHtml: () => [
+      {
+        tag: 'meta',
+        attrs: { 'http-equiv': 'Content-Security-Policy', content: CONTENT_SECURITY_POLICY },
+        injectTo: 'head-prepend' as const,
+      },
+    ],
+  }
+}
+
 export default defineConfig(({ mode }) => {
   const base = readBasePath(loadEnv(mode, process.cwd(), ''))
 
@@ -72,6 +117,7 @@ export default defineConfig(({ mode }) => {
       react(),
       tailwindcss(),
       preloadFonts(base),
+      contentSecurityPolicy(),
       VitePWA({
         /*
          * **The worker no longer waits, and the banner still asks.**

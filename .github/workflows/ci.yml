@@ -60,6 +60,9 @@ jobs:
       - name: Size budget
         run: pnpm size
 
+      - name: Content Security Policy present
+        run: pnpm check:csp
+
       # **Build every configuration that ships.** The demo build takes a
       # different branch at startup — a different storage namespace, and
       # a seeder that runs before the first render — and it is the one
