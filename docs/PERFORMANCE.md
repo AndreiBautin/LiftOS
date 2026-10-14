@@ -1,6 +1,9 @@
 # Performance
 
 Measured with `pnpm build && node scripts/chunk-sizes.mjs` (raw / gzip).
+`pnpm size` (part of `pnpm verify` and CI) fails when the entry chunk
+passes 120 kB gzip; raise the budget in `scripts/check-size.mjs` in the
+same commit as the reason.
 Each change records its before and after; a change that moved nothing is
 reverted rather than listed.
 
