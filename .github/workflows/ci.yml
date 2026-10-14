@@ -18,6 +18,10 @@ concurrency:
 permissions:
   contents: read
 
+# **Every action is pinned to a commit, with its version beside it.** A
+# tag can be moved to different code by whoever controls the action's
+# repository; a commit cannot. Dependabot (github-actions) proposes new
+# pins with the comment updated, so pinning costs no maintenance.
 jobs:
   verify:
     name: Typecheck, lint, test, build
@@ -25,11 +29,11 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: pnpm/action-setup@v6
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
           cache: pnpm
@@ -87,7 +91,7 @@ jobs:
     timeout-minutes: 5
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # gitleaks needs real history. The default shallow clone leaves
           # it with a commit range it cannot resolve, which fails the step
@@ -95,9 +99,9 @@ jobs:
           # than no scan, because it trains you to ignore the job.
           fetch-depth: 0
 
-      - uses: pnpm/action-setup@v6
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
 
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
           cache: pnpm
@@ -112,6 +116,6 @@ jobs:
         run: pnpm audit --audit-level high
 
       - name: Scan for committed secrets
-        uses: gitleaks/gitleaks-action@v3
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
