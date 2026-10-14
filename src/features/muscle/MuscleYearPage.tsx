@@ -1,4 +1,5 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import {} from 'lucide-react'
+import { PeriodStep } from '@/components/shared/PeriodStep'
 import { Link, useParams } from 'react-router-dom'
 
 import { useServices } from '@/app/context'
@@ -83,28 +84,11 @@ export function MuscleYearPage() {
         }
         action={
           <>
-            <Link
-              viewTransition
-              to={`/muscles/${previous}`}
-              aria-label={`Muscles in ${previous}`}
-              className="text-ink-300 hover:text-accent-400 tap-target flex items-center px-2"
-            >
-              <ChevronLeft size={18} aria-hidden />
-            </Link>
-            {next <= today.slice(0, 4) ? (
-              <Link
-                viewTransition
-                to={`/muscles/${next}`}
-                aria-label={`Muscles in ${next}`}
-                className="text-ink-300 hover:text-accent-400 tap-target flex items-center px-2"
-              >
-                <ChevronRight size={18} aria-hidden />
-              </Link>
-            ) : (
-              <span className="text-ink-700 tap-target flex items-center px-2" aria-hidden>
-                <ChevronRight size={18} />
-              </span>
-            )}
+            <PeriodStep to={`/muscles/${previous}`} label={`Muscles in ${previous}`} back />
+            <PeriodStep
+              to={next <= today.slice(0, 4) ? `/muscles/${next}` : undefined}
+              label={`Muscles in ${next}`}
+            />
           </>
         }
       />

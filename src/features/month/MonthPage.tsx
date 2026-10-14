@@ -1,5 +1,7 @@
 import type { CSSProperties } from 'react'
-import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Play, Star } from 'lucide-react'
+import { ArrowDown, ArrowUp, Play, Star } from 'lucide-react'
+
+import { PeriodStep } from '@/components/shared/PeriodStep'
 import { LIFT_COLOURS } from '@/features/charts/palette'
 import { Link, Navigate, useParams } from 'react-router-dom'
 
@@ -62,8 +64,15 @@ export function MonthPage() {
         subtitle={`${String(recap.sessions)} sessions · ${String(Object.keys(recap.days).length)} days trained`}
         action={
           <>
-            <StepLink to={older} label="Earlier month" icon="back" />
-            <StepLink to={newer} label="Later month" icon="forward" />
+            <PeriodStep
+              to={older === undefined ? undefined : `/month/${older}`}
+              label="Earlier month"
+              back
+            />
+            <PeriodStep
+              to={newer === undefined ? undefined : `/month/${newer}`}
+              label="Later month"
+            />
           </>
         }
       />
@@ -222,32 +231,6 @@ export function MonthPage() {
         )}
       </div>
     </div>
-  )
-}
-
-function StepLink({
-  to,
-  label,
-  icon,
-}: {
-  readonly to: string | undefined
-  readonly label: string
-  readonly icon: 'back' | 'forward'
-}) {
-  const Icon = icon === 'back' ? ChevronLeft : ChevronRight
-  return to === undefined ? (
-    <span className="text-ink-700 tap-target flex items-center justify-center" aria-hidden>
-      <Icon size={18} />
-    </span>
-  ) : (
-    <Link
-      viewTransition
-      to={`/month/${to}`}
-      aria-label={label}
-      className="text-ink-300 hover:text-ink-50 tap-target flex items-center justify-center"
-    >
-      <Icon size={18} aria-hidden />
-    </Link>
   )
 }
 

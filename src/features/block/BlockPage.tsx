@@ -1,4 +1,6 @@
-import { ChevronLeft, ChevronRight, TrendingUp } from 'lucide-react'
+import { TrendingUp } from 'lucide-react'
+
+import { PeriodStep } from '@/components/shared/PeriodStep'
 import { Link, useSearchParams } from 'react-router-dom'
 
 import { useServices, useSettings } from '@/app/context'
@@ -54,8 +56,8 @@ export function BlockPage() {
         subtitle={`${range(window.start, window.end, today)}${running ? ' · running' : ''}`}
         action={
           <>
-            <Step to={`/block?ago=${String(ago + 1)}`} label="Earlier block" back />
-            <Step
+            <PeriodStep to={`/block?ago=${String(ago + 1)}`} label="Earlier block" back />
+            <PeriodStep
               to={ago === 0 ? undefined : `/block?ago=${String(ago - 1)}`}
               label="Later block"
             />
@@ -246,32 +248,6 @@ function Figure({ label, value }: { readonly label: string; readonly value: stri
       <dt className="text-ink-500 text-[0.65rem] tracking-wide uppercase">{label}</dt>
       <dd className="numeric text-ink-50 mt-1 text-2xl font-semibold">{value}</dd>
     </div>
-  )
-}
-
-function Step({
-  to,
-  label,
-  back = false,
-}: {
-  readonly to: string | undefined
-  readonly label: string
-  readonly back?: boolean
-}) {
-  const Icon = back ? ChevronLeft : ChevronRight
-  return to === undefined ? (
-    <span className="text-ink-700 tap-target flex items-center px-2" aria-hidden>
-      <Icon size={18} />
-    </span>
-  ) : (
-    <Link
-      viewTransition
-      to={to}
-      aria-label={label}
-      className="text-ink-300 hover:text-accent-400 tap-target flex items-center px-2"
-    >
-      <Icon size={18} aria-hidden />
-    </Link>
   )
 }
 
