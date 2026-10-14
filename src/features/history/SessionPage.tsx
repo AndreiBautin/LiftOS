@@ -124,7 +124,7 @@ export function SessionPage() {
         <SessionStats sets={sets} tonnage={tonnage} minutes={minutes} units={settings.units} />
       </section>
 
-      <SessionNote key={workout.id} workoutId={workout.id} initial={workout.notes} />
+      <SessionNote key={`note-${workout.id}`} workoutId={workout.id} initial={workout.notes} />
 
       {warmups.length > 0 && <WarmupLine entries={warmups} library={library} />}
 
@@ -145,7 +145,9 @@ export function SessionPage() {
 
       <SessionTimeline workout={workout} nameOf={(exerciseId) => nameOf(library, exerciseId)} />
 
-      {workout.status !== 'in-progress' && <KeepSession key={workout.id} workout={workout} />}
+      {workout.status !== 'in-progress' && (
+        <KeepSession key={`keep-${workout.id}`} workout={workout} />
+      )}
     </div>
   )
 }
