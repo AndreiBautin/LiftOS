@@ -1,43 +1,74 @@
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 
-import { AdherenceCard } from '@/features/train/AdherenceCard'
-import { ForecastCard } from '@/features/train/ForecastCard'
-import { ThenNowCard } from '@/features/train/ThenNowCard'
-import { RipeCard } from '@/features/train/RipeCard'
-import { SavedSessionsCard } from '@/features/templates/SavedSessionsCard'
+import { lazyNamed } from '@/lib/lazy-named'
+import { Skeleton } from '@/components/shared/Skeleton'
+
 import { NoticeStrip } from './NoticeStrip'
 import { arrangeCards } from '@/domain/settings/home-cards'
 import { ArrangeCards } from './ArrangeCards'
 import { InstallCard } from '@/features/pwa/InstallCard'
 import { WhatsNew } from './WhatsNew'
 import { DeloadSuggestion } from '@/features/train/DeloadSuggestion'
-import { BalanceCard } from '@/features/train/BalanceCard'
-import { BodyMapCard } from '@/features/train/BodyMapCard'
-import { TrainingTimesCard } from '@/features/train/TrainingTimesCard'
-import { GoalsCard } from '@/features/train/GoalsCard'
 import { withViewTransition } from '@/app/view-transitions'
 import type { WorkoutReport } from '@/application/use-cases/training/finish-workout'
 import { useSettings } from '@/app/context'
 import { Masonry } from '@/components/shared/Masonry'
-import { TrainingHistory } from '@/features/history/TrainingHistory'
 import {
   useAbandonWorkout,
   useActiveWorkout,
   useExercises,
   useFinishWorkout,
 } from '@/features/train/hooks'
-import { ActivityHeatmap } from '@/features/train/ActivityHeatmap'
-import { LastWeekCard } from '@/features/train/LastWeekCard'
 import { NextSessionCard } from '@/features/train/NextSessionCard'
-import { SessionPlayer } from '@/features/train/SessionPlayer'
 import { SessionReport } from '@/features/train/SessionReport'
-import { StrengthStandards } from '@/features/train/StrengthStandards'
-import { StrengthTrendCard } from '@/features/train/StrengthTrendCard'
 import { WeekCard } from '@/features/train/WeekCard'
 
 import { FirstRunSetup } from './FirstRunSetup'
 import { HeroBanner } from './HeroBanner'
 import { SampleNotice } from './SampleNotice'
+
+/*
+ * **Below the first two cards, every card loads on demand.** They were all
+ * in the entry chunk, so the first paint waited on the forecast maths,
+ * the body map and the training grid that sit a screen or more down. The
+ * hero, the plan and the week stay eager because they are what a phone
+ * shows first. The player is split too: it renders only while a session
+ * is open. The service worker precaches every chunk, so offline is
+ * unchanged.
+ */
+const AdherenceCard = lazyNamed(() => import('@/features/train/AdherenceCard'), 'AdherenceCard')
+const ForecastCard = lazyNamed(() => import('@/features/train/ForecastCard'), 'ForecastCard')
+const ThenNowCard = lazyNamed(() => import('@/features/train/ThenNowCard'), 'ThenNowCard')
+const RipeCard = lazyNamed(() => import('@/features/train/RipeCard'), 'RipeCard')
+const SavedSessionsCard = lazyNamed(
+  () => import('@/features/templates/SavedSessionsCard'),
+  'SavedSessionsCard',
+)
+const BalanceCard = lazyNamed(() => import('@/features/train/BalanceCard'), 'BalanceCard')
+const BodyMapCard = lazyNamed(() => import('@/features/train/BodyMapCard'), 'BodyMapCard')
+const TrainingTimesCard = lazyNamed(
+  () => import('@/features/train/TrainingTimesCard'),
+  'TrainingTimesCard',
+)
+const GoalsCard = lazyNamed(() => import('@/features/train/GoalsCard'), 'GoalsCard')
+const TrainingHistory = lazyNamed(
+  () => import('@/features/history/TrainingHistory'),
+  'TrainingHistory',
+)
+const ActivityHeatmap = lazyNamed(
+  () => import('@/features/train/ActivityHeatmap'),
+  'ActivityHeatmap',
+)
+const LastWeekCard = lazyNamed(() => import('@/features/train/LastWeekCard'), 'LastWeekCard')
+const SessionPlayer = lazyNamed(() => import('@/features/train/SessionPlayer'), 'SessionPlayer')
+const StrengthStandards = lazyNamed(
+  () => import('@/features/train/StrengthStandards'),
+  'StrengthStandards',
+)
+const StrengthTrendCard = lazyNamed(
+  () => import('@/features/train/StrengthTrendCard'),
+  'StrengthTrendCard',
+)
 
 /**
  * The whole app, on one page.
@@ -93,33 +124,35 @@ export function HomePage() {
   const workout = activeWorkout.data
   if (workout != null && exercises.data !== undefined) {
     return (
-      <SessionPlayer
-        workout={workout}
-        exercises={exercises.data}
-        units={settings.units}
-        restEnabled={settings.restTimerEnabled}
-        keepAwake={settings.keepScreenAwake}
-        onFinish={() => {
-          /*
-           * **The session bar becomes the report's hero.** Both carry the
-           * `session-hero` transition name, so finishing grows the slim
-           * bar into the panel rather than swapping screens.
-           */
-          finishWorkout.mutate(workout.id, {
-            onSuccess: (finished) => {
-              withViewTransition(() => {
-                setReport(finished)
-                // The report opens at its hero, where the bar was pinned;
-                // left at the player's scroll it opened a screen down.
-                window.scrollTo(0, 0)
-              })
-            },
-          })
-        }}
-        onAbandon={() => {
-          abandonWorkout.mutate(workout.id)
-        }}
-      />
+      <Suspense fallback={<Skeleton label="Opening the session" className="h-96" />}>
+        <SessionPlayer
+          workout={workout}
+          exercises={exercises.data}
+          units={settings.units}
+          restEnabled={settings.restTimerEnabled}
+          keepAwake={settings.keepScreenAwake}
+          onFinish={() => {
+            /*
+             * **The session bar becomes the report's hero.** Both carry the
+             * `session-hero` transition name, so finishing grows the slim
+             * bar into the panel rather than swapping screens.
+             */
+            finishWorkout.mutate(workout.id, {
+              onSuccess: (finished) => {
+                withViewTransition(() => {
+                  setReport(finished)
+                  // The report opens at its hero, where the bar was pinned;
+                  // left at the player's scroll it opened a screen down.
+                  window.scrollTo(0, 0)
+                })
+              },
+            })
+          }}
+          onAbandon={() => {
+            abandonWorkout.mutate(workout.id)
+          }}
+        />
+      </Suspense>
     )
   }
 
@@ -147,7 +180,14 @@ export function HomePage() {
           settings.homeCards,
         ).flatMap((key) => {
           const card = HOME_CARDS.find((one) => one.key === key)
-          return card === undefined ? [] : [{ key, node: card.node }]
+          return card === undefined
+            ? []
+            : [
+                {
+                  key,
+                  node: <Suspense fallback={<Skeleton className="h-48" />}>{card.node}</Suspense>,
+                },
+              ]
         })}
       />
       <ArrangeCards
