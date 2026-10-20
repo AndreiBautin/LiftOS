@@ -43,9 +43,9 @@ export interface E1rmEstimate {
 }
 
 /**
- * The most reps in reserve a repeated set is ever credited with.
+ * The reps in reserve a set is credited with when every other set held it.
  *
- * Four straight sets of the same load and reps say the first was not a
+ * Straight sets of the same load and reps say the first was not a
  * limit set, but they do not say by how much; three is the usual
  * distance between "repeatable four times" and "could not do one more",
  * and reading more into it would turn a lot of easy work into a big
@@ -59,9 +59,17 @@ export const MAX_INFERRED_RESERVE = 3
  * The formulas assume the set went to failure. Double progression never
  * asks for that: a lifter who does 100 x 10 four times could plainly have
  * done more than ten on the first set, so reading it as 100 x 10 to
- * failure under-reads the max. Every other completed set at the same
- * load for at least as many reps counts as one rep left over, capped.
- * A set done once, or a top set nothing else matched, is read as given.
+ * failure under-reads the max. A set is credited by the **share** of the
+ * session's other completed sets that held it — same load, at least as
+ * many reps — scaled to `MAX_INFERRED_RESERVE` and rounded down. A set
+ * done once, or a top set nothing else matched, is read as given.
+ *
+ * **A share, not a count**, because the count tracked how many sets the
+ * programme asked for rather than how hard the set was. It was one rep
+ * per matching set, and when the leg days' compounds dropped from four
+ * sets to two the same clean straight sets went from three reps of
+ * credit to one — so hitting the progression read as a lower max and the
+ * total fell. Every set held is the same evidence at two sets or four.
  */
 export function inferredReserve(
   sets: readonly { readonly load: number; readonly reps: number }[],
@@ -69,14 +77,17 @@ export function inferredReserve(
 ): number {
   const set = sets[index]
   if (set === undefined) return 0
+  let others = 0
   let matched = 0
   for (let i = 0; i < sets.length; i += 1) {
     if (i === index) continue
     const other = sets[i]
     if (other === undefined) continue
+    others += 1
     if (other.load === set.load && other.reps >= set.reps) matched += 1
   }
-  return Math.min(matched, MAX_INFERRED_RESERVE)
+  if (others === 0) return 0
+  return Math.floor((MAX_INFERRED_RESERVE * matched) / others)
 }
 
 export function estimateOneRepMax(

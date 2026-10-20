@@ -12,13 +12,35 @@ describe('inferredReserve', () => {
     expect(inferredReserve([{ load: 100, reps: 10 }], 0)).toBe(0)
   })
 
-  it('credits one rep per other set at the same load and at least as many reps', () => {
+  it('credits the full reserve when every other set held it', () => {
     const straight = [
       { load: 100, reps: 10 },
       { load: 100, reps: 10 },
       { load: 100, reps: 10 },
     ]
-    expect(inferredReserve(straight, 0)).toBe(2)
+    expect(inferredReserve(straight, 0)).toBe(MAX_INFERRED_RESERVE)
+  })
+
+  /*
+   * The leg days' compounds went from four sets to two, and a count of
+   * matching sets read the same clean work as one rep of reserve where it
+   * had been three — the total fell on a session that hit its progression.
+   */
+  it('reads two straight sets the same as four', () => {
+    const two = Array.from({ length: 2 }, () => ({ load: 300, reps: 5 }))
+    const four = Array.from({ length: 4 }, () => ({ load: 300, reps: 5 }))
+    expect(inferredReserve(two, 0)).toBe(inferredReserve(four, 0))
+  })
+
+  it('credits a share of the reserve when only some sets held it', () => {
+    const partial = [
+      { load: 100, reps: 10 },
+      { load: 100, reps: 10 },
+      { load: 100, reps: 9 },
+      { load: 100, reps: 8 },
+    ]
+    // One of three other sets held ten: a third of three.
+    expect(inferredReserve(partial, 0)).toBe(1)
   })
 
   it('caps the reserve at three however many sets repeat', () => {
@@ -33,8 +55,8 @@ describe('inferredReserve', () => {
       { load: 100, reps: 7 },
     ]
     expect(inferredReserve(fading, 0)).toBe(0)
-    // The last set was matched twice over by the sets before it.
-    expect(inferredReserve(fading, 2)).toBe(2)
+    // The last set was matched by both sets before it.
+    expect(inferredReserve(fading, 2)).toBe(MAX_INFERRED_RESERVE)
   })
 
   it('ignores sets at another load', () => {

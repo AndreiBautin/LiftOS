@@ -4,6 +4,7 @@ export const RELEASES: readonly { readonly id: string; readonly items: readonly 
     id: '2026-10-20',
     items: [
       'Leg days are shorter: the squat, deadlift, Romanian deadlift and front squat run two sets rather than four.',
+      'Two clean straight sets now count for as much as four when estimating your max, so the total no longer dips on a shorter leg day.',
     ],
   },
   {

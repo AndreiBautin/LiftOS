@@ -53,11 +53,14 @@ reason is tied to them; read those as history too.
   Asked for as _"if I can repeat an effort 3/4 times, that doesn't
   represent a max effort lift"_. Every formula assumes the set went to
   failure, and double progression never asks for that: 100 x 10 four
-  times reads as 100 x 10 to failure and under-reads the max. Each
-  other completed set at the **same load for at least as many reps**
-  counts as one rep left over, capped at `MAX_INFERRED_RESERVE` (3), and
-  the set is estimated as the one it would have been taken to failure
-  (100 x 13). A top set the later sets fell off from is read as given,
+  times reads as 100 x 10 to failure and under-reads the max. A set is
+  credited by the **share** of the other completed sets that held it
+  (same load, at least as many reps), scaled to `MAX_INFERRED_RESERVE`
+  (3) and rounded down, and estimated as the set it would have been
+  taken to failure (100 x 13). **A share, not a count**: it was one rep
+  per matching set, so when the leg compounds went from four sets to
+  two the same clean work read one rep of reserve instead of three and
+  the total fell on a session that hit its progression. A top set the later sets fell off from is read as given,
   so a hard triple still beats three easy tens. **Applied in
   `bestEstimate`**, which the report, the exercise page, the trend and
   the forecast all read, and in the records wall's own loop; the
