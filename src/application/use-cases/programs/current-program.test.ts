@@ -181,10 +181,39 @@ describe('the shipped week', () => {
     ).toEqual(['bench-press', 'low-bar-squat', 'sumo-deadlift'])
   })
 
-  it('prescribes four straight sets on everything lifted', () => {
+  /*
+   * Two sets on the leg days' compounds — asked for as four being too
+   * much — and four on everything else, the calf raise and the trunk
+   * work on those same days included.
+   */
+  it('prescribes two sets on the leg days compounds and four on everything else', () => {
+    const lowerCompounds = new Set([
+      'low-bar-squat',
+      'romanian-deadlift',
+      'sumo-deadlift',
+      'front-squat',
+    ])
     const lifted = (week?.days ?? [])
       .flatMap((day) => day.slots)
       .filter((slot) => slot.role !== 'warmup' && slot.role !== 'conditioning')
-    expect(lifted.every((slot) => slot.sets.length === 4)).toBe(true)
+      .map((slot) => [
+        slot.exercise.kind === 'specific' ? slot.exercise.exerciseId : '',
+        slot.sets.length,
+      ])
+    expect(lifted).toHaveLength(20)
+    for (const [slug, count] of lifted) {
+      expect([slug, count]).toEqual([slug, lowerCompounds.has(String(slug)) ? 2 : 4])
+    }
+  })
+
+  it('halves both on the deload, never below one set', () => {
+    const block = deriveProgram(DEFAULT_SETTINGS, library).blocks[0]
+    const deload = block?.weeks.at(-1)
+    const counts = (deload?.days ?? [])
+      .flatMap((day) => day.slots)
+      .filter((slot) => slot.role !== 'warmup' && slot.role !== 'conditioning')
+      .map((slot) => slot.sets.length)
+    expect(counts.filter((n) => n === 1)).toHaveLength(4)
+    expect(counts.filter((n) => n === 2)).toHaveLength(16)
   })
 })

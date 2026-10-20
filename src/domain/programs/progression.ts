@@ -37,7 +37,16 @@ export const STRAIGHT_SETS = 4
  * `STRAIGHT_SETS - 1` once, which is barely a deload at five and none
  * at all at four, so it is its own number.
  */
-export const DELOAD_SETS = 2
+const DELOAD_SETS = 2
+
+/**
+ * A deload's sets for an exercise run at `sets`: half, at least one, and
+ * never more than `DELOAD_SETS`. Four gives two as before; the lower
+ * days' two-set compounds give one, or the deload would not be lighter.
+ */
+export function deloadSetsFor(sets: number): number {
+  return Math.min(DELOAD_SETS, Math.max(1, Math.ceil(sets / 2)))
+}
 
 /**
  * The competition lifts' range, and the only one stated here.

@@ -1459,7 +1459,10 @@ input required.
 both leg days written by the lifter (squat, RDL, calf raise, ab wheel;
 sumo, front squat, calf raise, hanging leg raise) and the rest
 rearranged from the existing exercises, nothing added. Four exercises a
-day, four sets each. Every movement appears once a week except the
+day, four sets each — **except the leg days' compounds, which run
+two** (squat, RDL, sumo, front squat; `sets` on `RoutineEntry`, a
+deload halving it to one), asked for as _"4 sets on the compounds is
+too much"_. Every movement appears once a week except the
 barbell calf raise; the swings and the treadmill walk left the week and
 stay in the catalogue. Two placement rules came from the lifter and a
 test holds both: **lateral raises are not on the overhead-press day**

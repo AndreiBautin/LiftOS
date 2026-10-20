@@ -1,6 +1,12 @@
 /** Release notes, newest first; `WhatsNew` shows the first once. */
 export const RELEASES: readonly { readonly id: string; readonly items: readonly string[] }[] = [
   {
+    id: '2026-10-20',
+    items: [
+      'Leg days are shorter: the squat, deadlift, Romanian deadlift and front squat run two sets rather than four.',
+    ],
+  },
+  {
     id: '2026-10-13',
     items: [
       'A sleeker look throughout: one motion style, lit sheets you can drag closed, and a hero with depth.',
