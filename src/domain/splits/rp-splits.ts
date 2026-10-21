@@ -101,20 +101,15 @@ export interface RpDay {
  * "last time" both look up history by exercise, and without it the light
  * day would plan its reps from the heavy day's. See `workingLoads` in
  * `start-workout.ts`, which matches on it.
- *
- * **A lift or an exercise can state its own set count**, over
- * `STRAIGHT_SETS` (three). The leg days' compounds run two — _"for lower body
- * days, 4 sets on the compounds is too much. please drop that to 2 sets
- * a piece"_ — and a deload halves it (`deloadSetsFor`).
+
  */
 export type RoutineEntry =
-  | { readonly kind: 'lift'; readonly lift: StrengthLift; readonly sets?: number }
+  | { readonly kind: 'lift'; readonly lift: StrengthLift }
   | {
       readonly kind: 'exercise'
       readonly slug: string
       readonly reps?: RepRange
       readonly variant?: string
-      readonly sets?: number
     }
   | { readonly kind: 'conditioning'; readonly slug: string }
 
@@ -264,8 +259,6 @@ export const FULL_BODY_SPLIT: RpSplit = {
 
 const lift = (which: StrengthLift): RoutineEntry => ({ kind: 'lift', lift: which })
 const exercise = (slug: string): RoutineEntry => ({ kind: 'exercise', slug })
-/** The leg days' compounds: two sets, not four. */
-const LOWER_COMPOUND_SETS = 2
 
 /*
  * **Upper, legs, push, pull, legs — Monday to Friday, the weekend off.**
@@ -318,8 +311,8 @@ export function sameVersion(logged: string | undefined, variant: string | undefi
 }
 
 const LEGS_A: readonly RoutineEntry[] = [
-  { kind: 'lift', lift: 'squat', sets: LOWER_COMPOUND_SETS },
-  { kind: 'exercise', slug: 'romanian-deadlift', sets: LOWER_COMPOUND_SETS },
+  lift('squat'),
+  exercise('romanian-deadlift'),
   { kind: 'exercise', slug: 'barbell-calf-raise', reps: { low: 10, high: 20 }, variant: 'Heavy' },
   exercise('ab-wheel'),
 ]
@@ -339,8 +332,8 @@ const PULL: readonly RoutineEntry[] = [
 ]
 
 const LEGS_B: readonly RoutineEntry[] = [
-  { kind: 'lift', lift: 'deadlift', sets: LOWER_COMPOUND_SETS },
-  { kind: 'exercise', slug: 'front-squat', sets: LOWER_COMPOUND_SETS },
+  lift('deadlift'),
+  exercise('front-squat'),
   { kind: 'exercise', slug: 'barbell-calf-raise', reps: { low: 20, high: 30 }, variant: 'Light' },
   exercise('hanging-leg-raise'),
 ]

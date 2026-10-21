@@ -4,7 +4,7 @@ import type { Exercise } from '@/domain/exercises/exercise'
 import type { MuscleGroup } from '@/domain/exercises/taxonomy'
 import { MUSCLE_GROUP_LABELS } from '@/domain/exercises/taxonomy'
 import type { ExerciseId, IdGenerator, ProgramId } from '@/domain/ids/ids'
-import { deloadSetsFor, STRAIGHT_SETS, STRENGTH_RANGE } from '@/domain/programs/progression'
+import { DELOAD_SETS, STRAIGHT_SETS, STRENGTH_RANGE } from '@/domain/programs/progression'
 import { asExerciseId, asSlotId } from '@/domain/ids/ids'
 import type { RepRange, SetPrescription } from '@/domain/programs/prescription'
 import type {
@@ -702,7 +702,6 @@ function buildStrengthSlots(
   lift: StrengthLift,
   session: number,
   isDeload: boolean,
-  working: number = STRAIGHT_SETS,
 ): BuiltSlots {
   const exerciseId = asExerciseId(strengthSlugFor(lift, session))
   const exercise = deps.exercises.find((candidate) => candidate.id === exerciseId)
@@ -713,7 +712,7 @@ function buildStrengthSlots(
    * range does not move: dropping to a lighter range would change what
    * the week means, where dropping a set just does less of it.
    */
-  const count = isDeload ? deloadSetsFor(working) : working
+  const count = isDeload ? DELOAD_SETS : STRAIGHT_SETS
 
   const sets: SetPrescription[] = Array.from({ length: count }, () => ({
     load: { kind: 'working' as const },
@@ -1654,7 +1653,7 @@ function routineSlots(
 
   for (const entry of day.routine ?? []) {
     if (entry.kind === 'lift') {
-      slots.push(...buildStrengthSlots(deps, entry.lift, 0, isDeload, entry.sets).slots)
+      slots.push(...buildStrengthSlots(deps, entry.lift, 0, isDeload).slots)
       continue
     }
 
@@ -1668,8 +1667,7 @@ function routineSlots(
     const exercise = deps.exercises.find((candidate) => candidate.id === asExerciseId(entry.slug))
     if (exercise === undefined || excluded.has(exercise.id)) continue
 
-    const working = entry.sets ?? STRAIGHT_SETS
-    const count = isDeload ? deloadSetsFor(working) : working
+    const count = isDeload ? DELOAD_SETS : STRAIGHT_SETS
     // The routine's own range wins over the exercise's — see `RoutineEntry`.
     const range =
       entry.reps ?? exercise.repRange ?? (exercise.isCompound ? COMPOUND_REPS : ISOLATION_REPS)

@@ -23,33 +23,22 @@ import type { RepRange } from './prescription'
  */
 
 /**
- * Three, on everything the routine does not say otherwise about. It was
- * three — _"straight 3 sets on anything"_ — then five, then four when
- * every day became four exercises, and is three again: _"id actually
- * like the rest of the exercises to be 3 sets instead of 4"_, after the
- * leg days' compounds went to two (`sets` on `RoutineEntry`). The routine
- * lists one movement per muscle per day, so the whole week's volume is
- * this number times the list; nothing else needs to change for it to
- * land everywhere.
+ * Two, on everything. It was three — _"straight 3 sets on anything"_ —
+ * then five, then four when every day became four exercises, then the
+ * leg days' compounds went to two and everything else to three, and now
+ * it is two across the board: _"id actually like to make all exercises 2
+ * sets across the board please"_. The routine lists one movement per
+ * muscle per day, so the whole week's volume is this number times the
+ * list; nothing else needs to change for it to land everywhere.
  */
-export const STRAIGHT_SETS = 3
+export const STRAIGHT_SETS = 2
 
 /**
- * A deload's sets: at most two. It was written as
- * `STRAIGHT_SETS - 1` once, which is barely a deload at five and none
- * at all at four, so it is its own number.
+ * A deload's sets: half of the two. It was written as
+ * `STRAIGHT_SETS - 1` once, which is barely a deload at five, so it is
+ * its own number.
  */
-const DELOAD_SETS = 2
-
-/**
- * A deload's sets for an exercise run at `sets`: half, at least one, and
- * never more than `DELOAD_SETS`. Three gives two, rounding up — one set
- * of everything would be a week off rather than a lighter one; the lower
- * days' two-set compounds give one, or the deload would not be lighter.
- */
-export function deloadSetsFor(sets: number): number {
-  return Math.min(DELOAD_SETS, Math.max(1, Math.ceil(sets / 2)))
-}
+export const DELOAD_SETS = 1
 
 /**
  * The competition lifts' range, and the only one stated here.

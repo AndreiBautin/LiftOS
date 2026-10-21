@@ -1462,11 +1462,10 @@ input required.
 both leg days written by the lifter (squat, RDL, calf raise, ab wheel;
 sumo, front squat, calf raise, hanging leg raise) and the rest
 rearranged from the existing exercises, nothing added. Four exercises a
-day, three sets each (_"id actually like the rest of the exercises to be
-3 sets instead of 4"_) — **except the leg days' compounds, which run
-two** (squat, RDL, sumo, front squat; `sets` on `RoutineEntry`, a
-deload halving it to one), asked for as _"4 sets on the compounds is
-too much"_. Every movement appears once a week except the
+day, **two sets each** — asked for as _"make all exercises 2 sets across
+the board"_, after a round of four, then two on the leg compounds and
+three on the rest; the per-entry set count that round added went with
+it. Every movement appears once a week except the
 barbell calf raise; the swings and the treadmill walk left the week and
 stay in the catalogue. Two placement rules came from the lifter and a
 test holds both: **lateral raises are not on the overhead-press day**
@@ -2957,7 +2956,7 @@ straight rep target across all sets. 5x16 then 5x17"_. The weakest set
 is the count the exercise has not yet held on every set, so it is the
 one to beat.
 
-**Three sets now (it was four), two on a deload.** It went to five on _"let's bump our
+**Two sets now (it was three, then four), one on a deload.** It went to five on _"let's bump our
 sets up to 5 per exercise"_ and back to four with the ULPPL week, when
 every day became four exercises — `STRAIGHT_SETS` and `DELOAD_SETS` in
 `progression.ts`. **`topped` is judged against the sets the previous
