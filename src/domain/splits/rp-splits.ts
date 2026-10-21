@@ -103,7 +103,7 @@ export interface RpDay {
  * `start-workout.ts`, which matches on it.
  *
  * **A lift or an exercise can state its own set count**, over
- * `STRAIGHT_SETS`. The leg days' compounds run two — _"for lower body
+ * `STRAIGHT_SETS` (three). The leg days' compounds run two — _"for lower body
  * days, 4 sets on the compounds is too much. please drop that to 2 sets
  * a piece"_ — and a deload halves it (`deloadSetsFor`).
  */

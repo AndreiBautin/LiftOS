@@ -183,10 +183,10 @@ describe('the shipped week', () => {
 
   /*
    * Two sets on the leg days' compounds — asked for as four being too
-   * much — and four on everything else, the calf raise and the trunk
+   * much — and three on everything else, the calf raise and the trunk
    * work on those same days included.
    */
-  it('prescribes two sets on the leg days compounds and four on everything else', () => {
+  it('prescribes two sets on the leg days compounds and three on everything else', () => {
     const lowerCompounds = new Set([
       'low-bar-squat',
       'romanian-deadlift',
@@ -202,11 +202,11 @@ describe('the shipped week', () => {
       ])
     expect(lifted).toHaveLength(20)
     for (const [slug, count] of lifted) {
-      expect([slug, count]).toEqual([slug, lowerCompounds.has(String(slug)) ? 2 : 4])
+      expect([slug, count]).toEqual([slug, lowerCompounds.has(String(slug)) ? 2 : 3])
     }
   })
 
-  it('halves both on the deload, never below one set', () => {
+  it('lightens both on the deload, never below one set', () => {
     const block = deriveProgram(DEFAULT_SETTINGS, library).blocks[0]
     const deload = block?.weeks.at(-1)
     const counts = (deload?.days ?? [])

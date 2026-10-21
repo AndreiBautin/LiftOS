@@ -23,17 +23,19 @@ import type { RepRange } from './prescription'
  */
 
 /**
- * Four, on everything. It was three — _"straight 3 sets on anything"_ —
- * then five — _"let's bump our sets up to 5 per exercise"_ — and is four
- * since every day became four exercises: _"since its four exercises now,
- * lets make it four sets per instead of 5."_ The routine lists one
- * movement per muscle per day, so the whole week's volume is this number
- * times the list; nothing else needs to change for it to land everywhere.
+ * Three, on everything the routine does not say otherwise about. It was
+ * three — _"straight 3 sets on anything"_ — then five, then four when
+ * every day became four exercises, and is three again: _"id actually
+ * like the rest of the exercises to be 3 sets instead of 4"_, after the
+ * leg days' compounds went to two (`sets` on `RoutineEntry`). The routine
+ * lists one movement per muscle per day, so the whole week's volume is
+ * this number times the list; nothing else needs to change for it to
+ * land everywhere.
  */
-export const STRAIGHT_SETS = 4
+export const STRAIGHT_SETS = 3
 
 /**
- * A deload's sets: half of the four. It was written as
+ * A deload's sets: at most two. It was written as
  * `STRAIGHT_SETS - 1` once, which is barely a deload at five and none
  * at all at four, so it is its own number.
  */
@@ -41,7 +43,8 @@ const DELOAD_SETS = 2
 
 /**
  * A deload's sets for an exercise run at `sets`: half, at least one, and
- * never more than `DELOAD_SETS`. Four gives two as before; the lower
+ * never more than `DELOAD_SETS`. Three gives two, rounding up — one set
+ * of everything would be a week off rather than a lighter one; the lower
  * days' two-set compounds give one, or the deload would not be lighter.
  */
 export function deloadSetsFor(sets: number): number {
