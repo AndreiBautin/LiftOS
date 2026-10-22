@@ -584,7 +584,7 @@ describe('finishing a session', () => {
       isAccessory(entry.exerciseId),
     )
 
-    for (let setIndex = 0; setIndex <= 1; setIndex += 1) {
+    for (let setIndex = 0; setIndex <= 2; setIndex += 1) {
       await logSet(
         {
           workoutId: started.workout.id,
@@ -599,8 +599,8 @@ describe('finishing a session', () => {
     currentTime = new Date('2026-08-26T10:20:00.000Z')
     const report = await finishWorkout(started.workout.id, deps)
 
-    expect(report.workingSets).toBe(2)
-    expect(report.tonnage).toBe(1000)
+    expect(report.workingSets).toBe(3)
+    expect(report.tonnage).toBe(1500)
     expect(report.durationMinutes).toBe(80)
     expect(report.progress[0]?.verdict).toBe('new')
     // The accessory is filed under the muscle it is programmed for.

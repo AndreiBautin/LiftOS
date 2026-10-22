@@ -727,7 +727,7 @@ function buildStrengthSlots(
     sets,
     restSeconds: exercise.defaultRestSeconds ?? 180,
     notes: isDeload
-      ? `Deload — same weight, ${count === 1 ? 'one set' : `${String(count)} sets`}, stop early.`
+      ? `Deload — same weight, ${String(count)} sets, stop early.`
       : `${String(count)} sets of ${String(STRENGTH_RANGE.low)}–${String(STRENGTH_RANGE.high)}. Hit the top of the range on every set and add weight next time.`,
   }
 
@@ -1680,7 +1680,7 @@ function routineSlots(
       sets,
       restSeconds: exercise.defaultRestSeconds ?? 120,
       notes: isDeload
-        ? `Deload — same weight, ${count === 1 ? 'one set' : `${String(count)} sets`}, stop early.`
+        ? `Deload — same weight, ${String(count)} sets, stop early.`
         : `${String(count)} sets of ${String(range.low)}–${String(range.high)}. Hit the top of the range on every set and add weight next time.`,
     })
     spent = addInto(spent, slotVolume(exercise, sets))

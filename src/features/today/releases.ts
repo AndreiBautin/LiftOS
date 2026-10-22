@@ -1,6 +1,10 @@
 /** Release notes, newest first; `WhatsNew` shows the first once. */
 export const RELEASES: readonly { readonly id: string; readonly items: readonly string[] }[] = [
   {
+    id: '2026-10-22',
+    items: ['Every exercise now runs three sets, and two on a deload week.'],
+  },
+  {
     id: '2026-10-21',
     items: ['Every exercise now runs two sets, and one on a deload week.'],
   },
