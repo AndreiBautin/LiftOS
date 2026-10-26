@@ -130,6 +130,14 @@ export interface WorkoutLog {
   readonly volumeTargets?: Readonly<Partial<Record<MuscleGroup, number>>>
   readonly notes?: string
   /**
+   * Started in a deload week, at the deload's lighter bar. Written at
+   * Start so the log describes itself: `planFromHistory` reads past it,
+   * and nothing has to re-derive the programme to know. Absent on every
+   * session filed before deloads cut the load, which planned at the full
+   * bar and are fair last times.
+   */
+  readonly deload?: true
+  /**
    * When this record last changed, ISO.
    *
    * Optional because records written before it existed do not have one,

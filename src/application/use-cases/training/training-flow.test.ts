@@ -2,7 +2,7 @@ import { deleteDB } from 'idb'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 import { builtInExercises, STRENGTH_LIFT_SLUGS } from '@/domain/exercises/catalogue'
-import { asExerciseId, type ExerciseId, type IdGenerator } from '@/domain/ids/ids'
+import { asExerciseId, type ExerciseId, type IdGenerator, type WorkoutId } from '@/domain/ids/ids'
 import type { Clock } from '@/domain/repositories/ports'
 import type { AthleteState } from '@/domain/resolution/resolve'
 import type { LogEntry } from '@/domain/logging/workout-log'
@@ -889,5 +889,88 @@ describe('a reset after a stall', () => {
     if (third.kind !== 'started') throw new Error('expected a started workout')
     expect(third.workout.entries[accessory]?.sets[0]?.plannedLoad).toBe(90)
     expect(third.workout.entries[accessory]?.sets[0]?.plannedReps).toBe(17)
+  })
+})
+
+describe('a deload week', () => {
+  /*
+   * Every week marked a deload, so the session the calendar offers is
+   * one. The day's slots stay the working week's; what is under test is
+   * the bar Start plans, not the set count the assembler writes.
+   */
+  const deloadProgram = (): typeof program => ({
+    ...program,
+    blocks: program.blocks.map((block) => ({
+      ...block,
+      weeks: block.weeks.map((week) => ({ ...week, isDeload: true })),
+    })),
+  })
+
+  /*
+   * Asked for as "deloads only cut volume in half. They should also cut
+   * load by about a quarter". The other half is the one that would go
+   * wrong quietly: progressed from, the deload's 75 would have planned the
+   * next working week at 75.
+   */
+  it('takes a quarter off the bar, then is read past by the week after', async () => {
+    const deps = beginProgram()
+    const request = { athlete, program, roundingIncrement: 5 }
+
+    const logAll = async (workoutId: WorkoutId, entryIndex: number, load: number, reps: number) => {
+      const workout = await deps.workouts.byId(workoutId)
+      const sets = workout?.entries[entryIndex]?.sets.length ?? 0
+      for (let setIndex = 0; setIndex < sets; setIndex += 1) {
+        await logSet(
+          {
+            workoutId,
+            entryIndex,
+            setIndex,
+            result: { load, reps, outcome: 'completed' },
+          },
+          deps,
+        )
+      }
+    }
+
+    const first = await startWorkout(request, deps)
+    if (first.kind !== 'started') throw new Error('expected a started workout')
+    const accessory = first.workout.entries.findIndex((entry) => isAccessory(entry.exerciseId))
+    await logAll(first.workout.id, accessory, 100, 16)
+    await finishWorkout(first.workout.id, deps)
+
+    currentTime = new Date('2026-09-02T09:00:00.000Z')
+    const deload = await startWorkout({ ...request, program: deloadProgram() }, deps)
+    if (deload.kind !== 'started') throw new Error('expected a started workout')
+    expect(deload.workout.deload).toBe(true)
+    // 100 × 0.75, and the reps last time held rather than one past them.
+    expect(deload.workout.entries[accessory]?.sets[0]?.plannedLoad).toBe(75)
+    expect(deload.workout.entries[accessory]?.sets[0]?.plannedReps).toBe(16)
+    await logAll(deload.workout.id, accessory, 75, 16)
+    await finishWorkout(deload.workout.id, deps)
+
+    currentTime = new Date('2026-09-09T09:00:00.000Z')
+    const after = await startWorkout(request, deps)
+    if (after.kind !== 'started') throw new Error('expected a started workout')
+    expect(after.workout.deload).toBeUndefined()
+    expect(after.workout.entries[accessory]?.sets[0]?.plannedLoad).toBe(100)
+    expect(after.workout.entries[accessory]?.sets[0]?.plannedReps).toBe(17)
+  })
+
+  it('rounds the cut down to a load the increment makes', async () => {
+    const deps = beginProgram()
+    const first = await startOnAStrengthDay(deps)
+    const index = first.workout.entries.findIndex((entry) => entry.role === 'strength')
+    const estimate =
+      athlete.estimatedMaxes[first.workout.entries[index]?.exerciseId ?? asExerciseId('')]
+    await abandonWorkout(first.workout.id, deps)
+
+    const deload = await startWorkout(
+      { athlete, program: deloadProgram(), roundingIncrement: 5 },
+      deps,
+    )
+    if (deload.kind !== 'started') throw new Error('expected a started workout')
+    const planned = deload.workout.entries[index]?.sets[0]?.plannedLoad
+    // The seeded first load, a quarter off, floored to the nearest five.
+    expect(planned).toBe(Math.floor(((estimate ?? 0) * 0.85 * 0.75) / 5) * 5)
   })
 })

@@ -66,6 +66,7 @@ import { logger } from '@/shared/logging/logger'
  * position, or a programme not yet loaded, is not a deload.
  */
 export function isDeloadSession(log: WorkoutLog, program: Program | undefined): boolean {
+  if (log.deload === true) return true
   const position = log.position
   if (position === undefined || program === undefined) return false
   return program.blocks[position.blockIndex]?.weeks[position.weekIndex]?.isDeload === true

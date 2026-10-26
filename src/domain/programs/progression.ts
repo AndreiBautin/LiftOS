@@ -1,3 +1,5 @@
+import { roundLoad } from '@/domain/units/weight'
+
 import type { RepRange } from './prescription'
 
 /**
@@ -39,6 +41,35 @@ export const STRAIGHT_SETS = 3
  * its own number even where it happens to equal that.
  */
 export const DELOAD_SETS = 2
+
+/**
+ * A deload's bar: three quarters of the working load, rounded **down** to
+ * something loadable. Asked for as _"deloads only cut volume in half. They
+ * should also cut load by about a quarter"_ — a deload at the same weight
+ * for two sets sheds volume and leaves every set as heavy as the week
+ * before, which is the part of the fatigue a deload is for.
+ *
+ * **The deload is never last time.** Its sessions are marked
+ * (`WorkoutLog.deload`) and `planFromHistory` reads past them, so the
+ * week after picks up from the bar before it — read as last time, 75 × 4
+ * would have planned the next working week at 75.
+ */
+const DELOAD_LOAD_SHARE = 0.75
+
+export function deloadLoad(load: number, increment: number): number {
+  return roundLoad(load * DELOAD_LOAD_SHARE, increment, 'down')
+}
+
+/**
+ * A deload's rep target: what the weakest set held last time, not one
+ * past it. Beating last time is the working weeks' job; at a quarter off
+ * the bar the reps are matched, so the only cuts are the two asked for —
+ * the sets and the load.
+ */
+export function deloadRepsFor(last: Performance | undefined, range: RepRange): number {
+  if (last === undefined || last.reps.length === 0) return range.low
+  return Math.min(range.high, Math.max(range.low, Math.min(...last.reps)))
+}
 
 /**
  * The competition lifts' range, and the only one stated here.

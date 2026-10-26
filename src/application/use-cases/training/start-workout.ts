@@ -16,6 +16,8 @@ import type { AthleteState } from '@/domain/resolution/resolve'
 import { resolveSets } from '@/domain/resolution/resolve'
 import { resetKey, resetPending, type LoadResets } from '@/domain/programs/stall'
 import {
+  deloadLoad,
+  deloadRepsFor,
   firstSessionLoad,
   lastPerformance,
   nextLoad,
@@ -127,13 +129,14 @@ export async function startWorkout(
    * Only the exercises this session actually contains are looked up:
    * the whole catalogue would be fifty queries for a six-exercise day.
    */
-  const { working, history } = await workingLoads(day, library, request, deps)
+  const deload = isDeloadWeek(request.program, scheduled)
+  const { working, history } = await workingLoads(day, library, request, deps, deload)
   const withHistory: StartWorkoutRequest = {
     ...request,
     athlete: { ...request.athlete, working },
   }
 
-  const workout = buildFromDay(day, scheduled, withHistory, library, deps, history)
+  const workout = buildFromDay(day, scheduled, withHistory, library, deps, history, deload)
   await deps.workouts.save(workout)
 
   return { kind: 'started', workout }
@@ -163,10 +166,14 @@ export async function previewWorkout(
 
   const library = await deps.exercises.all()
   const day = applyDraft(scheduled.day, request.draft, scheduled.on)
-  const { working, history } = await workingLoads(day, library, request, {
-    ...deps,
-    ids: PREVIEW_IDS,
-  })
+  const deload = isDeloadWeek(request.program, scheduled)
+  const { working, history } = await workingLoads(
+    day,
+    library,
+    request,
+    { ...deps, ids: PREVIEW_IDS },
+    deload,
+  )
   return buildFromDay(
     day,
     scheduled,
@@ -174,7 +181,16 @@ export async function previewWorkout(
     library,
     { ...deps, ids: PREVIEW_IDS },
     history,
+    deload,
   )
+}
+
+/** Whether the scheduled session falls in its block's deload week. */
+function isDeloadWeek(
+  program: ProgramTemplate,
+  at: Pick<ProgramPosition, 'blockIndex' | 'weekIndex'>,
+): boolean {
+  return program.blocks[at.blockIndex]?.weeks[at.weekIndex]?.isDeload === true
 }
 
 const PREVIEW_IDS = { next: () => 'preview' }
@@ -211,12 +227,16 @@ function emptyWorkout(title: string, deps: StartWorkoutDeps): WorkoutLog {
  * load, which is the strength range and is nowhere near a set of twenty.
  * Turning an estimate into a load for an arbitrary range needs the RPE
  * chart, which is exactly what went with RTS.
+ *
+ * **A deload week takes a quarter off whatever this finds** (`deloadLoad`),
+ * the seeded first load included, rounded down to the rounding increment.
  */
 async function workingLoads(
   day: ProgramDay,
   library: readonly Exercise[],
   request: StartWorkoutRequest,
   deps: StartWorkoutDeps,
+  deload: boolean,
 ): Promise<{
   readonly working: Readonly<Partial<Record<ExerciseId, number>>>
   readonly history: Readonly<Partial<Record<ExerciseId, LastTime>>>
@@ -227,6 +247,9 @@ async function workingLoads(
       .filter((slot) => slot.role === 'strength')
       .flatMap((slot) => resolveExercise(slot, library) ?? []),
   )
+
+  const lighten = (load: number): number =>
+    deload ? deloadLoad(load, request.roundingIncrement) : load
 
   const entries = await Promise.all(
     ids.map(async (id): Promise<readonly [ExerciseId, number, LastTime | undefined][]> => {
@@ -254,10 +277,10 @@ async function workingLoads(
       })
       if (plan === undefined) {
         const seeded = strengthIds.has(id) ? seededLoad(id, request) : undefined
-        return seeded === undefined ? [] : [[id, seeded, undefined]]
+        return seeded === undefined ? [] : [[id, lighten(seeded), undefined]]
       }
       if (plan.load === undefined) return []
-      return [[id, plan.load, plan.lastTime]]
+      return [[id, lighten(plan.load), plan.lastTime]]
     }),
   )
 
@@ -309,6 +332,7 @@ function buildFromDay(
   library: readonly Exercise[],
   deps: StartWorkoutDeps,
   history: Readonly<Partial<Record<ExerciseId, LastTime>>> = {},
+  deload = false,
 ): WorkoutLog {
   const now = deps.clock.now()
 
@@ -329,13 +353,16 @@ function buildFromDay(
      * **One rep target for every set, aimed past last time**: one more
      * than the weakest set managed, at the same load, capped at the top
      * of the range — and back to the bottom once the load has gone up.
-     * See `plannedRepsFor`.
+     * See `plannedRepsFor`. A deload matches last time instead
+     * (`deloadRepsFor`): its cuts are the sets and the bar.
      */
     const lastTime = history[exerciseId]
     const sets: LoggedSet[] = resolved.map((set) => {
       const reps =
         !set.isWarmup && set.reps.kind === 'range'
-          ? plannedRepsFor(lastTime?.last, set.reps, lastTime?.bumped ?? false)
+          ? deload
+            ? deloadRepsFor(lastTime?.last, set.reps)
+            : plannedRepsFor(lastTime?.last, set.reps, lastTime?.bumped ?? false)
           : plannedReps(set.reps)
       return {
         prescription: set.prescription,
@@ -376,6 +403,7 @@ function buildFromDay(
     status: 'in-progress',
     title: day.label,
     entries,
+    ...(deload ? { deload: true as const } : {}),
     ...(request.athlete.bodyweight !== undefined ? { bodyweight: request.athlete.bodyweight } : {}),
     // Frozen here rather than read back off the program, so a tally the
     // lifter is measuring against cannot move under them mid-session.
@@ -461,7 +489,13 @@ export function planFromHistory(args: {
   readonly history: readonly WorkoutLog[]
   readonly resets?: LoadResets
 }): { readonly load: number | undefined; readonly lastTime: LastTime | undefined } | undefined {
-  const { exercise, variant, history } = args
+  const { exercise, variant } = args
+  /*
+   * **A deload is never last time.** Its bar is a quarter light on
+   * purpose, and progressing from it would carry the cut into the working
+   * weeks after. See `deloadLoad`.
+   */
+  const history = args.history.filter((log) => log.deload !== true)
   const id = exercise.id
   /*
    * **Last time is a time it was done.** An abandoned session keeps

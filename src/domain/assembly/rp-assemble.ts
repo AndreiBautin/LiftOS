@@ -708,8 +708,8 @@ function buildStrengthSlots(
   if (exercise === undefined) return { slots: [], spent: emptyVolumeMap() }
 
   /*
-   * A deload is the same movement for fewer sets — . The
-   * range does not move: dropping to a lighter range would change what
+   * A deload is the same movement for fewer sets, a quarter lighter —
+   * the bar is cut at Start (`deloadLoad`). The range does not move: dropping to a lighter range would change what
    * the week means, where dropping a set just does less of it.
    */
   const count = isDeload ? DELOAD_SETS : STRAIGHT_SETS
@@ -727,7 +727,7 @@ function buildStrengthSlots(
     sets,
     restSeconds: exercise.defaultRestSeconds ?? 180,
     notes: isDeload
-      ? `Deload — same weight, ${String(count)} sets, stop early.`
+      ? `Deload — a quarter off the bar, ${String(count)} sets.`
       : `${String(count)} sets of ${String(STRENGTH_RANGE.low)}–${String(STRENGTH_RANGE.high)}. Hit the top of the range on every set and add weight next time.`,
   }
 
@@ -1680,7 +1680,7 @@ function routineSlots(
       sets,
       restSeconds: exercise.defaultRestSeconds ?? 120,
       notes: isDeload
-        ? `Deload — same weight, ${String(count)} sets, stop early.`
+        ? `Deload — a quarter off the bar, ${String(count)} sets.`
         : `${String(count)} sets of ${String(range.low)}–${String(range.high)}. Hit the top of the range on every set and add weight next time.`,
     })
     spent = addInto(spent, slotVolume(exercise, sets))
