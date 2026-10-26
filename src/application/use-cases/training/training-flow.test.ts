@@ -974,3 +974,59 @@ describe('a deload week', () => {
     expect(planned).toBe(Math.floor(((estimate ?? 0) * 0.85 * 0.75) / 5) * 5)
   })
 })
+
+describe('the swing EMOM', () => {
+  const swingOf = (entries: readonly LogEntry[]) =>
+    entries.findIndex((entry) => entry.exerciseId === asExerciseId('kb-swing'))
+
+  const deloadProgram = (): typeof program => ({
+    ...program,
+    blocks: program.blocks.map((block) => ({
+      ...block,
+      weeks: block.weeks.map((week) => ({ ...week, isDeload: true })),
+    })),
+  })
+
+  /*
+   * Through the real repositories: the week's EMOM is written into the
+   * session, logged once, and the next week's session climbs a rep from
+   * it — or, on a deload, is cut from it.
+   */
+  it('opens at 60 × 10 × 10, climbs a rep a week, and deloads from what was done', async () => {
+    const deps = beginProgram()
+    const request = { athlete, program, roundingIncrement: 5 }
+
+    const first = await startWorkout(request, deps)
+    if (first.kind !== 'started') throw new Error('expected a started workout')
+    const index = swingOf(first.workout.entries)
+    const set = first.workout.entries[index]?.sets[0]
+    expect(set?.plannedLoad).toBe(60)
+    expect(set?.plannedReps).toBe(10)
+    expect(set?.prescription.reps).toEqual({ kind: 'emom', reps: 10, minutes: 10 })
+
+    await logSet(
+      {
+        workoutId: first.workout.id,
+        entryIndex: index,
+        setIndex: 0,
+        result: { load: 60, reps: 10, outcome: 'completed' },
+      },
+      deps,
+    )
+    await finishWorkout(first.workout.id, deps)
+
+    currentTime = new Date('2026-09-02T09:00:00.000Z')
+    const next = await startWorkout(request, deps)
+    if (next.kind !== 'started') throw new Error('expected a started workout')
+    const nextSet = next.workout.entries[swingOf(next.workout.entries)]?.sets[0]
+    expect(nextSet?.plannedReps).toBe(11)
+    expect(nextSet?.prescription.reps).toEqual({ kind: 'emom', reps: 11, minutes: 10 })
+    await abandonWorkout(next.workout.id, deps)
+
+    const deload = await startWorkout({ ...request, program: deloadProgram() }, deps)
+    if (deload.kind !== 'started') throw new Error('expected a started workout')
+    const deloadSet = deload.workout.entries[swingOf(deload.workout.entries)]?.sets[0]
+    expect(deloadSet?.plannedLoad).toBe(45)
+    expect(deloadSet?.prescription.reps).toEqual({ kind: 'emom', reps: 10, minutes: 7 })
+  })
+})

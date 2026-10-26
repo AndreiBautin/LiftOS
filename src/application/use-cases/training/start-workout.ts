@@ -30,6 +30,7 @@ import { matchesQuery } from '@/domain/exercises/exercise'
 import { applyDraft, type SessionDraft } from '@/domain/programs/session-draft'
 import type { DayMoves } from '@/domain/programs/schedule'
 import { DAY_VERSIONS, sameVersion } from '@/domain/splits/rp-splits'
+import { plannedEmom, type EmomStep } from '@/domain/programs/emom'
 
 /**
  * Turning the next scheduled day into a workout that can be logged.
@@ -130,13 +131,13 @@ export async function startWorkout(
    * the whole catalogue would be fifty queries for a six-exercise day.
    */
   const deload = isDeloadWeek(request.program, scheduled)
-  const { working, history } = await workingLoads(day, library, request, deps, deload)
+  const { working, history, emoms } = await workingLoads(day, library, request, deps, deload)
   const withHistory: StartWorkoutRequest = {
     ...request,
     athlete: { ...request.athlete, working },
   }
 
-  const workout = buildFromDay(day, scheduled, withHistory, library, deps, history, deload)
+  const workout = buildFromDay(day, scheduled, withHistory, library, deps, history, deload, emoms)
   await deps.workouts.save(workout)
 
   return { kind: 'started', workout }
@@ -167,7 +168,7 @@ export async function previewWorkout(
   const library = await deps.exercises.all()
   const day = applyDraft(scheduled.day, request.draft, scheduled.on)
   const deload = isDeloadWeek(request.program, scheduled)
-  const { working, history } = await workingLoads(
+  const { working, history, emoms } = await workingLoads(
     day,
     library,
     request,
@@ -182,6 +183,7 @@ export async function previewWorkout(
     { ...deps, ids: PREVIEW_IDS },
     history,
     deload,
+    emoms,
   )
 }
 
@@ -230,6 +232,10 @@ function emptyWorkout(title: string, deps: StartWorkoutDeps): WorkoutLog {
  *
  * **A deload week takes a quarter off whatever this finds** (`deloadLoad`),
  * the seeded first load included, rounded down to the rounding increment.
+ *
+ * **An EMOM is its own ladder** (`plannedEmom`): the bell, the reps on the
+ * minute and the minutes, climbed once a calendar week from the last one
+ * done and deloaded by its own rule, so it skips the lifting's path.
  */
 async function workingLoads(
   day: ProgramDay,
@@ -240,8 +246,24 @@ async function workingLoads(
 ): Promise<{
   readonly working: Readonly<Partial<Record<ExerciseId, number>>>
   readonly history: Readonly<Partial<Record<ExerciseId, LastTime>>>
+  readonly emoms: Readonly<Partial<Record<ExerciseId, EmomStep>>>
 }> {
-  const ids = [...new Set(day.slots.flatMap((slot) => resolveExercise(slot, library) ?? []))]
+  const emomIds = new Set(
+    day.slots
+      .filter((slot) => slot.sets.some((set) => set.reps.kind === 'emom'))
+      .flatMap((slot) => resolveExercise(slot, library) ?? []),
+  )
+  const today = isoDate(deps.clock.now())
+  const emomSteps = await Promise.all(
+    [...emomIds].map(async (id) => {
+      const history = await deps.workouts.forExercise(id, 10)
+      return [id, plannedEmom(history, id, today, deload)] as const
+    }),
+  )
+
+  const ids = [
+    ...new Set(day.slots.flatMap((slot) => resolveExercise(slot, library) ?? [])),
+  ].filter((id) => !emomIds.has(id))
   const strengthIds = new Set(
     day.slots
       .filter((slot) => slot.role === 'strength')
@@ -286,7 +308,11 @@ async function workingLoads(
 
   const found = entries.flat()
   return {
-    working: Object.fromEntries(found.map(([id, load]) => [id, load])),
+    emoms: Object.fromEntries(emomSteps),
+    working: {
+      ...Object.fromEntries(found.map(([id, load]) => [id, load])),
+      ...Object.fromEntries(emomSteps.map(([id, step]) => [id, step.load])),
+    },
     history: Object.fromEntries(
       found.flatMap(([id, , lastTime]) => (lastTime === undefined ? [] : [[id, lastTime]])),
     ),
@@ -333,6 +359,7 @@ function buildFromDay(
   deps: StartWorkoutDeps,
   history: Readonly<Partial<Record<ExerciseId, LastTime>>> = {},
   deload = false,
+  emoms: Readonly<Partial<Record<ExerciseId, EmomStep>>> = {},
 ): WorkoutLog {
   const now = deps.clock.now()
 
@@ -357,7 +384,21 @@ function buildFromDay(
      * (`deloadRepsFor`): its cuts are the sets and the bar.
      */
     const lastTime = history[exerciseId]
+    const emom = emoms[exerciseId]
     const sets: LoggedSet[] = resolved.map((set) => {
+      /* The week's EMOM, written into the set so the log says what it asked. */
+      if (set.reps.kind === 'emom' && emom !== undefined) {
+        return {
+          prescription: {
+            ...set.prescription,
+            reps: { kind: 'emom', reps: emom.reps, minutes: emom.minutes },
+          },
+          plannedLoad: emom.load,
+          plannedReps: emom.reps,
+          outcome: 'pending' as const,
+          isWarmup: set.isWarmup,
+        }
+      }
       const reps =
         !set.isWarmup && set.reps.kind === 'range'
           ? deload
@@ -432,6 +473,8 @@ function plannedReps(reps: LoggedSet['prescription']['reps']): number | undefine
       return reps.minimum
     case 'range':
       return reps.low
+    case 'emom':
+      return reps.reps
     case 'time':
       return undefined
   }

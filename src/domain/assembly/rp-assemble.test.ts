@@ -1379,9 +1379,11 @@ describe('conditioning', () => {
    * The rule that replaced it is worth a test of its own, because the
    * failure it guards is silent — a plan gaining rows again would show up
    * as a session screen asking somebody to tick fifteen boxes for
-   * something their phone is already counting.
+   * something their phone is already counting. The swings came back as
+   * a tracked EMOM, and that is still one row: the bell, the reps on the
+   * minute and the minutes, logged once.
    */
-  it('prescribes one block of time, never rows to tick', () => {
+  it('prescribes one row, never a row a minute', () => {
     const slots = week.days.flatMap((day) =>
       day.slots.filter((candidate) => candidate.role === 'conditioning'),
     )
@@ -1391,7 +1393,7 @@ describe('conditioning', () => {
     for (const slot of slots) {
       const named = slot.exercise.kind === 'specific' ? slot.exercise.exerciseId : ''
       expect(slot.sets, named).toHaveLength(1)
-      expect(slot.sets[0]?.reps.kind, named).toBe('time')
+      expect(slot.sets[0]?.reps.kind, named).toBe(named === 'kb-swing' ? 'emom' : 'time')
     }
   })
 
@@ -1413,7 +1415,8 @@ describe('conditioning', () => {
           ),
         )
 
-    expect(minutesOf('kb-swing')).toEqual([15])
+    // The EMOM's start; Start climbs it from history.
+    expect(minutesOf('kb-swing')).toEqual([10])
   })
 
   it('counts toward the session budget rather than riding along free', () => {
@@ -1431,17 +1434,31 @@ describe('conditioning', () => {
     const conditioningMinutes = conditioningIn(0).reduce(
       (total, slot) =>
         total +
-        slot.sets.reduce((sum, set) => sum + (set.reps.kind === 'time' ? set.reps.seconds : 0), 0) /
+        slot.sets.reduce(
+          (sum, set) =>
+            sum +
+            (set.reps.kind === 'time'
+              ? set.reps.seconds
+              : set.reps.kind === 'emom'
+                ? set.reps.minutes * 60
+                : 0),
+          0,
+        ) /
           60,
       0,
     )
 
-    expect(conditioningMinutes).toBeGreaterThanOrEqual(15)
+    expect(conditioningMinutes).toBeGreaterThanOrEqual(10)
     expect(withWalk).toBeGreaterThan(conditioningMinutes)
   })
 
-  it('is cut on the deload like everything else', () => {
-    /* On the swings, which are the conditioning that is left. */
+  /*
+   * **The swings' deload is Start's, not the template's.** The EMOM is cut
+   * from what was last done (`deloadEmom`), which the template cannot see,
+   * so both weeks plan the same start and Start applies the cut —
+   * `emom.test.ts` and `training-flow.test.ts` hold the deload itself.
+   */
+  it('leaves the EMOM deload to Start', () => {
     const deloadRun = weekAt(program, 6)
       .days.flatMap((day) => day.slots)
       .find((slot) => slot.exercise.kind === 'specific' && slot.exercise.exerciseId === 'kb-swing')
@@ -1449,12 +1466,8 @@ describe('conditioning', () => {
       .flatMap((day) => day.slots)
       .find((slot) => slot.exercise.kind === 'specific' && slot.exercise.exerciseId === 'kb-swing')
 
-    const seconds = (slot: typeof deloadRun): number => {
-      const set = slot?.sets[0]
-      return set?.reps.kind === 'time' ? set.reps.seconds : 0
-    }
-
-    expect(seconds(deloadRun)).toBeLessThan(seconds(workingRun))
+    expect(deloadRun?.sets).toEqual(workingRun?.sets)
+    expect(deloadRun?.sets[0]?.reps.kind).toBe('emom')
   })
 })
 

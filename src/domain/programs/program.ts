@@ -433,7 +433,9 @@ export function setSeconds(set: SetPrescription, restSeconds: number): number {
   const work =
     set.reps.kind === 'time'
       ? set.reps.seconds
-      : Math.max(MINIMUM_SET_SECONDS, nominalReps(set.reps) * SECONDS_PER_REP)
+      : set.reps.kind === 'emom'
+        ? set.reps.minutes * 60
+        : Math.max(MINIMUM_SET_SECONDS, nominalReps(set.reps) * SECONDS_PER_REP)
 
   // Warm-ups are quick and rested through, so they cost the work but not
   // the full interval.

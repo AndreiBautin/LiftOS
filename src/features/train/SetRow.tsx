@@ -9,7 +9,7 @@ import type { ExerciseId, WorkoutId } from '@/domain/ids/ids'
 import { recordFor } from '@/domain/logging/records'
 import { versusLast, type Performance } from '@/domain/logging/versus-last'
 import type { LoggedSet } from '@/domain/logging/workout-log'
-import { describePrescription } from '@/domain/programs/prescription'
+import { describePrescription, describeReps } from '@/domain/programs/prescription'
 import { formatLoad } from '@/domain/units/weight'
 import type { WeightUnit } from '@/domain/units/weight'
 import { Badge, Button } from '@/components/shared/primitives'
@@ -111,16 +111,23 @@ export function SetRow(props: Props) {
       ? set.plannedReps
       : undefined
 
-  const summary = done
-    ? `${loadText(set.actualLoad)} × ${String(set.actualReps ?? '—')}${
-        set.actualRpe === undefined ? '' : ` @ ${String(set.actualRpe)}`
-      }`
-    : describePrescription(set.prescription, repsOverride)
+  // An EMOM reads as the bell, then the reps on the minute and its minutes.
+  const emom = set.prescription.reps.kind === 'emom' ? set.prescription.reps : undefined
+  const summary =
+    done && emom !== undefined
+      ? `${loadText(set.actualLoad)} · ${describeReps({ ...emom, reps: set.actualReps ?? emom.reps })}`
+      : done
+        ? `${loadText(set.actualLoad)} × ${String(set.actualReps ?? '—')}${
+            set.actualRpe === undefined ? '' : ` @ ${String(set.actualRpe)}`
+          }`
+        : describePrescription(set.prescription, repsOverride)
 
   const plannedSummary =
     set.plannedLoad === undefined
       ? describePrescription(set.prescription)
-      : `${loadText(set.plannedLoad)} × ${set.prescription.reps.kind === 'amrap' ? `${String(set.prescription.reps.minimum)}+` : String(set.plannedReps ?? '')}`
+      : emom !== undefined
+        ? `${loadText(set.plannedLoad)} · ${describeReps({ ...emom, reps: set.plannedReps ?? emom.reps })}`
+        : `${loadText(set.plannedLoad)} × ${set.prescription.reps.kind === 'amrap' ? `${String(set.prescription.reps.minimum)}+` : String(set.plannedReps ?? '')}`
 
   /*
    * **One tap logs the set as planned.** The row's own press opens the

@@ -1,6 +1,12 @@
 /** Release notes, newest first; `WhatsNew` shows the first once. */
 export const RELEASES: readonly { readonly id: string; readonly items: readonly string[] }[] = [
   {
+    id: '2026-10-26',
+    items: [
+      'Kettlebell swing EMOMs close every session and progress on their own: a rep a week to thirty, then a minute more, then ten pounds on the bell. Deload weeks lighten them too.',
+    ],
+  },
+  {
     id: '2026-10-22',
     items: ['Every exercise now runs three sets, and two on a deload week.'],
   },

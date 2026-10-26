@@ -49,6 +49,7 @@ import {
 } from '@/domain/volume/levels'
 
 import { DEFAULT_WEEKS_BEFORE_DELOAD } from '@/domain/autoregulation/schedule'
+import { EMOM_START } from '@/domain/programs/emom'
 
 /**
  * Assembling an RP block with RTS strength work.
@@ -1718,9 +1719,20 @@ function conditioningSlots(
      * carry a duration *and* an interval that the set count was derived
      * from, and `estimateDayMinutes` had to agree with both.
      */
-    const sets: readonly SetPrescription[] = [
-      { load: { kind: 'open' }, reps: { kind: 'time', seconds: minutes * 60 } },
-    ]
+    /*
+     * An EMOM is planned at its start here and climbed at Start, which
+     * reads history (`plannedEmom`) — the template never carries a number
+     * from the log. Its deload is applied there too, from what was done.
+     */
+    const sets: readonly SetPrescription[] =
+      plan.emom === true
+        ? [
+            {
+              load: { kind: 'working' },
+              reps: { kind: 'emom', reps: EMOM_START.reps, minutes: EMOM_START.minutes },
+            },
+          ]
+        : [{ load: { kind: 'open' }, reps: { kind: 'time', seconds: minutes * 60 } }]
 
     const restSeconds = 0
 
@@ -1779,6 +1791,15 @@ interface ConditioningPlan {
   readonly minutes: number
   readonly note: string
   readonly style: string
+  /**
+   * Run as a tracked EMOM rather than a block of time: one set whose bell,
+   * reps on the minute and minutes Start reads off history and climbs by
+   * `plannedEmom`. Asked for once the swings came back — _"I'd like to also
+   * track my post workout cardio"_ — which reverses the checkbox above for
+   * this one modality: the EMOM app still runs the clock, this keeps the
+   * progression.
+   */
+  readonly emom?: true
 }
 
 const CONDITIONING_PLANS: Readonly<Record<string, ConditioningPlan>> = {
@@ -1788,9 +1809,10 @@ const CONDITIONING_PLANS: Readonly<Record<string, ConditioningPlan>> = {
     note: 'Steep incline, easy pace. You should be able to hold a conversation.',
   },
   'kb-swing': {
-    minutes: 15,
+    minutes: EMOM_START.minutes,
     style: 'HIIT',
-    note: 'Ten swings on the minute with the 60 lb bell, for fifteen minutes. Hips, not arms.',
+    emom: true,
+    note: 'On the minute, every minute. A rep a week to thirty, then a minute more from ten; at 30 × 30, ten pounds on the bell. Hips, not arms.',
   },
 }
 

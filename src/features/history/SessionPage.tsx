@@ -16,7 +16,7 @@ import { asWorkoutId, type WorkoutId } from '@/domain/ids/ids'
 import { sessionCrest } from '@/domain/logging/crest'
 import type { SessionRecord } from '@/domain/logging/records'
 import type { LoggedSet } from '@/domain/logging/workout-log'
-import { describePrescription } from '@/domain/programs/prescription'
+import { describePrescription, describeReps } from '@/domain/programs/prescription'
 import { formatLoad, type WeightUnit } from '@/domain/units/weight'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { PageSkeleton } from '@/components/shared/PageSkeleton'
@@ -328,6 +328,10 @@ function describeSet(set: LoggedSet, units: WeightUnit, bodyweight: boolean): st
   if (set.outcome === 'skipped') return 'Skipped'
   if (set.outcome !== 'completed') return 'Not done'
   if (set.prescription.reps.kind === 'time') return describePrescription(set.prescription)
+  if (set.prescription.reps.kind === 'emom') {
+    const reps = { ...set.prescription.reps, reps: set.actualReps ?? set.prescription.reps.reps }
+    return `${describeLoad(set.actualLoad, units, bodyweight)} · ${describeReps(reps)}`
+  }
   return `${describeLoad(set.actualLoad, units, bodyweight)} × ${String(set.actualReps ?? '—')}`
 }
 

@@ -131,6 +131,12 @@ export type RepTarget =
   | { readonly kind: 'amrap'; readonly minimum: number }
   /** Timed rather than counted — planks, carries. */
   | { readonly kind: 'time'; readonly seconds: number }
+  /**
+   * Reps on the minute, every minute, for so many minutes — the swings.
+   * One set, logged once: its load is the bell and its reps the count on
+   * each minute. See `domain/programs/emom.ts`.
+   */
+  | { readonly kind: 'emom'; readonly reps: number; readonly minutes: number }
 
 /** One prescribed set. */
 export interface SetPrescription {
@@ -248,6 +254,8 @@ export function describeReps(reps: RepTarget): string {
       return `${String(reps.minimum)}+`
     case 'time':
       return describeSeconds(reps.seconds)
+    case 'emom':
+      return `${String(reps.reps)} a minute × ${String(reps.minutes)} min`
   }
 }
 
@@ -283,5 +291,7 @@ export function nominalReps(reps: RepTarget): number {
       return reps.minimum
     case 'time':
       return 0
+    case 'emom':
+      return reps.reps * reps.minutes
   }
 }

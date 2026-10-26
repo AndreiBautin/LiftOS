@@ -468,7 +468,7 @@ function SlotRow({
         ].join('  ·  ')
       : grouped
           .map((row) =>
-            row.count === 1 && shown[0]?.reps.kind === 'time'
+            row.count === 1 && (shown[0]?.reps.kind === 'time' || shown[0]?.reps.kind === 'emom')
               ? row.label
               : `${String(row.count)} × ${row.label}`,
           )

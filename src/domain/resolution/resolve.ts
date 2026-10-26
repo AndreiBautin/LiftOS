@@ -237,6 +237,7 @@ function repsForRpeLookup(reps: RepTarget): number | undefined {
     case 'amrap':
       return reps.minimum
     case 'time':
+    case 'emom':
       return undefined
   }
 }

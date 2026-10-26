@@ -44,7 +44,7 @@ function describeSlot(sets: readonly SetPrescription[]): string {
   if (first === undefined) return '—'
 
   const label = describeReps(first.reps)
-  if (sets.length === 1 && first.reps.kind === 'time') return label
+  if (sets.length === 1 && (first.reps.kind === 'time' || first.reps.kind === 'emom')) return label
 
   const count = countedSets(sets)
 
@@ -246,7 +246,9 @@ function PlannedFigure({
     <span className="numeric flex shrink-0 items-baseline gap-1.5 text-xs">
       <span className="text-ink-50 text-sm font-semibold">{bar}</span>
       <span className="text-ink-500">
-        {String(working.length)} × {String(reps)}
+        {first.prescription.reps.kind === 'emom'
+          ? describeReps(first.prescription.reps)
+          : `${String(working.length)} × ${String(reps)}`}
       </span>
     </span>
   )

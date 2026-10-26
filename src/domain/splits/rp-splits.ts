@@ -281,14 +281,18 @@ const exercise = (slug: string): RoutineEntry => ({ kind: 'exercise', slug })
  * both curls on Pull — which is the price of fitting the shrug onto a
  * four-exercise Upper day. Monday's bench and row still work them.
  *
- * The swings and the treadmill walk are gone: neither leg day lists them.
- * They stay in the catalogue, unscheduled, the way `incline-walk` was.
+ * **The swings close every session**, as an EMOM that progresses by week
+ * (`domain/programs/emom.ts`) — _"I'd like to also track my post workout
+ * cardio"_. The treadmill walk stays in the catalogue, unscheduled.
  */
+const SWINGS: RoutineEntry = { kind: 'conditioning', slug: 'kb-swing' }
+
 const UPPER: readonly RoutineEntry[] = [
   lift('bench'),
   exercise('pendlay-row'),
   exercise('db-lateral-raise'),
   exercise('barbell-shrug'),
+  SWINGS,
 ]
 
 /**
@@ -315,6 +319,7 @@ const LEGS_A: readonly RoutineEntry[] = [
   exercise('romanian-deadlift'),
   { kind: 'exercise', slug: 'barbell-calf-raise', reps: { low: 10, high: 20 }, variant: 'Heavy' },
   exercise('ab-wheel'),
+  SWINGS,
 ]
 
 const PUSH: readonly RoutineEntry[] = [
@@ -322,6 +327,7 @@ const PUSH: readonly RoutineEntry[] = [
   exercise('dips'),
   exercise('skullcrusher'),
   exercise('french-press'),
+  SWINGS,
 ]
 
 const PULL: readonly RoutineEntry[] = [
@@ -329,6 +335,7 @@ const PULL: readonly RoutineEntry[] = [
   exercise('rear-delt-raise'),
   exercise('ez-bar-curl'),
   exercise('db-curl'),
+  SWINGS,
 ]
 
 const LEGS_B: readonly RoutineEntry[] = [
@@ -336,6 +343,7 @@ const LEGS_B: readonly RoutineEntry[] = [
   exercise('front-squat'),
   { kind: 'exercise', slug: 'barbell-calf-raise', reps: { low: 20, high: 30 }, variant: 'Light' },
   exercise('hanging-leg-raise'),
+  SWINGS,
 ]
 
 /**

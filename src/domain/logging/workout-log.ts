@@ -188,7 +188,10 @@ export function totalTonnage(log: WorkoutLog): number {
   for (const entry of log.entries) {
     for (const set of workingSets(entry)) {
       if (set.actualLoad !== undefined && set.actualReps !== undefined) {
-        total += set.actualLoad * set.actualReps
+        // An EMOM's reps are per minute; the set is every minute of them.
+        const { reps } = set.prescription
+        const minutes = reps.kind === 'emom' ? reps.minutes : 1
+        total += set.actualLoad * set.actualReps * minutes
       }
     }
   }

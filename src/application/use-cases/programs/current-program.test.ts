@@ -122,33 +122,48 @@ describe('the shipped week', () => {
   })
 
   it('holds each routine exactly, in its written order', () => {
-    expect(worked(0)).toEqual(['bench-press', 'pendlay-row', 'db-lateral-raise', 'barbell-shrug'])
+    expect(worked(0)).toEqual([
+      'bench-press',
+      'pendlay-row',
+      'db-lateral-raise',
+      'barbell-shrug',
+      'kb-swing',
+    ])
     expect(worked(1)).toEqual([
       'low-bar-squat',
       'romanian-deadlift',
       'barbell-calf-raise',
       'ab-wheel',
+      'kb-swing',
     ])
-    expect(worked(2)).toEqual(['overhead-press', 'dips', 'skullcrusher', 'french-press'])
-    expect(worked(3)).toEqual(['pull-up', 'rear-delt-raise', 'ez-bar-curl', 'db-curl'])
+    expect(worked(2)).toEqual([
+      'overhead-press',
+      'dips',
+      'skullcrusher',
+      'french-press',
+      'kb-swing',
+    ])
+    expect(worked(3)).toEqual(['pull-up', 'rear-delt-raise', 'ez-bar-curl', 'db-curl', 'kb-swing'])
     expect(worked(4)).toEqual([
       'sumo-deadlift',
       'front-squat',
       'barbell-calf-raise',
       'hanging-leg-raise',
+      'kb-swing',
     ])
   })
 
   /*
    * Every movement once a week except the calf raise, which runs on both
-   * leg days in two ranges. A movement landing twice, or going missing,
+   * leg days in two ranges, and the swings, which close every session. A movement landing twice, or going missing,
    * would still build a valid week — this is what notices.
    */
-  it('trains every movement once a week, the calf raise twice', () => {
+  it('trains every movement once a week, the calf raise twice and the swings daily', () => {
     const all = [0, 1, 2, 3, 4].flatMap(worked)
-    expect(all).toHaveLength(20)
+    expect(all).toHaveLength(25)
     expect(all.filter((slug) => slug === 'barbell-calf-raise')).toHaveLength(2)
-    expect(new Set(all).size).toBe(19)
+    expect(all.filter((slug) => slug === 'kb-swing')).toHaveLength(5)
+    expect(new Set(all).size).toBe(20)
   })
 
   /*

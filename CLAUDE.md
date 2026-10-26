@@ -34,6 +34,23 @@ anything it names** — the reasoning for why each went is there.
 A few mentions of those features remain below where a current rule's
 reason is tied to them; read those as history too.
 
+- **The swings close every session as a tracked EMOM** (`plannedEmom`,
+  `nextEmom`, `deloadEmom` in `domain/programs/emom.ts`, tested; the
+  `emom` rep target; `SWINGS` on every routine). Asked for as _"progress
+  by one rep each week, then reset at 10 with one more minute added,
+  until we hit 30x30, at which point up the kb by 10 lbs"_, from 60 lb
+  for 10 × 10, and _"deloads should also apply to this"_. **One row, logged
+  once** — the bell as the load, the reps on the minute as the reps, the
+  minutes on the prescription — so the checkbox rule ("I have a separate
+  EMOM app") still holds for the clock. **It moves once a calendar week,
+  not once a session**: every session in a week runs the week's EMOM, the
+  first of the next week takes a rung past what was done. A deload is a
+  quarter off the bell (down to 5 lb) and two thirds of the minutes, reps
+  held, and is read past like the lifting's. The template plans the start
+  and Start climbs it from history (`workingLoads`), so the assembler's
+  deload no longer halves the swings. Tonnage counts every minute.
+  **Records and the bests wall read it as a 60 × 10 set** — a heavier bell
+  is a real record, the estimated max beside it means nothing.
 - **The Strength card and the hero's total read what the sessions
   measure** (`measuredMaxes` in `domain/strength/trend.ts`, tested;
   `isDeloadSession` in `features/train/hooks.ts`). Asked for as _"why
