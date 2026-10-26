@@ -44,9 +44,7 @@ reason is tied to them; read those as history too.
   minutes on the prescription — so the checkbox rule ("I have a separate
   EMOM app") still holds for the clock. **It moves once a calendar week,
   not once a session**: every session in a week runs the week's EMOM, the
-  first of the next week takes a rung past what was done. A deload is a
-  quarter off the bell (down to 5 lb) and two thirds of the minutes, reps
-  held, and is read past like the lifting's. The template plans the start
+  first of the next week takes a rung past what was done. **A deload keeps the bell** and takes a quarter off the reps and a third off the minutes (floor five of each), and is read past like the lifting's — it took a quarter off the bell for one release, reversed as _"i dont have a 45lb kb"_: a kettlebell is the bells on the floor, not any load the plates make. The template plans the start
   and Start climbs it from history (`workingLoads`), so the assembler's
   deload no longer halves the swings. Tonnage counts every minute.
   **Records and the bests wall read it as a 60 × 10 set** — a heavier bell

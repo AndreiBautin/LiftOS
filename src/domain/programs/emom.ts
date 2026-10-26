@@ -1,5 +1,4 @@
 import { mondayOf } from '@/domain/time/day'
-import { roundLoad } from '@/domain/units/weight'
 
 import type { WorkoutLog } from '@/domain/logging/workout-log'
 import type { ExerciseId } from '@/domain/ids/ids'
@@ -47,28 +46,31 @@ export function nextEmom(step: EmomStep): EmomStep {
 }
 
 /**
- * A deload's EMOM, cut the way the lifting is: a quarter off the bell and
- * a third off the volume — two thirds of the minutes, as two sets are two
- * thirds of three — with the reps on the minute held. Rounded down to a
- * five-pound bell, and never under five minutes.
+ * A deload's EMOM: **the same bell**, a quarter off the reps on the minute
+ * and a third off the minutes — about half the work, as the lifting's
+ * deload is. Rounded down, never under five of either.
+ *
+ * It took a quarter off the bell, the lifting's rule, for one release:
+ * _"could we drop reps and keep load the same instead? i dont have a 45lb
+ * kb"_. A bar takes any load the plates make; a kettlebell is the bells
+ * on the floor, so the cut that a lifter can actually run is the reps.
  */
-const DELOAD_BELL_SHARE = 0.75
+const DELOAD_REPS_SHARE = 0.75
 const DELOAD_MINUTES_SHARE = 2 / 3
-const DELOAD_BELL_INCREMENT = 5
-const DELOAD_MIN_MINUTES = 5
+const DELOAD_MIN = 5
 
 export function deloadEmom(step: EmomStep): EmomStep {
   return {
-    load: roundLoad(step.load * DELOAD_BELL_SHARE, DELOAD_BELL_INCREMENT, 'down'),
-    reps: step.reps,
-    minutes: Math.max(DELOAD_MIN_MINUTES, Math.round(step.minutes * DELOAD_MINUTES_SHARE)),
+    load: step.load,
+    reps: Math.max(DELOAD_MIN, Math.floor(step.reps * DELOAD_REPS_SHARE)),
+    minutes: Math.max(DELOAD_MIN, Math.round(step.minutes * DELOAD_MINUTES_SHARE)),
   }
 }
 
 /**
  * The last EMOM of an exercise that was done, and the day it was done.
  *
- * **A deload is never last time**, as for the lifting: its bell is light on
+ * **A deload is never last time**, as for the lifting: it is light on
  * purpose. The load and reps are what was logged, falling back to the plan;
  * the minutes are the prescription's, since a log describes itself. An
  * entry logged before swings were an EMOM (a timed block) is not one.

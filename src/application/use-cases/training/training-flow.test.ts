@@ -1026,7 +1026,7 @@ describe('the swing EMOM', () => {
     const deload = await startWorkout({ ...request, program: deloadProgram() }, deps)
     if (deload.kind !== 'started') throw new Error('expected a started workout')
     const deloadSet = deload.workout.entries[swingOf(deload.workout.entries)]?.sets[0]
-    expect(deloadSet?.plannedLoad).toBe(45)
-    expect(deloadSet?.prescription.reps).toEqual({ kind: 'emom', reps: 10, minutes: 7 })
+    expect(deloadSet?.plannedLoad).toBe(60)
+    expect(deloadSet?.prescription.reps).toEqual({ kind: 'emom', reps: 7, minutes: 7 })
   })
 })

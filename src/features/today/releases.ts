@@ -3,7 +3,7 @@ export const RELEASES: readonly { readonly id: string; readonly items: readonly 
   {
     id: '2026-10-26',
     items: [
-      'Kettlebell swing EMOMs close every session and progress on their own: a rep a week to thirty, then a minute more, then ten pounds on the bell. Deload weeks lighten them too.',
+      'Kettlebell swing EMOMs close every session and progress on their own: a rep a week to thirty, then a minute more, then ten pounds on the bell. Deload weeks keep the bell and cut the reps and minutes.',
     ],
   },
   {
