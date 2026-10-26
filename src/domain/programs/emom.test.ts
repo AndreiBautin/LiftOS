@@ -3,7 +3,16 @@ import { describe, expect, it } from 'vitest'
 import { asExerciseId, asWorkoutId } from '@/domain/ids/ids'
 import type { WorkoutLog } from '@/domain/logging/workout-log'
 
-import { deloadEmom, EMOM_START, lastEmom, nextEmom, plannedEmom, type EmomStep } from './emom'
+import {
+  deloadEmom,
+  emomAt,
+  emomCuesBetween,
+  EMOM_START,
+  lastEmom,
+  nextEmom,
+  plannedEmom,
+  type EmomStep,
+} from './emom'
 
 const swing = asExerciseId('kb-swing')
 
@@ -43,7 +52,7 @@ function session(
 }
 
 describe('nextEmom', () => {
-  it('adds a rep on the minute until thirty', () => {
+  it('adds a rep on the minute until thirty, at ten minutes always', () => {
     expect(nextEmom({ load: 60, reps: 10, minutes: 10 })).toEqual({
       load: 60,
       reps: 11,
@@ -56,45 +65,40 @@ describe('nextEmom', () => {
     })
   })
 
-  it('then a minute, with the reps back at ten', () => {
+  /* "the only thing we progress is reps up to 30, then up the weight and reprogress" */
+  it('then ten pounds on the bell and back to ten', () => {
     expect(nextEmom({ load: 60, reps: 30, minutes: 10 })).toEqual({
-      load: 60,
+      load: 70,
       reps: 10,
-      minutes: 11,
-    })
-    expect(nextEmom({ load: 60, reps: 30, minutes: 29 })).toEqual({
-      load: 60,
-      reps: 10,
-      minutes: 30,
+      minutes: 10,
     })
   })
 
-  it('and at 30 × 30, ten pounds on the bell and 10 × 10 again', () => {
-    expect(nextEmom({ load: 60, reps: 30, minutes: 30 })).toEqual({
-      load: 70,
-      reps: 10,
+  it('pulls an old longer EMOM back to ten minutes', () => {
+    expect(nextEmom({ load: 60, reps: 12, minutes: 11 })).toEqual({
+      load: 60,
+      reps: 13,
       minutes: 10,
     })
   })
 })
 
 describe('deloadEmom', () => {
-  /* "i dont have a 45lb kb" — the bell is the one thing a deload keeps. */
-  it('keeps the bell and takes a quarter off the reps and a third off the minutes', () => {
-    expect(deloadEmom({ load: 60, reps: 14, minutes: 12 })).toEqual({
-      load: 60,
-      reps: 10,
-      minutes: 8,
+  /* "i have a 30lb one, for deload lets just do that and keep the same reps" */
+  it('runs the 30 lb bell at the same reps for the same ten minutes', () => {
+    expect(deloadEmom({ load: 60, reps: 14, minutes: 10 })).toEqual({
+      load: 30,
+      reps: 14,
+      minutes: 10,
     })
   })
 
-  it('rounds down and keeps at least five of each', () => {
-    expect(deloadEmom({ load: 70, reps: 10, minutes: 6 })).toEqual({
-      load: 70,
-      reps: 7,
-      minutes: 5,
+  it('never goes heavier than the working bell', () => {
+    expect(deloadEmom({ load: 25, reps: 14, minutes: 10 })).toEqual({
+      load: 25,
+      reps: 14,
+      minutes: 10,
     })
-    expect(deloadEmom({ load: 70, reps: 6, minutes: 6 })).toEqual({ load: 70, reps: 5, minutes: 5 })
   })
 })
 
@@ -134,18 +138,18 @@ describe('plannedEmom', () => {
    * picks up one rung past the working week before it.
    */
   it('deloads from the last working week and is read past by the week after', () => {
-    const working = session('2026-10-26', { load: 60, reps: 14, minutes: 12 })
+    const working = session('2026-10-26', { load: 60, reps: 14, minutes: 10 })
     expect(plannedEmom([working], swing, '2026-11-02', true)).toEqual({
-      load: 60,
-      reps: 10,
-      minutes: 8,
+      load: 30,
+      reps: 14,
+      minutes: 10,
     })
 
-    const deloaded = session('2026-11-02', { load: 60, reps: 10, minutes: 8 }, { deload: true })
+    const deloaded = session('2026-11-02', { load: 30, reps: 14, minutes: 10 }, { deload: true })
     expect(plannedEmom([deloaded, working], swing, '2026-11-09', false)).toEqual({
       load: 60,
       reps: 15,
-      minutes: 12,
+      minutes: 10,
     })
   })
 
@@ -153,5 +157,42 @@ describe('plannedEmom', () => {
     const done = session('2026-10-19', EMOM_START)
     const pending = session('2026-10-26', { ...EMOM_START, reps: 11 }, { done: false })
     expect(lastEmom([pending, done], swing)?.date).toBe('2026-10-19')
+  })
+})
+
+describe('emomAt', () => {
+  it('reads the minute and the seconds left in it', () => {
+    expect(emomAt(0, 10)).toEqual({ round: 1, secondsLeft: 60, done: false })
+    expect(emomAt(59_001, 10)).toEqual({ round: 1, secondsLeft: 1, done: false })
+    expect(emomAt(60_000, 10)).toEqual({ round: 2, secondsLeft: 60, done: false })
+    expect(emomAt(599_500, 10)).toEqual({ round: 10, secondsLeft: 1, done: false })
+  })
+
+  it('is done at the end of the last minute', () => {
+    expect(emomAt(600_000, 10)).toEqual({ round: 10, secondsLeft: 0, done: true })
+  })
+})
+
+describe('emomCuesBetween', () => {
+  it('ticks in the last three seconds of a minute and says go at the next', () => {
+    expect(emomCuesBetween(56_900, 57_100, 10)).toEqual(['tick'])
+    expect(emomCuesBetween(59_900, 60_100, 10)).toEqual(['go'])
+    expect(emomCuesBetween(10_000, 10_250, 10)).toEqual([])
+  })
+
+  it('counts in to the first minute from below zero', () => {
+    expect(emomCuesBetween(-3_500, -2_900, 10)).toEqual(['tick'])
+    expect(emomCuesBetween(-200, 100, 10)).toEqual(['go'])
+  })
+
+  it('chimes at the end, not go', () => {
+    expect(emomCuesBetween(599_900, 600_100, 10)).toEqual(['done'])
+  })
+
+  /* A phone unlocked mid-EMOM jumps several marks: one cue, never a burst. */
+  it('sounds only the latest mark after a jump', () => {
+    expect(emomCuesBetween(30_000, 200_000, 10)).toEqual(['go'])
+    expect(emomCuesBetween(56_000, 59_500, 10)).toEqual([])
+    expect(emomCuesBetween(300_000, 700_000, 10)).toEqual(['done'])
   })
 })

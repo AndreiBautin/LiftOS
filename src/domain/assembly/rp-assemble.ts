@@ -1812,7 +1812,7 @@ const CONDITIONING_PLANS: Readonly<Record<string, ConditioningPlan>> = {
     minutes: EMOM_START.minutes,
     style: 'HIIT',
     emom: true,
-    note: 'On the minute, every minute. A rep a week to thirty, then a minute more from ten; at 30 × 30, ten pounds on the bell. Hips, not arms.',
+    note: 'On the minute, every minute, for ten minutes. A rep a week to thirty, then ten pounds on the bell and back to ten. Hips, not arms.',
   },
 }
 

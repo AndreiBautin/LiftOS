@@ -34,21 +34,33 @@ anything it names** — the reasoning for why each went is there.
 A few mentions of those features remain below where a current rule's
 reason is tied to them; read those as history too.
 
-- **The swings close every session as a tracked EMOM** (`plannedEmom`,
-  `nextEmom`, `deloadEmom` in `domain/programs/emom.ts`, tested; the
-  `emom` rep target; `SWINGS` on every routine). Asked for as _"progress
-  by one rep each week, then reset at 10 with one more minute added,
-  until we hit 30x30, at which point up the kb by 10 lbs"_, from 60 lb
-  for 10 × 10, and _"deloads should also apply to this"_. **One row, logged
-  once** — the bell as the load, the reps on the minute as the reps, the
-  minutes on the prescription — so the checkbox rule ("I have a separate
-  EMOM app") still holds for the clock. **It moves once a calendar week,
-  not once a session**: every session in a week runs the week's EMOM, the
-  first of the next week takes a rung past what was done. **A deload keeps the bell** and takes a quarter off the reps and a third off the minutes (floor five of each), and is read past like the lifting's — it took a quarter off the bell for one release, reversed as _"i dont have a 45lb kb"_: a kettlebell is the bells on the floor, not any load the plates make. The template plans the start
-  and Start climbs it from history (`workingLoads`), so the assembler's
-  deload no longer halves the swings. Tonnage counts every minute.
-  **Records and the bests wall read it as a 60 × 10 set** — a heavier bell
-  is a real record, the estimated max beside it means nothing.
+- **The swings close every session as a tracked, timed EMOM**
+  (`plannedEmom`, `nextEmom`, `deloadEmom`, `emomAt` and
+  `emomCuesBetween` in `domain/programs/emom.ts`, tested; the `emom` rep
+  target; `SWINGS` on every routine; `EmomTimer` in place of the set clock).
+  **The rule, as it now stands**: ten minutes always, a rep on the minute a
+  week from 10 to 30, then ten pounds on the bell and back to 10 — _"the
+  only thing we progress is reps up to 30, then up the weight and
+  reprogress"_. It climbed the minutes too for a few hours, and the deload
+  was first a quarter off the bell, then a cut in reps; it is **the 30 lb
+  bell at the same reps** — _"i have a 30lb one"_: a kettlebell is the
+  bells on the floor, not any load the plates make. **It moves once a
+  calendar week, not once a session**; a deload is read past like the
+  lifting's. **One row, logged once** — the bell as the load, the reps on
+  the minute as the reps — and **the timer logs it** when the last minute
+  ends (_"add some sort of emom timer into the app so its not a single
+  checkmark"_): a five-second count-in, each minute counted down, a tick in
+  its last three seconds and a go at the top of the next, read from an
+  absolute start and cued by crossing so a locked phone loses no time and
+  never fires a burst. Its sounds play whatever the rest-sounds setting
+  says, because the timer is started on purpose. **Checked by moving the
+  page's clock**, not by waiting ten minutes: minute 3 read correctly and
+  the end logged the set once; the sounds were not heard (the agent's pane
+  plays none). It resets if the card is paged away from mid-EMOM. The
+  template plans the start and Start climbs it from history
+  (`workingLoads`). Tonnage counts every minute. **Records and the bests
+  wall read it as a 60 × 10 set** — a heavier bell is a real record, the
+  estimated max beside it means nothing.
 - **The Strength card and the hero's total read what the sessions
   measure** (`measuredMaxes` in `domain/strength/trend.ts`, tested;
   `isDeloadSession` in `features/train/hooks.ts`). Asked for as _"why

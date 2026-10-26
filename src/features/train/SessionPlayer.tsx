@@ -66,6 +66,7 @@ import { RestTimer } from './RestTimer'
 import { FocusView } from './FocusView'
 import { ExercisePeek } from './ExercisePeek'
 import { AddExercisePanel } from './AddExercisePanel'
+import { EmomTimer } from './EmomTimer'
 import { SetClock } from './SetClock'
 import { ReorderPanel } from './ReorderPanel'
 import { primeRestSounds } from './rest-sounds'
@@ -715,7 +716,25 @@ export function SessionPlayer({
                 key left the last exercise's bar picture behind on every page
                 turn — React keeps one and orphans the other.
               */}
-              <SetClock key={`clock-${String(index)}`} />
+              {(() => {
+                /* An EMOM gets its own clock, which logs the set as planned at the end. */
+                const emomIndex = entry.sets.findIndex(
+                  (one) => one.prescription.reps.kind === 'emom',
+                )
+                const emom = entry.sets[emomIndex]
+                if (emom === undefined) return <SetClock key={`clock-${String(index)}`} />
+                if (emom.outcome !== 'pending') return null
+                return (
+                  <EmomTimer
+                    key={`emom-${String(index)}`}
+                    set={emom}
+                    units={units}
+                    onFinish={() => {
+                      logAt(emomIndex, plannedResult(emom, bodyweightHere))
+                    }}
+                  />
+                )
+              })()}
 
               <div className="mt-4 space-y-2">
                 {entry.sets.map((set, setIndex) => (

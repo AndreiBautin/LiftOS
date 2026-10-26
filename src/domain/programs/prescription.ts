@@ -255,7 +255,7 @@ export function describeReps(reps: RepTarget): string {
     case 'time':
       return describeSeconds(reps.seconds)
     case 'emom':
-      return `${String(reps.reps)} a minute × ${String(reps.minutes)} min`
+      return `${String(reps.reps)}/min × ${String(reps.minutes)} min`
   }
 }
 

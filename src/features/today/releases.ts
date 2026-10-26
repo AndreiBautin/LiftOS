@@ -1,9 +1,10 @@
 /** Release notes, newest first; `WhatsNew` shows the first once. */
 export const RELEASES: readonly { readonly id: string; readonly items: readonly string[] }[] = [
   {
-    id: '2026-10-26',
+    id: '2026-10-26b',
     items: [
-      'Kettlebell swing EMOMs close every session and progress on their own: a rep a week to thirty, then a minute more, then ten pounds on the bell. Deload weeks keep the bell and cut the reps and minutes.',
+      'Kettlebell swing EMOMs close every session, with a timer that calls each minute and logs the set when the last one ends.',
+      'They progress on their own: a rep a week to thirty, then ten pounds on the bell. Deload weeks run the 30 lb bell at the same reps.',
     ],
   },
   {

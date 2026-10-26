@@ -9,7 +9,7 @@ import type { ExerciseId, WorkoutId } from '@/domain/ids/ids'
 import { recordFor } from '@/domain/logging/records'
 import { versusLast, type Performance } from '@/domain/logging/versus-last'
 import type { LoggedSet } from '@/domain/logging/workout-log'
-import { describePrescription, describeReps } from '@/domain/programs/prescription'
+import { describePrescription } from '@/domain/programs/prescription'
 import { formatLoad } from '@/domain/units/weight'
 import type { WeightUnit } from '@/domain/units/weight'
 import { Badge, Button } from '@/components/shared/primitives'
@@ -111,11 +111,11 @@ export function SetRow(props: Props) {
       ? set.plannedReps
       : undefined
 
-  // An EMOM reads as the bell, then the reps on the minute and its minutes.
+  // An EMOM reads as the bell and the reps on the minute; its minutes are in the header.
   const emom = set.prescription.reps.kind === 'emom' ? set.prescription.reps : undefined
   const summary =
     done && emom !== undefined
-      ? `${loadText(set.actualLoad)} · ${describeReps({ ...emom, reps: set.actualReps ?? emom.reps })}`
+      ? `${loadText(set.actualLoad)} × ${String(set.actualReps ?? emom.reps)}/min`
       : done
         ? `${loadText(set.actualLoad)} × ${String(set.actualReps ?? '—')}${
             set.actualRpe === undefined ? '' : ` @ ${String(set.actualRpe)}`
@@ -126,7 +126,7 @@ export function SetRow(props: Props) {
     set.plannedLoad === undefined
       ? describePrescription(set.prescription)
       : emom !== undefined
-        ? `${loadText(set.plannedLoad)} · ${describeReps({ ...emom, reps: set.plannedReps ?? emom.reps })}`
+        ? `${loadText(set.plannedLoad)} × ${String(set.plannedReps ?? emom.reps)}/min`
         : `${loadText(set.plannedLoad)} × ${set.prescription.reps.kind === 'amrap' ? `${String(set.prescription.reps.minimum)}+` : String(set.plannedReps ?? '')}`
 
   /*

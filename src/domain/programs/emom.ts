@@ -4,22 +4,25 @@ import type { WorkoutLog } from '@/domain/logging/workout-log'
 import type { ExerciseId } from '@/domain/ids/ids'
 
 /**
- * Double progression for an EMOM: reps on the minute, then minutes, then
- * the bell.
+ * Double progression for an EMOM: reps on the minute, then the bell.
  *
- * Asked for as _"progress by one rep each week, then reset at 10 with one
- * more minute added, until we hit 30x30, at which point up the kb by 10
- * lbs"_, starting from 60 lb for ten minutes of ten. The same shape as the
- * lifting's double progression — climb inside a range, then move the next
- * thing — with three rungs instead of two.
+ * Asked for as _"the only thing we progress is reps up to 30, then up the
+ * weight and reprogress"_, at _"always 10 minutes"_, from 60 lb for ten on
+ * the minute. The lifting's double progression with the minute as the set:
+ * climb the reps to the top, then ten pounds on the bell and back to ten.
+ *
+ * It first climbed the minutes too — ten reps again with a minute more at
+ * thirty, the bell only at 30 × 30 — and that went within the day. The
+ * minutes are fixed now, so they are written on the plan and never read
+ * back from a log.
  *
  * **It moves once a calendar week, not once a session.** The swings close
- * every session, so per session it would climb five rungs a week; the rule
+ * every session, so per session it would climb five reps a week; the rule
  * asked for is per week. Every session in a week runs the week's EMOM, and
  * the first one of the next week takes the next rung from what was done.
  *
  * **Nothing is stored**, as for the lifting: the step is read off the last
- * EMOM logged, whose prescription says its minutes (a log describes itself).
+ * EMOM logged.
  */
 export interface EmomStep {
   readonly load: number
@@ -28,52 +31,44 @@ export interface EmomStep {
   readonly minutes: number
 }
 
-/** Where a first EMOM opens: what was being done when this was asked for. */
-export const EMOM_START: EmomStep = { load: 60, reps: 10, minutes: 10 }
+/** Always ten minutes. */
+const EMOM_MINUTES = 10
 
-/** The floor both counts reset to. */
+/** Where a first EMOM opens: what was being done when this was asked for. */
+export const EMOM_START: EmomStep = { load: 60, reps: 10, minutes: EMOM_MINUTES }
+
+/** Where the reps start, and start again on a heavier bell. */
 const EMOM_FLOOR = 10
-/** The cap on both counts. */
+/** Where the reps stop and the bell goes up. */
 const EMOM_CAP = 30
-/** What goes on the bell at 30 × 30. */
+/** What goes on the bell at thirty. */
 const EMOM_BELL_STEP = 10
 
-/** The next rung: a rep, else a minute with the reps back at ten, else the bell. */
+/** The next rung: a rep, else ten pounds on the bell with the reps back at ten. */
 export function nextEmom(step: EmomStep): EmomStep {
-  if (step.reps < EMOM_CAP) return { ...step, reps: step.reps + 1 }
-  if (step.minutes < EMOM_CAP) return { ...step, reps: EMOM_FLOOR, minutes: step.minutes + 1 }
-  return { load: step.load + EMOM_BELL_STEP, reps: EMOM_FLOOR, minutes: EMOM_FLOOR }
+  if (step.reps < EMOM_CAP) return { ...step, reps: step.reps + 1, minutes: EMOM_MINUTES }
+  return { load: step.load + EMOM_BELL_STEP, reps: EMOM_FLOOR, minutes: EMOM_MINUTES }
 }
 
 /**
- * A deload's EMOM: **the same bell**, a quarter off the reps on the minute
- * and a third off the minutes — about half the work, as the lifting's
- * deload is. Rounded down, never under five of either.
- *
- * It took a quarter off the bell, the lifting's rule, for one release:
- * _"could we drop reps and keep load the same instead? i dont have a 45lb
- * kb"_. A bar takes any load the plates make; a kettlebell is the bells
- * on the floor, so the cut that a lifter can actually run is the reps.
+ * A deload's EMOM: **the 30 lb bell**, the same reps, the same ten minutes
+ * — _"i have a 30lb one, for deload lets just do that and keep the same
+ * reps"_. A kettlebell is the bells on the floor, so the deload is the
+ * lighter one there is rather than a share of the working one (which asked
+ * for a 45 nobody owned). A working bell at or under thirty keeps itself.
  */
-const DELOAD_REPS_SHARE = 0.75
-const DELOAD_MINUTES_SHARE = 2 / 3
-const DELOAD_MIN = 5
+const DELOAD_BELL = 30
 
 export function deloadEmom(step: EmomStep): EmomStep {
-  return {
-    load: step.load,
-    reps: Math.max(DELOAD_MIN, Math.floor(step.reps * DELOAD_REPS_SHARE)),
-    minutes: Math.max(DELOAD_MIN, Math.round(step.minutes * DELOAD_MINUTES_SHARE)),
-  }
+  return { load: Math.min(step.load, DELOAD_BELL), reps: step.reps, minutes: EMOM_MINUTES }
 }
 
 /**
  * The last EMOM of an exercise that was done, and the day it was done.
  *
  * **A deload is never last time**, as for the lifting: it is light on
- * purpose. The load and reps are what was logged, falling back to the plan;
- * the minutes are the prescription's, since a log describes itself. An
- * entry logged before swings were an EMOM (a timed block) is not one.
+ * purpose. The load and reps are what was logged, falling back to the plan.
+ * An entry logged before swings were an EMOM (a timed block) is not one.
  */
 export function lastEmom(
   history: readonly WorkoutLog[],
@@ -92,7 +87,7 @@ export function lastEmom(
         const load = set.actualLoad ?? set.plannedLoad
         const perMinute = set.actualReps ?? set.plannedReps
         if (load === undefined || perMinute === undefined || perMinute <= 0) continue
-        return { step: { load, reps: perMinute, minutes: reps.minutes }, date: log.date }
+        return { step: { load, reps: perMinute, minutes: EMOM_MINUTES }, date: log.date }
       }
     }
   }
@@ -117,4 +112,55 @@ export function plannedEmom(
   if (last === undefined) return deload ? deloadEmom(EMOM_START) : EMOM_START
   if (deload) return deloadEmom(last.step)
   return mondayOf(last.date) === mondayOf(day) ? last.step : nextEmom(last.step)
+}
+
+/**
+ * Where an EMOM stands, `elapsed` milliseconds after it started: which
+ * minute (from one), the seconds left in it (rounded up, so a fresh minute
+ * reads 60), and whether every minute is over.
+ */
+interface EmomReading {
+  readonly round: number
+  readonly secondsLeft: number
+  readonly done: boolean
+}
+
+const MINUTE = 60_000
+
+export function emomAt(elapsed: number, minutes: number): EmomReading {
+  const total = minutes * MINUTE
+  if (elapsed >= total) return { round: minutes, secondsLeft: 0, done: true }
+  const at = Math.max(0, elapsed)
+  const round = Math.floor(at / MINUTE) + 1
+  return { round, secondsLeft: Math.ceil((round * MINUTE - at) / 1000), done: false }
+}
+
+/** A sound the EMOM makes: a tick in a minute's last seconds, a go at the next, a chime at the end. */
+export type EmomCue = 'tick' | 'go' | 'done'
+
+const TICK_AT = [3, 2, 1] as const
+
+/**
+ * Which cues sound between two readings of the time elapsed — negative
+ * during the count-in, so the first minute gets its ticks and its go too.
+ *
+ * **By crossing, not by equality**, the rest timer's rule: readings come
+ * every quarter second and a phone in a pocket can jump several marks at
+ * once. A jump over more than one mark sounds only the latest — the start
+ * of the minute it landed in, or the end — never a burst.
+ */
+export function emomCuesBetween(before: number, now: number, minutes: number): readonly EmomCue[] {
+  if (now <= before) return []
+  const total = minutes * MINUTE
+  if (before < total && now >= total) return ['done']
+
+  // Every minute's start, the first included: the timer counts in from below zero.
+  const minuteMarks = Array.from({ length: minutes }, (_, index) => index * MINUTE)
+  if (minuteMarks.some((mark) => before < mark && now >= mark)) return ['go']
+
+  const ticks = minuteMarks
+    .concat(total)
+    .flatMap((mark) => TICK_AT.map((seconds) => mark - seconds * 1000))
+    .filter((mark) => before < mark && now >= mark)
+  return ticks.length === 1 ? ['tick'] : []
 }

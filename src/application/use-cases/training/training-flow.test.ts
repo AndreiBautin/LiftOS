@@ -992,7 +992,7 @@ describe('the swing EMOM', () => {
    * session, logged once, and the next week's session climbs a rep from
    * it — or, on a deload, is cut from it.
    */
-  it('opens at 60 × 10 × 10, climbs a rep a week, and deloads from what was done', async () => {
+  it('opens at 60 lb × 10 for ten minutes, climbs a rep a week, and deloads on the 30', async () => {
     const deps = beginProgram()
     const request = { athlete, program, roundingIncrement: 5 }
 
@@ -1026,7 +1026,7 @@ describe('the swing EMOM', () => {
     const deload = await startWorkout({ ...request, program: deloadProgram() }, deps)
     if (deload.kind !== 'started') throw new Error('expected a started workout')
     const deloadSet = deload.workout.entries[swingOf(deload.workout.entries)]?.sets[0]
-    expect(deloadSet?.plannedLoad).toBe(60)
-    expect(deloadSet?.prescription.reps).toEqual({ kind: 'emom', reps: 7, minutes: 7 })
+    expect(deloadSet?.plannedLoad).toBe(30)
+    expect(deloadSet?.prescription.reps).toEqual({ kind: 'emom', reps: 10, minutes: 10 })
   })
 })

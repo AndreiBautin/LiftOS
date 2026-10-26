@@ -1,3 +1,4 @@
+import type { EmomCue } from '@/domain/programs/emom'
 import type { RestCue } from '@/domain/programs/rest-cues'
 
 let context: AudioContext | undefined
@@ -41,4 +42,19 @@ function blip(audio: AudioContext, hz: number, at: number, length: number, peak:
   tone.connect(level).connect(audio.destination)
   tone.start(at)
   tone.stop(at + length + 0.02)
+}
+
+/**
+ * The EMOM's cues: the rest timer's tick and chime, and a **go** — one
+ * long high note — at the top of every minute, the one sound the EMOM is
+ * for. Played whatever the rest-sounds setting says: the timer is started
+ * on purpose, and a minute with no signal is not an EMOM.
+ */
+export function playEmomCue(cue: EmomCue): void {
+  if (cue !== 'go') {
+    playRestCue(cue)
+    return
+  }
+  if (context?.state !== 'running') return
+  blip(context, 1320, context.currentTime, 0.4, 0.3)
 }
