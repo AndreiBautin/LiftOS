@@ -76,6 +76,7 @@ import { formatTime } from '@/lib/format-date'
 import {
   firstIncompleteIndex,
   loadToShow,
+  nextStep,
   nextUp,
   restFor,
   restWorkOf,
@@ -241,8 +242,9 @@ export function SessionPlayer({
    * past all of it. See `WarmupBlock`.
    */
   const warmup = warmupRun(workout, index)
-  const stepEnd = warmup === undefined ? index : (warmup.at(-1) ?? index)
-  const next = workout.entries[stepEnd + 1]
+  const stepAfter = nextStep(workout, index)
+  const stepEnd = stepAfter - 1
+  const next = workout.entries[stepAfter]
   const first = entry.sets[0]
   const firstPending = entry.sets.findIndex((set) => set.outcome === 'pending' && !set.isWarmup)
   const stepComplete =
@@ -358,7 +360,7 @@ export function SessionPlayer({
         if (set !== undefined && warmup === undefined) setOpenSet(nextOpen)
         return
       case 'next':
-        go(stepEnd + 1)
+        go(stepAfter)
         return
       case 'previous':
         go(index - 1)
@@ -522,7 +524,7 @@ export function SessionPlayer({
           ) : (
             <SwipePager
               onNext={() => {
-                go(stepEnd + 1)
+                go(stepAfter)
               }}
               onPrevious={() => {
                 go(index - 1)
@@ -789,7 +791,7 @@ export function SessionPlayer({
                 variant={stepComplete ? 'primary' : 'outline'}
                 className="min-w-0 flex-1 justify-between"
                 onClick={() => {
-                  go(index + 1)
+                  go(stepAfter)
                 }}
                 aria-label={`Next exercise: ${nameOf(next.exerciseId)}`}
               >
@@ -818,7 +820,7 @@ export function SessionPlayer({
                   {
                     // Straight to it; `go` would clamp against the session before the add.
                     onSuccess: () => {
-                      showEntry(stepEnd + 1)
+                      showEntry(stepAfter)
                       window.scrollTo({ top: 0, behavior: scrollMotion() })
                     },
                   },
@@ -997,7 +999,7 @@ export function SessionPlayer({
             setOpenSet(setIndex)
           }}
           onNext={() => {
-            go(stepEnd + 1)
+            go(stepAfter)
           }}
           onClose={closeFocus}
         />

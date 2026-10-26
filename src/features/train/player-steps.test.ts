@@ -7,6 +7,7 @@ import { anEntry, aSet, aWorkout } from '@/test/builders/workout'
 import {
   firstIncompleteIndex,
   loadToShow,
+  nextStep,
   nextUp,
   restFor,
   runStart,
@@ -43,6 +44,13 @@ describe('a run of warm-up rows', () => {
   it('is nothing for a working exercise, which stays where it is', () => {
     expect(warmupRun(workout, 2)).toBeUndefined()
     expect(runStart(workout, 2)).toBe(2)
+  })
+
+  it('is stepped past whole by Next, from any row in it', () => {
+    // One past row 0 is row 1, which snaps back to row 0: Next went nowhere.
+    expect(nextStep(workout, 0)).toBe(2)
+    expect(nextStep(workout, 1)).toBe(2)
+    expect(nextStep(workout, 2)).toBe(3)
   })
 })
 

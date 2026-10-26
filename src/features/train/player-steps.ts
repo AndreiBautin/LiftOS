@@ -67,6 +67,15 @@ export function runStart(workout: WorkoutLog, at: number): number {
 }
 
 /**
+ * Where Next goes from `at`: past the whole warm-up run it sits in. One
+ * past `at` is inside the run, and the player snaps that back to the run's
+ * first row, so a button that stepped one went nowhere.
+ */
+export function nextStep(workout: WorkoutLog, at: number): number {
+  return (warmupRun(workout, at)?.at(-1) ?? at) + 1
+}
+
+/**
  * The weight the bar should hold now: the next pending set's planned load,
  * or, once every set is settled, the last one actually lifted — so the
  * picture still answers "what is on the bar" while you strip it.
