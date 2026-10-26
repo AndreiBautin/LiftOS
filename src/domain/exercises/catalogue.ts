@@ -838,6 +838,19 @@ const ENTRIES: readonly CatalogueEntry[] = [
     notes: 'Upper-day warm-up. Contributes no training volume.',
   },
   {
+    slug: 'arm-swings',
+    name: 'Arm Swings',
+    primaryMuscle: 'rear-delts',
+    equipment: 'bodyweight',
+    pattern: 'isolation',
+    isCompound: false,
+    intent: 'conditioning',
+    sfr: 5,
+    systemicCost: 0,
+    defaultRestSeconds: 0,
+    notes: 'Upper-day warm-up. Contributes no training volume.',
+  },
+  {
     slug: 'foam-roll',
     name: 'Foam Rolling',
     primaryMuscle: 'quads',
@@ -1021,50 +1034,35 @@ export function builtInExercises(): readonly Exercise[] {
  * seven regions.
  */
 export const WARM_UPS = {
+  /*
+   * Asked for as "shoulder dislocation, band pull-apart, rotator cuff work
+   * with plates along with arm swings". The upper-back and lat rolling that
+   * used to open it moved to the lower routine.
+   */
   upper: [
-    { slug: 'roll-upper-back', sets: 1, reps: 10, note: 'Ten passes each side.' },
-    { slug: 'roll-lats', sets: 1, reps: 10, note: 'Ten passes each side.' },
     { slug: 'shoulder-dislocation', sets: 1, reps: 10 },
-    { slug: 'rotator-cuff-plate', sets: 1, reps: 10, note: 'Ten each side.' },
     { slug: 'band-pull-apart', sets: 1, reps: 10 },
+    { slug: 'rotator-cuff-plate', sets: 1, reps: 10, note: 'Ten each side.' },
+    { slug: 'arm-swings', sets: 1, reps: 10, note: 'Ten forward, ten back.' },
   ],
   /*
-   * One row per area rather than one row listing seven of them.
-   *
-   * This was a single "Foam Rolling" slot whose note read "hamstrings,
-   * quads, IT band, groin, lats, upper back, calves — twenty passes
-   * each". Accurate, and unusable at the moment it matters: a note is one
-   * line of small text and the session screen ticks off *slots*, so seven
-   * areas inside one slot are seven things you either remember or skip
-   * together. Split, each one is a row you tick.
-   *
-   * The lats and upper back moved to the upper routine with the same
-   * reasoning — that is the day they are about to be worked.
+   * One row per area rather than one row listing several — the session
+   * screen ticks off slots, so areas inside one slot are things you either
+   * remember or skip together. Asked for as "roll back, lats, calves,
+   * hamstrings"; the IT band, quads, groin and hips rows left the routine
+   * and stay in the catalogue, because sessions already logged name them.
    */
   lower: [
+    { slug: 'roll-upper-back', sets: 1, reps: 10, note: 'Ten passes each side.' },
+    { slug: 'roll-lats', sets: 1, reps: 10, note: 'Ten passes each side.' },
     { slug: 'roll-calves', sets: 1, reps: 10, note: 'Ten passes each side.' },
     { slug: 'roll-hamstrings', sets: 1, reps: 10, note: 'Ten passes each side.' },
-    { slug: 'roll-it-band', sets: 1, reps: 10, note: 'Ten passes each side.' },
-    { slug: 'roll-quads', sets: 1, reps: 10, note: 'Ten passes each side.' },
-    { slug: 'roll-groin', sets: 1, reps: 10, note: 'Ten passes each side.' },
-    { slug: 'roll-hips', sets: 1, reps: 10, note: 'Ten passes each side.' },
   ],
 } as const
 
 export const WARM_UP_SLUGS = {
-  upper: [
-    'roll-upper-back',
-    'roll-lats',
-    'shoulder-dislocation',
-    'rotator-cuff-plate',
-    'band-pull-apart',
-  ],
-  lower: [
-    'roll-calves',
-    'roll-hamstrings',
-    'roll-it-band',
-    'roll-quads',
-    'roll-groin',
-    'roll-hips',
-  ],
+  upper: ['shoulder-dislocation', 'band-pull-apart', 'rotator-cuff-plate', 'arm-swings'],
+  lower: ['roll-upper-back', 'roll-lats', 'roll-calves', 'roll-hamstrings'],
+  /* No routine names these now; logs still do, so they still draw as warm-ups. */
+  retired: ['foam-roll', 'roll-it-band', 'roll-quads', 'roll-groin', 'roll-hips'],
 } as const

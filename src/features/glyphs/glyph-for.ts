@@ -1,7 +1,11 @@
 import { WARM_UP_SLUGS } from '@/domain/exercises/catalogue'
 import type { MovementPattern, MuscleGroup } from '@/domain/exercises/taxonomy'
 
-const WARM_UPS: ReadonlySet<string> = new Set([...WARM_UP_SLUGS.upper, ...WARM_UP_SLUGS.lower])
+const WARM_UPS: ReadonlySet<string> = new Set([
+  ...WARM_UP_SLUGS.upper,
+  ...WARM_UP_SLUGS.lower,
+  ...WARM_UP_SLUGS.retired,
+])
 
 export const GLYPHS = [
   'squat',

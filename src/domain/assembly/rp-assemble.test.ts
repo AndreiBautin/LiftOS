@@ -1137,11 +1137,10 @@ describe('the order a session is performed in', () => {
       .flatMap((slot) => (slot.exercise.kind === 'specific' ? [slot.exercise.exerciseId] : []))
 
     expect(benchDay).toEqual([
-      'roll-upper-back',
-      'roll-lats',
       'shoulder-dislocation',
-      'rotator-cuff-plate',
       'band-pull-apart',
+      'rotator-cuff-plate',
+      'arm-swings',
     ])
   })
 
