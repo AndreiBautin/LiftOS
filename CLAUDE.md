@@ -2994,7 +2994,13 @@ it** — progressed from, the deload's 75 would plan the next working week
 at 75, so the week after picks up from the bar before. Read off the log
 rather than the programme so swap, add and repeat get it too. Not
 changed: the stall count still sees a deload's lighter bar as "a new
-climb", which clears a stall, arguably what a deload is for.
+climb", which clears a stall, arguably what a deload is for. **On the
+body alone the quarter comes off the reps** (`deloadRepsFor`, tested) —
+_"for bodyweight stuff that doesn't have a load, we need a way to make
+it easier for deloads other than just dropping sets"_: 12, 12, 10
+pull-ups deload to 2 × 7, rounded down and allowed under the range's
+floor, or a lifter at the bottom of 5–30 would deload at the same five.
+A belted set keeps the loaded rule.
 
 **Three sets now, two on a deload** (it has been three, five, four, a split and two). It went to five on _"let's bump our
 sets up to 5 per exercise"_ and back to four with the ULPPL week, when

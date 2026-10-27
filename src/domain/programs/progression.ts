@@ -65,10 +65,22 @@ export function deloadLoad(load: number, increment: number): number {
  * past it. Beating last time is the working weeks' job; at a quarter off
  * the bar the reps are matched, so the only cuts are the two asked for —
  * the sets and the load.
+ *
+ * **On the body alone the quarter comes off the reps instead.** Asked for
+ * as _"for bodyweight stuff that doesn't have a load, we need a way to make
+ * it easier for deloads other than just dropping sets"_. A pull-up with no
+ * belt has no bar to lighten, so matched reps left every set exactly as
+ * hard as the week before — the part of the fatigue a deload is for. The
+ * reps are the load there, so they take the same share, rounded down and
+ * **allowed under the range**: clamped back up to its floor, a lifter at
+ * the bottom of 5–30 would deload at the same five. A belted set keeps the
+ * loaded rule, since its belt is lightened like a bar.
  */
 export function deloadRepsFor(last: Performance | undefined, range: RepRange): number {
   if (last === undefined || last.reps.length === 0) return range.low
-  return Math.min(range.high, Math.max(range.low, Math.min(...last.reps)))
+  const matched = Math.min(range.high, Math.max(range.low, Math.min(...last.reps)))
+  if (last.load > 0) return matched
+  return Math.max(1, Math.floor(matched * DELOAD_LOAD_SHARE))
 }
 
 /**

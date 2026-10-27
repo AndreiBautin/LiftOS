@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  deloadRepsFor,
   ladderState,
   lastPerformance,
   nextLoad,
@@ -156,6 +157,30 @@ describe('lastPerformance on a bodyweight exercise', () => {
 
   it('still ignores unloaded sets on a loaded exercise', () => {
     expect(lastPerformance([{ reps: 9 }])).toBeUndefined()
+  })
+})
+
+describe('deloadRepsFor', () => {
+  const range = { low: 5, high: 30 }
+
+  it('matches the weakest set when there is a load to lighten', () => {
+    expect(deloadRepsFor(did(100, 12, 12, 10), { low: 10, high: 15 })).toBe(10)
+  })
+
+  /*
+   * A pull-up with no belt has no bar to lighten, so matched reps left
+   * every deload set as hard as the working week.
+   */
+  it('takes a quarter off the reps on the body alone', () => {
+    expect(deloadRepsFor(did(0, 12, 12, 10), range)).toBe(7)
+  })
+
+  it('goes under the range rather than deloading at its floor', () => {
+    expect(deloadRepsFor(did(0, 5, 5, 5), range)).toBe(3)
+  })
+
+  it('lightens a belted set by its belt, not its reps', () => {
+    expect(deloadRepsFor(did(10, 8, 8, 7), range)).toBe(7)
   })
 })
 
