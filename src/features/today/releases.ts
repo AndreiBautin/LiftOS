@@ -1,6 +1,10 @@
 /** Release notes, newest first; `WhatsNew` shows the first once. */
 export const RELEASES: readonly { readonly id: string; readonly items: readonly string[] }[] = [
   {
+    id: '2026-10-27',
+    items: ['Every exercise now runs two sets, and one on a deload week.'],
+  },
+  {
     id: '2026-10-26b',
     items: [
       'Kettlebell swing EMOMs close every session, with a timer that calls each minute and logs the set when the last one ends.',

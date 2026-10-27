@@ -49,7 +49,7 @@ describe('adding an exercise to the open session', () => {
     )
     const added = updated.entries[1]
     expect(updated.entries.map((entry) => entry.exerciseId)).toEqual([ROW, CURL, 'pull-up'])
-    expect(added?.sets).toHaveLength(3)
+    expect(added?.sets).toHaveLength(2)
     expect(added?.sets[0]?.prescription.reps).toEqual({ kind: 'range', low: 15, high: 30 })
     expect(added?.slotId).toBeUndefined()
     // No history: no weight is guessed.

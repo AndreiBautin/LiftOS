@@ -196,21 +196,21 @@ describe('the shipped week', () => {
     ).toEqual(['bench-press', 'low-bar-squat', 'sumo-deadlift'])
   })
 
-  it('prescribes three straight sets on everything lifted', () => {
+  it('prescribes two straight sets on everything lifted', () => {
     const lifted = (week?.days ?? [])
       .flatMap((day) => day.slots)
       .filter((slot) => slot.role !== 'warmup' && slot.role !== 'conditioning')
     expect(lifted).toHaveLength(20)
-    expect(lifted.every((slot) => slot.sets.length === 3)).toBe(true)
+    expect(lifted.every((slot) => slot.sets.length === 2)).toBe(true)
   })
 
-  it('runs two sets of everything on the deload', () => {
+  it('runs one set of everything on the deload', () => {
     const deload = deriveProgram(DEFAULT_SETTINGS, library).blocks[0]?.weeks.at(-1)
     const counts = (deload?.days ?? [])
       .flatMap((day) => day.slots)
       .filter((slot) => slot.role !== 'warmup' && slot.role !== 'conditioning')
       .map((slot) => slot.sets.length)
     expect(counts).toHaveLength(20)
-    expect(counts.every((n) => n === 2)).toBe(true)
+    expect(counts.every((n) => n === 1)).toBe(true)
   })
 })

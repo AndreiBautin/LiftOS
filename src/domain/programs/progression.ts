@@ -25,22 +25,21 @@ import type { RepRange } from './prescription'
  */
 
 /**
- * Three, on everything. It was three — _"straight 3 sets on anything"_ —
- * then five, then four when every day became four exercises, then two on
- * the leg compounds and three on the rest, then two everywhere, and is
- * three again: _"3 sets across every exercise across the board, which
- * gets cut to 2 on deload"_. The routine lists one movement per muscle
- * per day, so the whole week's volume is this number times the list;
+ * Two, on everything. It was three — _"straight 3 sets on anything"_ —
+ * then five, four, a split, two, three again, and is two: _"actually
+ * lets go 2 sets please"_. The routine lists one movement per muscle per
+ * day, so the whole week's volume is this number times the list;
  * nothing else needs to change for it to land everywhere.
  */
-export const STRAIGHT_SETS = 3
+export const STRAIGHT_SETS = 2
 
 /**
- * A deload's sets, asked for with the three above. It was written as
- * `STRAIGHT_SETS - 1` once, which is barely a deload at five, so it is
- * its own number even where it happens to equal that.
+ * A deload's sets: half of the two, beside the quarter off the bar
+ * (`deloadLoad`). It was written as `STRAIGHT_SETS - 1` once, which is
+ * barely a deload at five, so it is its own number even where it
+ * happens to equal that.
  */
-export const DELOAD_SETS = 2
+export const DELOAD_SETS = 1
 
 /**
  * A deload's bar: three quarters of the working load, rounded **down** to

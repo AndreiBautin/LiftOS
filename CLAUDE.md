@@ -1489,10 +1489,8 @@ input required.
 both leg days written by the lifter (squat, RDL, calf raise, ab wheel;
 sumo, front squat, calf raise, hanging leg raise) and the rest
 rearranged from the existing exercises, nothing added. Four exercises a
-day, **three sets each, two on a deload** — asked for as _"3 sets
-across every exercise across the board, which gets cut to 2 on
-deload"_, after rounds of four, two on the leg compounds and three on
-the rest, and two everywhere. Every movement appears once a week except the
+day, **two sets each, one on a deload** — asked for as _"actually lets
+go 2 sets please"_, after rounds of four, a split, two, and three. Every movement appears once a week except the
 barbell calf raise; the swings and the treadmill walk left the week and
 stay in the catalogue. Two placement rules came from the lifter and a
 test holds both: **lateral raises are not on the overhead-press day**
@@ -3002,7 +3000,7 @@ pull-ups deload to 2 × 7, rounded down and allowed under the range's
 floor, or a lifter at the bottom of 5–30 would deload at the same five.
 A belted set keeps the loaded rule.
 
-**Three sets now, two on a deload** (it has been three, five, four, a split and two). It went to five on _"let's bump our
+**Two sets now, one on a deload** (it has been three, five, four, a split, two and three). It went to five on _"let's bump our
 sets up to 5 per exercise"_ and back to four with the ULPPL week, when
 every day became four exercises — `STRAIGHT_SETS` and `DELOAD_SETS` in
 `progression.ts`. **`topped` is judged against the sets the previous
