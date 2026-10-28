@@ -45,7 +45,7 @@ describe('deriving the program', () => {
      */
     const before = deriveProgram(DEFAULT_SETTINGS, library)
     const after = deriveProgram(
-      { ...DEFAULT_SETTINGS, excludedExercises: [asExerciseId('dips')] },
+      { ...DEFAULT_SETTINGS, excludedExercises: [asExerciseId('skullcrusher')] },
       library,
     )
 
@@ -54,12 +54,12 @@ describe('deriving the program', () => {
 
   it('honours an exclusion made in settings', () => {
     const without = deriveProgram(
-      { ...DEFAULT_SETTINGS, excludedExercises: [asExerciseId('dips')] },
+      { ...DEFAULT_SETTINGS, excludedExercises: [asExerciseId('skullcrusher')] },
       library,
     )
     const ids = JSON.stringify(without)
 
-    expect(ids).not.toContain('"dips"')
+    expect(ids).not.toContain('"skullcrusher"')
   })
 })
 
@@ -111,12 +111,11 @@ describe('the shipped week', () => {
       .filter((slot) => slot.role !== 'warmup')
       .map((slot) => (slot.exercise.kind === 'specific' ? slot.exercise.exerciseId : ''))
 
-  it('runs upper, legs, push, pull, legs, Monday to Friday', () => {
+  it('runs upper, lower, upper, lower on Monday, Tuesday, Thursday and Friday', () => {
     expect(week?.days.map((day) => day.label)).toEqual([
-      'Monday — Upper',
+      'Monday — Upper A',
       'Tuesday — Legs A',
-      'Wednesday — Push',
-      'Thursday — Pull',
+      'Thursday — Upper B',
       'Friday — Legs B',
     ])
   })
@@ -126,7 +125,8 @@ describe('the shipped week', () => {
       'bench-press',
       'pendlay-row',
       'db-lateral-raise',
-      'barbell-shrug',
+      'barbell-curl',
+      'skullcrusher',
       'kb-swing',
     ])
     expect(worked(1)).toEqual([
@@ -138,13 +138,13 @@ describe('the shipped week', () => {
     ])
     expect(worked(2)).toEqual([
       'overhead-press',
-      'dips',
-      'skullcrusher',
+      'pull-up',
+      'rear-delt-raise',
+      'db-curl',
       'french-press',
       'kb-swing',
     ])
-    expect(worked(3)).toEqual(['pull-up', 'rear-delt-raise', 'ez-bar-curl', 'db-curl', 'kb-swing'])
-    expect(worked(4)).toEqual([
+    expect(worked(3)).toEqual([
       'sumo-deadlift',
       'front-squat',
       'barbell-calf-raise',
@@ -155,15 +155,15 @@ describe('the shipped week', () => {
 
   /*
    * Every movement once a week except the calf raise, which runs on both
-   * leg days in two ranges, and the swings, which close every session. A movement landing twice, or going missing,
+   * lower days in two ranges, and the swings, which close every session. A movement landing twice, or going missing,
    * would still build a valid week — this is what notices.
    */
   it('trains every movement once a week, the calf raise twice and the swings daily', () => {
-    const all = [0, 1, 2, 3, 4].flatMap(worked)
-    expect(all).toHaveLength(25)
+    const all = [0, 1, 2, 3].flatMap(worked)
+    expect(all).toHaveLength(22)
     expect(all.filter((slug) => slug === 'barbell-calf-raise')).toHaveLength(2)
-    expect(all.filter((slug) => slug === 'kb-swing')).toHaveLength(5)
-    expect(new Set(all).size).toBe(20)
+    expect(all.filter((slug) => slug === 'kb-swing')).toHaveLength(4)
+    expect(new Set(all).size).toBe(18)
   })
 
   /*
@@ -178,13 +178,12 @@ describe('the shipped week', () => {
       )
     expect(calf(1)?.variant).toBe('Heavy')
     expect(calf(1)?.sets[0]?.reps).toEqual({ kind: 'range', low: 10, high: 20 })
-    expect(calf(4)?.variant).toBe('Light')
-    expect(calf(4)?.sets[0]?.reps).toEqual({ kind: 'range', low: 20, high: 30 })
+    expect(calf(3)?.variant).toBe('Light')
+    expect(calf(3)?.sets[0]?.reps).toEqual({ kind: 'range', low: 20, high: 30 })
   })
 
-  it('keeps lateral raises off the press day and shrugs off the day before deadlifts', () => {
+  it('keeps lateral raises off the press day', () => {
     expect(worked(2)).not.toContain('db-lateral-raise')
-    expect(worked(3)).not.toContain('barbell-shrug')
   })
 
   it('runs each competition lift once, in its competition version', () => {
@@ -200,7 +199,7 @@ describe('the shipped week', () => {
     const lifted = (week?.days ?? [])
       .flatMap((day) => day.slots)
       .filter((slot) => slot.role !== 'warmup' && slot.role !== 'conditioning')
-    expect(lifted).toHaveLength(20)
+    expect(lifted).toHaveLength(18)
     expect(lifted.every((slot) => slot.sets.length === 2)).toBe(true)
   })
 
@@ -210,7 +209,7 @@ describe('the shipped week', () => {
       .flatMap((day) => day.slots)
       .filter((slot) => slot.role !== 'warmup' && slot.role !== 'conditioning')
       .map((slot) => slot.sets.length)
-    expect(counts).toHaveLength(20)
+    expect(counts).toHaveLength(18)
     expect(counts.every((n) => n === 1)).toBe(true)
   })
 })

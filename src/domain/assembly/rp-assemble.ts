@@ -413,7 +413,7 @@ function buildWeek(
     }
 
     /*
-     * **A written routine is built as written** — see `ULPPL_SPLIT`. No
+     * **A written routine is built as written** — see `UPPER_LOWER_SPLIT`. No
      * fill, no picker and no reordering: the list is the lifter's
      * decision, in the order they run it. What it shares with the
      * generated path is everything about how a set is prescribed.

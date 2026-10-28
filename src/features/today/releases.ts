@@ -1,6 +1,13 @@
 /** Release notes, newest first; `WhatsNew` shows the first once. */
 export const RELEASES: readonly { readonly id: string; readonly items: readonly string[] }[] = [
   {
+    id: '2026-10-28',
+    items: [
+      'The week is upper, lower, upper, lower: Monday, Tuesday, Thursday and Friday, with Wednesday off.',
+      'Upper A is bench, Pendlay row, lateral raise, barbell curl and skullcrusher; Upper B is overhead press, pull-up, rear delt fly, dumbbell curl and overhead triceps extension.',
+    ],
+  },
+  {
     id: '2026-10-27',
     items: ['Every exercise now runs two sets, and one on a deload week.'],
   },

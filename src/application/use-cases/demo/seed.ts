@@ -217,13 +217,12 @@ async function seedTraining(deps: DemoDeps): Promise<void> {
   const along = (from: number, to: number, through: number): number =>
     round5(from + (to - from) * through)
 
-  type Day = 'Upper' | 'Legs A' | 'Push' | 'Pull' | 'Legs B'
-  /* `getDay()` is Sunday-first; the weekend is off. */
+  type Day = 'Upper A' | 'Legs A' | 'Upper B' | 'Legs B'
+  /* `getDay()` is Sunday-first; Wednesday and the weekend are off. */
   const DAYS: Readonly<Record<number, Day>> = {
-    1: 'Upper',
+    1: 'Upper A',
     2: 'Legs A',
-    3: 'Push',
-    4: 'Pull',
+    4: 'Upper B',
     5: 'Legs B',
   }
 
@@ -234,12 +233,13 @@ async function seedTraining(deps: DemoDeps): Promise<void> {
     const bump = Math.round(through * 3)
     const strengthSets = heavy ? 4 : 3
     switch (day) {
-      case 'Upper':
+      case 'Upper A':
         return [
           lifted('bench-press', 0, 'strength', along(170, 210, through), 5, strengthSets),
           lifted('pendlay-row', 1, 'hypertrophy', along(135, 165, through), 8),
           lifted('db-lateral-raise', 2, 'assistance', along(15, 20, through), 18),
-          lifted('barbell-shrug', 3, 'assistance', along(185, 225, through), 18),
+          lifted('barbell-curl', 3, 'assistance', along(50, 65, through), 18),
+          lifted('skullcrusher', 4, 'assistance', along(50, 65, through), 18),
         ]
       case 'Legs A':
         return [
@@ -251,19 +251,13 @@ async function seedTraining(deps: DemoDeps): Promise<void> {
           ),
           lifted('ab-wheel', 3, 'assistance', 0, 10 + bump),
         ]
-      case 'Push':
+      case 'Upper B':
         return [
           lifted('overhead-press', 0, 'hypertrophy', along(95, 115, through), 8),
-          lifted('dips', 1, 'hypertrophy', 0, 8 + bump),
-          lifted('skullcrusher', 2, 'assistance', along(50, 65, through), 18),
-          lifted('french-press', 3, 'assistance', along(40, 55, through), 18),
-        ]
-      case 'Pull':
-        return [
-          lifted('pull-up', 0, 'hypertrophy', 0, 6 + bump),
-          lifted('rear-delt-raise', 1, 'assistance', along(15, 20, through), 18),
-          lifted('ez-bar-curl', 2, 'assistance', along(50, 65, through), 18),
+          lifted('pull-up', 1, 'hypertrophy', 0, 6 + bump),
+          lifted('rear-delt-raise', 2, 'assistance', along(15, 20, through), 18),
           lifted('db-curl', 3, 'assistance', along(25, 35, through), 18),
+          lifted('french-press', 4, 'assistance', along(40, 55, through), 18),
         ]
       case 'Legs B':
         return [

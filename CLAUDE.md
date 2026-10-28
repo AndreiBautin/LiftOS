@@ -1484,20 +1484,23 @@ input required.
   sample's `estimatedMaxes`; they disagreed by seventy pounds once, side
   by side on Train.
 
-**The week is upper, legs, push, pull, legs — Monday to Friday.**
-`ULPPL_SPLIT`, asked for as _"switch from pplppl to ulppl mon-fri"_ with
-both leg days written by the lifter (squat, RDL, calf raise, ab wheel;
-sumo, front squat, calf raise, hanging leg raise) and the rest
-rearranged from the existing exercises, nothing added. Four exercises a
-day, **two sets each, one on a deload** — asked for as _"actually lets
-go 2 sets please"_, after rounds of four, a split, two, and three. Every movement appears once a week except the
-barbell calf raise; the swings and the treadmill walk left the week and
-stay in the catalogue. Two placement rules came from the lifter and a
-test holds both: **lateral raises are not on the overhead-press day**
-(the press already trains the side delts, so the raise on Upper makes
-it twice a week), and **shrugs are not the day before deadlifts** (the
-traps hold every pull). The price is the arms on one day each — both
-triceps movements on Push, both curls on Pull.
+**The week is upper, lower, upper, lower — Monday, Tuesday, Thursday,
+Friday.** `UPPER_LOWER_SPLIT`, asked for as _"update the split to 4 day
+upper lower, mon/tues thurs/fri, lowers stay the same"_, with both upper
+days written by the lifter: **Upper A** bench, Pendlay row, lateral
+raise, barbell curl, skullcrusher; **Upper B** overhead press, pull-up,
+rear delt raise, dumbbell curl, overhead triceps extension
+(`french-press`). The leg days are unchanged (squat, RDL, calf raise, ab
+wheel; sumo, front squat, calf raise, hanging leg raise), keep their
+**Legs A / Legs B** titles so history and this week's ticks still match,
+and the swings close every day. **Two sets each, one on a deload.** Every
+movement appears once a week except the barbell calf raise. Shrugs, dips
+and the EZ-bar curl left the week and stay in the catalogue. The
+lateral raise stays off the press day (a test holds it). It replaced
+upper, legs, push, pull, legs Monday to Friday (`ULPPL_SPLIT`), whose
+shrugs-not-before-deadlifts rule no longer has a shrug to place.
+**Wednesday is a rest day**, so Start there opens Thursday's Upper B
+early — the training-flow tests start on that Wednesday and read it so.
 
 - **One exercise can be two versions in a week.** A `RoutineEntry`
   exercise may carry its own `reps` and `variant`: the calf raise is

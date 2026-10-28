@@ -57,7 +57,7 @@ const athlete: AthleteState = {
     [asExerciseId(STRENGTH_LIFT_SLUGS.bench)]: 250,
     [asExerciseId(STRENGTH_LIFT_SLUGS.deadlift)]: 450,
     /*
-     * Day one is Push, which carries triceps isolation — the day-one
+     * The first session is Upper B, which carries triceps isolation — the
      * exercise a suggested load can be checked against. *Which* one is
      * the routine's business, not this test's, so every variant carries
      * a max and the tests below find whichever one turned up.
@@ -279,7 +279,7 @@ describe('starting a session from a program', () => {
    * more.
    */
   /*
-   * Dips are bodyweight and run 5–30. Logged with no load, twelve reps on
+   * Pull-ups are bodyweight and run 5–30. Logged with no load, twelve reps on
    * every set: under the compound range that read as topped and put a
    * belt on at five reps; under no-load-means-no-history it planned
    * nothing at all. Both were reported from the same session.
@@ -289,9 +289,9 @@ describe('starting a session from a program', () => {
     const first = await startWorkout({ athlete, program, roundingIncrement: 5 }, deps)
     if (first.kind !== 'started') throw new Error('expected a started workout')
 
-    const index = first.workout.entries.findIndex((entry) => entry.exerciseId === 'dips')
+    const index = first.workout.entries.findIndex((entry) => entry.exerciseId === 'pull-up')
     const entry = first.workout.entries[index]
-    if (entry === undefined) throw new Error('expected dips on Push day')
+    if (entry === undefined) throw new Error('expected pull-ups on Upper B')
 
     for (const [setIndex, set] of entry.sets.entries()) {
       if (set.isWarmup) continue
@@ -313,7 +313,7 @@ describe('starting a session from a program', () => {
 
     const sets =
       again.workout.entries
-        .find((one) => one.exerciseId === 'dips')
+        .find((one) => one.exerciseId === 'pull-up')
         ?.sets.filter((set) => !set.isWarmup) ?? []
     expect(sets[0]?.prescription.reps).toMatchObject({ kind: 'range', low: 5, high: 30 })
     expect(sets.map((set) => set.plannedLoad)).toEqual(sets.map(() => 0))
@@ -477,23 +477,25 @@ describe('logging', () => {
 })
 
 describe('the calendar decides the session', () => {
-  // 2026-08-26, where the clock starts, is a Wednesday — Push, the day the
-  // triceps work these tests reach for is on.
-  it('opens the session today is scheduled for', async () => {
+  // 2026-08-26, where the clock starts, is a Wednesday — a rest day, so
+  // Start opens Thursday's Upper B early, the day the triceps work these
+  // tests reach for is on.
+  it('opens the next scheduled session on a rest day', async () => {
     const started = await startWorkout({ athlete, program, roundingIncrement: 5 }, beginProgram())
     if (started.kind !== 'started') throw new Error('expected a started workout')
-    expect(started.workout.title).toBe('Wednesday — Push')
+    expect(started.workout.title).toBe('Thursday — Upper B')
   })
 
   it('offers tomorrow’s session once today’s is finished', async () => {
     const deps = beginProgram()
+    nextDay() // Thursday, so today has a session of its own
     const today = await startWorkout({ athlete, program, roundingIncrement: 5 }, deps)
     if (today.kind !== 'started') throw new Error('expected a started workout')
     await finishWorkout(today.workout.id, deps)
 
     const early = await startWorkout({ athlete, program, roundingIncrement: 5 }, deps)
     if (early.kind !== 'started') throw new Error('expected a started workout')
-    expect(early.workout.title).toBe('Thursday — Pull')
+    expect(early.workout.title).toBe('Friday — Legs B')
   })
 
   /*
@@ -746,6 +748,9 @@ describe('editing the next session before starting it', () => {
   /* A draft drops and swaps for that one session, in the preview and at Start alike. */
   it('opens the session as the draft left it', async () => {
     const deps = beginProgram()
+    // Thursday: the preview's date is the day it is built on, which is the
+    // session's own day only when today holds one.
+    nextDay()
     const request = { athlete, program, roundingIncrement: 5 }
     const plain = await previewWorkout(request, deps)
     if (plain === undefined) throw new Error('expected a preview')

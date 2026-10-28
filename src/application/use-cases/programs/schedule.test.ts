@@ -26,33 +26,33 @@ const BLOCK = '2026-01-05'
 
 describe('the day comes from the date', () => {
   it.each([
-    ['2026-01-05', 'Monday — Upper'],
+    ['2026-01-05', 'Monday — Upper A'],
     ['2026-01-06', 'Tuesday — Legs A'],
-    ['2026-01-07', 'Wednesday — Push'],
-    ['2026-01-08', 'Thursday — Pull'],
+    ['2026-01-08', 'Thursday — Upper B'],
     ['2026-01-09', 'Friday — Legs B'],
   ])('%s is %s', (on, label) => {
     expect(sessionOn(program, BLOCK, on)?.day.label).toBe(label)
   })
 
-  it('has nothing on the weekend', () => {
+  it('has nothing on Wednesday or the weekend', () => {
+    expect(sessionOn(program, BLOCK, '2026-01-07')).toBeUndefined()
     expect(sessionOn(program, BLOCK, '2026-01-10')).toBeUndefined()
     expect(sessionOn(program, BLOCK, '2026-01-11')).toBeUndefined()
   })
 
   /*
    * The whole point of the change. A queue held Legs A over to the
-   * Wednesday when the Tuesday was missed, and every day after it slid
+   * Thursday when the Tuesday was missed, and every day after it slid
    * one place later than the routine says.
    */
-  it('does not hold a missed day over: Wednesday is Push whatever Tuesday did', () => {
-    expect(sessionOn(program, BLOCK, '2026-01-14')?.day.label).toBe('Wednesday — Push')
+  it('does not hold a missed day over: Thursday is Upper B whatever Tuesday did', () => {
+    expect(sessionOn(program, BLOCK, '2026-01-15')?.day.label).toBe('Thursday — Upper B')
   })
 
   it('offers Monday’s session from a Sunday', () => {
     const next = sessionFrom(program, BLOCK, '2026-01-11')
     expect(next?.on).toBe('2026-01-12')
-    expect(next?.day.label).toBe('Monday — Upper')
+    expect(next?.day.label).toBe('Monday — Upper A')
   })
 })
 
@@ -155,7 +155,7 @@ describe('the schedule for today', () => {
     expect(schedule.next?.on).toBe('2026-01-06')
   })
 
-  it('moves on to tomorrow once today’s session is finished', async () => {
+  it('moves on to the next session once today’s is finished', async () => {
     const finished = aWorkout({
       date: '2026-01-06',
       status: 'completed',
@@ -163,7 +163,7 @@ describe('the schedule for today', () => {
     })
     const schedule = await scheduleFor(program, deps([finished], TUESDAY, stored))
     expect(schedule.doneToday).toBe(true)
-    expect(schedule.next?.day.label).toBe('Wednesday — Push')
+    expect(schedule.next?.day.label).toBe('Thursday — Upper B')
   })
 
   /*
@@ -186,7 +186,7 @@ describe('the weeks ahead', () => {
       '2026-01-19',
       '2026-01-26',
     ])
-    expect(ahead[0]?.days[0]?.session?.label).toBe('Monday — Upper')
+    expect(ahead[0]?.days[0]?.session?.label).toBe('Monday — Upper A')
     expect(ahead[0]?.days[5]?.session).toBeUndefined()
     // The last week of the block is the deload, wherever four weeks lands.
     const deloadAt = weeks - 1

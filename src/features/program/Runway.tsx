@@ -140,7 +140,7 @@ function Row({
 }
 
 /**
- * What a cell can hold: "Legs A" → "LA", "Push" stays "Push", "Upper" →
+ * What a cell can hold: "Legs A" → "LA", "Upper B" → "UB", "Push" stays "Push", "Upper" →
  * "Up". Two letters for everything read Push and Pull both as "Pu".
  */
 function initials(name: string): string {

@@ -80,7 +80,7 @@ export interface RpDay {
    * The session written out, exercise by exercise, in the order it is run.
    *
    * A day with a routine is taken as written: no volume fill, no picker,
-   * no reordering — see `ULPPL_SPLIT` for why. A day without one is
+   * no reordering — see `UPPER_LOWER_SPLIT` for why. A day without one is
    * generated from `muscles` and `carries` exactly as before.
    */
   readonly routine?: readonly RoutineEntry[]
@@ -261,25 +261,17 @@ const lift = (which: StrengthLift): RoutineEntry => ({ kind: 'lift', lift: which
 const exercise = (slug: string): RoutineEntry => ({ kind: 'exercise', slug })
 
 /*
- * **Upper, legs, push, pull, legs — Monday to Friday, the weekend off.**
- * Asked for as _"switch from pplppl to ulppl mon-fri"_, with both leg
- * days written by the lifter and the upper, push and pull days proposed
- * from the exercises already in the week — rearranged, nothing added.
+ * **Upper, lower, upper, lower — Monday, Tuesday, Thursday, Friday.**
+ * Asked for as _"update the split to 4 day upper lower, mon/tues
+ * thurs/fri, lowers stay the same"_, with both upper days written by the
+ * lifter. It replaced upper, legs, push, pull, legs (Monday to Friday),
+ * whose leg days are kept exactly as they were.
  *
- * Every day is four exercises, and every exercise appears once a week
- * except the barbell calf raise, which runs on both leg days in two
- * ranges. Two corrections shaped the upper half, both worth keeping:
- *
- * - **Lateral raises are not on the overhead-press day.** _"This prevents
- *   getting twice weekly frequency on side delts"_ — the press trains
- *   them, so the raise goes on Upper and the side delts get two days.
- * - **Shrugs are not the day before deadlifts.** _"Shrugs before
- *   deadlifts might have a negative impact"_ — the traps hold the bar on
- *   every pull, so they sit on Monday, four days clear of Friday.
- *
- * That leaves the arms on one day each — both triceps movements on Push,
- * both curls on Pull — which is the price of fitting the shrug onto a
- * four-exercise Upper day. Monday's bench and row still work them.
+ * Upper A pairs the bench with the row, Upper B the press with the
+ * pull-up, and each day trains the delts and the arms once — lateral
+ * raises with the bench, rear delts with the pull-up, a curl and a
+ * triceps movement on each. Every exercise appears once a week except the
+ * barbell calf raise, which runs on both lower days in two ranges.
  *
  * **The swings close every session**, as an EMOM that progresses by week
  * (`domain/programs/emom.ts`) — _"I'd like to also track my post workout
@@ -287,11 +279,21 @@ const exercise = (slug: string): RoutineEntry => ({ kind: 'exercise', slug })
  */
 const SWINGS: RoutineEntry = { kind: 'conditioning', slug: 'kb-swing' }
 
-const UPPER: readonly RoutineEntry[] = [
+const UPPER_A: readonly RoutineEntry[] = [
   lift('bench'),
   exercise('pendlay-row'),
   exercise('db-lateral-raise'),
-  exercise('barbell-shrug'),
+  exercise('barbell-curl'),
+  exercise('skullcrusher'),
+  SWINGS,
+]
+
+const UPPER_B: readonly RoutineEntry[] = [
+  exercise('overhead-press'),
+  exercise('pull-up'),
+  exercise('rear-delt-raise'),
+  exercise('db-curl'),
+  exercise('french-press'),
   SWINGS,
 ]
 
@@ -322,22 +324,6 @@ const LEGS_A: readonly RoutineEntry[] = [
   SWINGS,
 ]
 
-const PUSH: readonly RoutineEntry[] = [
-  exercise('overhead-press'),
-  exercise('dips'),
-  exercise('skullcrusher'),
-  exercise('french-press'),
-  SWINGS,
-]
-
-const PULL: readonly RoutineEntry[] = [
-  exercise('pull-up'),
-  exercise('rear-delt-raise'),
-  exercise('ez-bar-curl'),
-  exercise('db-curl'),
-  SWINGS,
-]
-
 const LEGS_B: readonly RoutineEntry[] = [
   lift('deadlift'),
   exercise('front-squat'),
@@ -364,19 +350,19 @@ const LEGS_B: readonly RoutineEntry[] = [
  * lift is in its competition version — low bar, touch-and-go bench,
  * sumo — once a week, spread Monday, Tuesday and Friday.
  */
-const ULPPL_SPLIT: RpSplit = {
-  id: 'ulppl-5',
-  name: 'Upper, legs, push, pull, legs',
-  description: 'Monday to Friday, the weekend off.',
-  daysPerWeek: 5,
+const UPPER_LOWER_SPLIT: RpSplit = {
+  id: 'ul-4',
+  name: 'Upper, lower, upper, lower',
+  description: 'Monday, Tuesday, Thursday and Friday.',
+  daysPerWeek: 4,
   days: [
     {
       index: 0,
       label: 'Monday',
       weekday: 1,
-      focusName: 'Upper',
-      muscles: ['chest', 'upper-back', 'side-delts', 'traps'],
-      routine: UPPER,
+      focusName: 'Upper A',
+      muscles: ['chest', 'upper-back', 'side-delts', 'biceps', 'triceps'],
+      routine: UPPER_A,
       warmUp: 'upper',
     },
     {
@@ -390,24 +376,15 @@ const ULPPL_SPLIT: RpSplit = {
     },
     {
       index: 2,
-      label: 'Wednesday',
-      weekday: 3,
-      focusName: 'Push',
-      muscles: ['front-delts', 'chest', 'triceps'],
-      routine: PUSH,
+      label: 'Thursday',
+      weekday: 4,
+      focusName: 'Upper B',
+      muscles: ['front-delts', 'lats', 'rear-delts', 'biceps', 'triceps'],
+      routine: UPPER_B,
       warmUp: 'upper',
     },
     {
       index: 3,
-      label: 'Thursday',
-      weekday: 4,
-      focusName: 'Pull',
-      muscles: ['lats', 'rear-delts', 'biceps'],
-      routine: PULL,
-      warmUp: 'upper',
-    },
-    {
-      index: 4,
       label: 'Friday',
       weekday: 5,
       focusName: 'Legs B',
@@ -419,7 +396,7 @@ const ULPPL_SPLIT: RpSplit = {
 }
 
 /** The week the app runs. */
-const RP_SPLIT: RpSplit = ULPPL_SPLIT
+const RP_SPLIT: RpSplit = UPPER_LOWER_SPLIT
 
 /**
  * The split, which no longer depends on anything.
