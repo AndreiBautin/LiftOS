@@ -29,6 +29,14 @@ export function Debrief({
   readonly units: WeightUnit
 }) {
   const result = debrief(workout, history)
+  /*
+   * A deload is under last time on purpose, and the week after plans from
+   * the bars before it (`planFromHistory` reads past a deload) — so
+   * "came in under" would read a plan as a slip, and "stays at" would name
+   * the deload's bar for a week that will not use it. Both are left out;
+   * the headline above says what a deload is.
+   */
+  const deload = workout.deload === true
   const exercise = (id: string) => library.find((one) => one.id === id)
   const name = (id: string) => exercise(id)?.name ?? id
 
@@ -40,7 +48,9 @@ export function Debrief({
   const matched = result.held.filter((one) => one.versus.kind === 'matched')
   const held = [
     matched.length > 0 ? `${list(matched.map((one) => name(one.exerciseId)))} matched it` : '',
-    under.length > 0 ? `${list(under.map((one) => name(one.exerciseId)))} came in under` : '',
+    under.length > 0 && !deload
+      ? `${list(under.map((one) => name(one.exerciseId)))} came in under`
+      : '',
   ]
     .filter((part) => part !== '')
     .join('; ')
@@ -63,7 +73,7 @@ export function Debrief({
       `${nextItems.length > 0 ? 'the rest' : building.length === 1 ? name(building[0]?.exerciseId ?? '') : 'every lift'} at the same ${building.length === 1 ? 'bar' : 'bars'}, a rep more`,
     )
   }
-  const next = list(nextItems, '; ')
+  const next = deload ? '' : list(nextItems, '; ')
 
   if (moved === '' && held === '' && next === '') return null
 

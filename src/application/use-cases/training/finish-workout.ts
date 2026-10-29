@@ -37,7 +37,11 @@ interface FinishWorkoutDeps {
 export interface ExerciseProgress {
   readonly exerciseId: ExerciseId
   readonly name: string
-  readonly verdict: 'better' | 'matched' | 'worse' | 'new'
+  /**
+   * `lighter` is `worse` in a deload session: under last time because the
+   * bar was dropped on purpose, which is the plan rather than a slip.
+   */
+  readonly verdict: 'better' | 'matched' | 'worse' | 'lighter' | 'new'
   readonly estimate?: E1rmEstimate
 }
 
@@ -136,7 +140,7 @@ async function buildReport(
     volumeByMuscle,
     progress,
     newEstimates,
-    headline: headlineFor(progress),
+    headline: headlineFor(progress, workout.deload === true),
     records: await recordsOf(workout, lookup, deps),
   }
 }
@@ -168,7 +172,8 @@ async function verdictFor(
 
   const versus = versusLast(current, before)
   if (versus === undefined || versus.kind === 'matched') return 'matched'
-  return isProgress(versus) ? 'better' : 'worse'
+  if (isProgress(versus)) return 'better'
+  return workout.deload === true ? 'lighter' : 'worse'
 }
 
 /**
@@ -192,7 +197,10 @@ async function recordsOf(
   }))
 }
 
-function headlineFor(progress: readonly ExerciseProgress[]): string {
+function headlineFor(progress: readonly ExerciseProgress[], deload: boolean): string {
+  if (deload && progress.length > 0) {
+    return 'Deload done: lighter by design. The next working week picks up from the bars before it.'
+  }
   const regressed = progress.filter((entry) => entry.verdict === 'worse')
   const improved = progress.filter((entry) => entry.verdict === 'better')
 

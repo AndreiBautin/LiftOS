@@ -1,5 +1,14 @@
 import type { CSSProperties } from 'react'
-import { ArrowDown, ArrowUp, BarChart3, Minus, Sparkles, Star, TrendingUp } from 'lucide-react'
+import {
+  ArrowDown,
+  ArrowUp,
+  BarChart3,
+  Feather,
+  Minus,
+  Sparkles,
+  Star,
+  TrendingUp,
+} from 'lucide-react'
 
 import { SessionNote } from '@/features/history/SessionNote'
 import { ShareSession } from '@/features/share/ShareSession'
@@ -258,6 +267,13 @@ export function SessionReport({ report, units, onDismiss }: Props) {
             </p>
           )}
 
+          {report.progress.some((entry) => entry.verdict === 'lighter') && (
+            <p className="text-ink-500 mt-3 text-xs">
+              A deload drops the bar on purpose, so lighter than last time is the plan. The week
+              after picks up from the bars before it.
+            </p>
+          )}
+
           <ApplyEstimates progress={report.progress} />
         </Card>
       )}
@@ -290,7 +306,7 @@ export function SessionReport({ report, units, onDismiss }: Props) {
   )
 }
 
-function Verdict({ verdict }: { readonly verdict: 'better' | 'matched' | 'worse' | 'new' }) {
+function Verdict({ verdict }: { readonly verdict: WorkoutReport['progress'][number]['verdict'] }) {
   switch (verdict) {
     case 'better':
       return (
@@ -304,6 +320,14 @@ function Verdict({ verdict }: { readonly verdict: 'better' | 'matched' | 'worse'
         <Badge tone="bad">
           <ArrowDown size={12} aria-hidden className="mr-0.5" />
           down
+        </Badge>
+      )
+    case 'lighter':
+      // The deload's violet, never the bad colour: this is the plan.
+      return (
+        <Badge className="bg-[oklch(0.62_0.13_285_/_0.12)] text-[oklch(0.78_0.11_285)] ring-1 ring-[oklch(0.62_0.13_285_/_0.3)]">
+          <Feather size={12} aria-hidden className="mr-0.5" />
+          deload
         </Badge>
       )
     case 'matched':

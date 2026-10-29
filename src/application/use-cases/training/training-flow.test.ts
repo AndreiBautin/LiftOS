@@ -951,7 +951,14 @@ describe('a deload week', () => {
     expect(deload.workout.entries[accessory]?.sets[0]?.plannedLoad).toBe(75)
     expect(deload.workout.entries[accessory]?.sets[0]?.plannedReps).toBe(16)
     await logAll(deload.workout.id, accessory, 75, 16)
-    await finishWorkout(deload.workout.id, deps)
+    const report = await finishWorkout(deload.workout.id, deps)
+    // Under last time by design, so the report says so rather than "down".
+    expect(
+      report.progress.find(
+        (entry) => entry.exerciseId === first.workout.entries[accessory]?.exerciseId,
+      )?.verdict,
+    ).toBe('lighter')
+    expect(report.headline).toMatch(/^Deload done/)
 
     currentTime = new Date('2026-09-09T09:00:00.000Z')
     const after = await startWorkout(request, deps)
