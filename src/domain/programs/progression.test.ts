@@ -171,12 +171,16 @@ describe('deloadRepsFor', () => {
    * A pull-up with no belt has no bar to lighten, so matched reps left
    * every deload set as hard as the working week.
    */
-  it('takes a quarter off the reps on the body alone', () => {
-    expect(deloadRepsFor(did(0, 12, 12, 10), range)).toBe(7)
+  it('halves the reps on the body alone', () => {
+    expect(deloadRepsFor(did(0, 12, 12, 10), range)).toBe(5)
   })
 
   it('goes under the range rather than deloading at its floor', () => {
-    expect(deloadRepsFor(did(0, 5, 5, 5), range)).toBe(3)
+    expect(deloadRepsFor(did(0, 5, 5, 5), range)).toBe(2)
+  })
+
+  it('never plans a set of nothing', () => {
+    expect(deloadRepsFor(did(0, 1, 1), { low: 1, high: 30 })).toBe(1)
   })
 
   it('lightens a belted set by its belt, not its reps', () => {
