@@ -7,17 +7,19 @@ import type { ExerciseId } from '@/domain/ids/ids'
  * Double progression for an EMOM: reps on the minute, then the bell.
  *
  * Asked for as _"the only thing we progress is reps up to 30, then up the
- * weight and reprogress"_, at _"always 10 minutes"_, from 60 lb for ten on
- * the minute. The lifting's double progression with the minute as the set:
- * climb the reps to the top, then ten pounds on the bell and back to ten.
+ * weight and reprogress"_, at _"always 10 minutes"_. The lifting's double
+ * progression with the minute as the set: climb the reps to the top, then
+ * ten pounds on the bell and back to ten. **Two EMOMs run it**, each on its
+ * own ladder: the clean and press closing the upper days from a 30 lb bell,
+ * the swings closing the lower days from 60 lb.
  *
  * It first climbed the minutes too — ten reps again with a minute more at
  * thirty, the bell only at 30 × 30 — and that went within the day. The
  * minutes are fixed now, so they are written on the plan and never read
  * back from a log.
  *
- * **It moves once a calendar week, not once a session.** The swings close
- * every session, so per session it would climb five reps a week; the rule
+ * **It moves once a calendar week, not once a session.** Each EMOM runs
+ * twice a week, so per session it would climb two reps a week; the rule
  * asked for is per week. Every session in a week runs the week's EMOM, and
  * the first one of the next week takes the next rung from what was done.
  *
@@ -34,8 +36,17 @@ export interface EmomStep {
 /** Always ten minutes. */
 const EMOM_MINUTES = 10
 
-/** Where a first EMOM opens: what was being done when this was asked for. */
-export const EMOM_START: EmomStep = { load: 60, reps: 10, minutes: EMOM_MINUTES }
+/** Where a first EMOM opens: ten on the minute for ten minutes. */
+export const EMOM_START: Omit<EmomStep, 'load'> = { reps: 10, minutes: EMOM_MINUTES }
+
+/** The bell each EMOM opens on, by exercise; one not named opens on the lighter. */
+const START_BELL: Readonly<Record<string, number>> = { 'kb-swing': 60, 'kb-clean-press': 30 }
+const DEFAULT_START_BELL = 30
+
+/** An exercise's first EMOM. */
+function emomStart(id: ExerciseId): EmomStep {
+  return { ...EMOM_START, load: START_BELL[id] ?? DEFAULT_START_BELL }
+}
 
 /** Where the reps start, and start again on a heavier bell. */
 const EMOM_FLOOR = 10
@@ -51,16 +62,18 @@ export function nextEmom(step: EmomStep): EmomStep {
 }
 
 /**
- * A deload's EMOM: **the 30 lb bell**, the same reps, the same ten minutes
- * — _"i have a 30lb one, for deload lets just do that and keep the same
- * reps"_. A kettlebell is the bells on the floor, so the deload is the
- * lighter one there is rather than a share of the working one (which asked
- * for a 45 nobody owned). A working bell at or under thirty keeps itself.
+ * A deload's EMOM: **the same bell, half the reps on the minute and half
+ * the minutes**, rounded down — _"for the deload, just half the reps and
+ * sets and keep weight the same"_. A kettlebell is the bells on the floor,
+ * so the cut is in the work, never the bell. It was a quarter off the bell,
+ * then fewer reps, then the 30 lb bell at the same reps, each for a release.
  */
-const DELOAD_BELL = 30
-
 export function deloadEmom(step: EmomStep): EmomStep {
-  return { load: Math.min(step.load, DELOAD_BELL), reps: step.reps, minutes: EMOM_MINUTES }
+  return {
+    load: step.load,
+    reps: Math.max(1, Math.floor(step.reps / 2)),
+    minutes: Math.floor(EMOM_MINUTES / 2),
+  }
 }
 
 /**
@@ -109,7 +122,7 @@ export function plannedEmom(
   deload: boolean,
 ): EmomStep {
   const last = lastEmom(history, id)
-  if (last === undefined) return deload ? deloadEmom(EMOM_START) : EMOM_START
+  if (last === undefined) return deload ? deloadEmom(emomStart(id)) : emomStart(id)
   if (deload) return deloadEmom(last.step)
   return mondayOf(last.date) === mondayOf(day) ? last.step : nextEmom(last.step)
 }

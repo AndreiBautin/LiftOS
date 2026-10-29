@@ -1814,6 +1814,12 @@ const CONDITIONING_PLANS: Readonly<Record<string, ConditioningPlan>> = {
     emom: true,
     note: 'On the minute, every minute, for ten minutes. A rep a week to thirty, then ten pounds on the bell and back to ten. Hips, not arms.',
   },
+  'kb-clean-press': {
+    minutes: EMOM_START.minutes,
+    style: 'HIIT',
+    emom: true,
+    note: 'On the minute, every minute, for ten minutes. A rep a week to thirty, then ten pounds on the bell and back to ten. Clean to the rack, then press.',
+  },
 }
 
 /**

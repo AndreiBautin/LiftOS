@@ -84,37 +84,43 @@ describe('nextEmom', () => {
 })
 
 describe('deloadEmom', () => {
-  /* "i have a 30lb one, for deload lets just do that and keep the same reps" */
-  it('runs the 30 lb bell at the same reps for the same ten minutes', () => {
+  /* "just half the reps and sets and keep weight the same" */
+  it('keeps the bell and halves the reps on the minute and the minutes', () => {
     expect(deloadEmom({ load: 60, reps: 14, minutes: 10 })).toEqual({
-      load: 30,
-      reps: 14,
-      minutes: 10,
+      load: 60,
+      reps: 7,
+      minutes: 5,
     })
   })
 
-  it('never goes heavier than the working bell', () => {
-    expect(deloadEmom({ load: 25, reps: 14, minutes: 10 })).toEqual({
-      load: 25,
-      reps: 14,
-      minutes: 10,
+  it('rounds the reps down', () => {
+    expect(deloadEmom({ load: 30, reps: 11, minutes: 10 })).toEqual({
+      load: 30,
+      reps: 5,
+      minutes: 5,
     })
   })
 })
 
 describe('plannedEmom', () => {
-  it('opens at 60 lb, ten on the minute for ten minutes', () => {
-    expect(plannedEmom([], swing, '2026-10-26', false)).toEqual(EMOM_START)
+  /* Each EMOM on its own bell: swings from 60, the clean and press from 30. */
+  it('opens ten on the minute for ten minutes, on each exercise’s own bell', () => {
+    expect(plannedEmom([], swing, '2026-10-26', false)).toEqual({ ...EMOM_START, load: 60 })
+    expect(plannedEmom([], asExerciseId('kb-clean-press'), '2026-10-26', false)).toEqual({
+      ...EMOM_START,
+      load: 30,
+    })
   })
 
   /*
-   * The swings close every session, and the rule asked for is a rep a
-   * week — so a second session in the same calendar week runs the same.
+   * Each EMOM runs twice a week, and the rule asked for is a rep a week —
+   * so a second session in the same calendar week runs the same.
    */
   it('repeats inside a calendar week and climbs into the next', () => {
-    const monday = [session('2026-10-26', EMOM_START)]
-    expect(plannedEmom(monday, swing, '2026-10-30', false)).toEqual(EMOM_START)
-    expect(plannedEmom(monday, swing, '2026-11-02', false)).toEqual({ ...EMOM_START, reps: 11 })
+    const start = { ...EMOM_START, load: 60 }
+    const monday = [session('2026-10-26', start)]
+    expect(plannedEmom(monday, swing, '2026-10-30', false)).toEqual(start)
+    expect(plannedEmom(monday, swing, '2026-11-02', false)).toEqual({ ...start, reps: 11 })
   })
 
   it('climbs from what was done, not what was planned', () => {
@@ -140,12 +146,12 @@ describe('plannedEmom', () => {
   it('deloads from the last working week and is read past by the week after', () => {
     const working = session('2026-10-26', { load: 60, reps: 14, minutes: 10 })
     expect(plannedEmom([working], swing, '2026-11-02', true)).toEqual({
-      load: 30,
-      reps: 14,
-      minutes: 10,
+      load: 60,
+      reps: 7,
+      minutes: 5,
     })
 
-    const deloaded = session('2026-11-02', { load: 30, reps: 14, minutes: 10 }, { deload: true })
+    const deloaded = session('2026-11-02', { load: 60, reps: 7, minutes: 5 }, { deload: true })
     expect(plannedEmom([deloaded, working], swing, '2026-11-09', false)).toEqual({
       load: 60,
       reps: 15,
@@ -154,8 +160,8 @@ describe('plannedEmom', () => {
   })
 
   it('ignores an EMOM that was never done', () => {
-    const done = session('2026-10-19', EMOM_START)
-    const pending = session('2026-10-26', { ...EMOM_START, reps: 11 }, { done: false })
+    const done = session('2026-10-19', { ...EMOM_START, load: 60 })
+    const pending = session('2026-10-26', { ...EMOM_START, load: 60, reps: 11 }, { done: false })
     expect(lastEmom([pending, done], swing)?.date).toBe('2026-10-19')
   })
 })

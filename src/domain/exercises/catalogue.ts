@@ -796,6 +796,22 @@ const ENTRIES: readonly CatalogueEntry[] = [
     notes:
       'Conditioning that also loads the posterior chain — count it against hip fatigue, not as free cardio.',
   },
+  {
+    slug: 'kb-clean-press',
+    name: 'Kettlebell Clean and Press',
+    primaryMuscle: 'front-delts',
+    secondaryMuscles: ['triceps', 'glutes', 'hamstrings', 'core'],
+    equipment: 'kettlebell',
+    pattern: 'conditioning',
+    isCompound: true,
+    intent: 'conditioning',
+    sfr: 3,
+    // A swing's hinge plus a press overhead every rep: costed like the swing.
+    systemicCost: 0.35,
+    defaultRestSeconds: 60,
+    notes:
+      'Conditioning that also loads the shoulders — it closes the upper days, after the pressing is done.',
+  },
 
   /* ---- Warm-ups ------------------------------------------------------ */
   {

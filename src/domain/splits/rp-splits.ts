@@ -273,10 +273,13 @@ const exercise = (slug: string): RoutineEntry => ({ kind: 'exercise', slug })
  * triceps movement on each. Every exercise appears once a week except the
  * barbell calf raise, which runs on both lower days in two ranges.
  *
- * **The swings close every session**, as an EMOM that progresses by week
- * (`domain/programs/emom.ts`) — _"I'd like to also track my post workout
- * cardio"_. The treadmill walk stays in the catalogue, unscheduled.
+ * **An EMOM closes every session**, progressing by week
+ * (`domain/programs/emom.ts`): a kettlebell clean and press on the upper
+ * days and swings on the lower — _"kb clean and press … on upper days (mon
+ * and thurs) and kb swing on lower days (tues and fri)"_. The treadmill
+ * walk stays in the catalogue, unscheduled.
  */
+const CLEAN_PRESS: RoutineEntry = { kind: 'conditioning', slug: 'kb-clean-press' }
 const SWINGS: RoutineEntry = { kind: 'conditioning', slug: 'kb-swing' }
 
 const UPPER_A: readonly RoutineEntry[] = [
@@ -285,7 +288,7 @@ const UPPER_A: readonly RoutineEntry[] = [
   exercise('db-lateral-raise'),
   exercise('barbell-curl'),
   exercise('skullcrusher'),
-  SWINGS,
+  CLEAN_PRESS,
 ]
 
 const UPPER_B: readonly RoutineEntry[] = [
@@ -294,7 +297,7 @@ const UPPER_B: readonly RoutineEntry[] = [
   exercise('rear-delt-raise'),
   exercise('db-curl'),
   exercise('french-press'),
-  SWINGS,
+  CLEAN_PRESS,
 ]
 
 /**

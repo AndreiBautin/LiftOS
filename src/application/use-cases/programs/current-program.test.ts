@@ -127,7 +127,7 @@ describe('the shipped week', () => {
       'db-lateral-raise',
       'barbell-curl',
       'skullcrusher',
-      'kb-swing',
+      'kb-clean-press',
     ])
     expect(worked(1)).toEqual([
       'low-bar-squat',
@@ -142,7 +142,7 @@ describe('the shipped week', () => {
       'rear-delt-raise',
       'db-curl',
       'french-press',
-      'kb-swing',
+      'kb-clean-press',
     ])
     expect(worked(3)).toEqual([
       'sumo-deadlift',
@@ -155,15 +155,17 @@ describe('the shipped week', () => {
 
   /*
    * Every movement once a week except the calf raise, which runs on both
-   * lower days in two ranges, and the swings, which close every session. A movement landing twice, or going missing,
+   * lower days in two ranges, and the two EMOMs: the clean and press on
+   * both upper days, the swings on both lower days. A movement landing twice, or going missing,
    * would still build a valid week — this is what notices.
    */
-  it('trains every movement once a week, the calf raise twice and the swings daily', () => {
+  it('trains every movement once a week, the calf raise and each EMOM twice', () => {
     const all = [0, 1, 2, 3].flatMap(worked)
     expect(all).toHaveLength(22)
     expect(all.filter((slug) => slug === 'barbell-calf-raise')).toHaveLength(2)
-    expect(all.filter((slug) => slug === 'kb-swing')).toHaveLength(4)
-    expect(new Set(all).size).toBe(18)
+    expect(all.filter((slug) => slug === 'kb-swing')).toHaveLength(2)
+    expect(all.filter((slug) => slug === 'kb-clean-press')).toHaveLength(2)
+    expect(new Set(all).size).toBe(19)
   })
 
   /*

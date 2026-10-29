@@ -980,9 +980,10 @@ describe('a deload week', () => {
   })
 })
 
-describe('the swing EMOM', () => {
+describe('the EMOM', () => {
+  /* The suite starts on a Wednesday, which opens Thursday's upper day: the clean and press. */
   const swingOf = (entries: readonly LogEntry[]) =>
-    entries.findIndex((entry) => entry.exerciseId === asExerciseId('kb-swing'))
+    entries.findIndex((entry) => entry.exerciseId === asExerciseId('kb-clean-press'))
 
   const deloadProgram = (): typeof program => ({
     ...program,
@@ -997,7 +998,7 @@ describe('the swing EMOM', () => {
    * session, logged once, and the next week's session climbs a rep from
    * it — or, on a deload, is cut from it.
    */
-  it('opens at 60 lb × 10 for ten minutes, climbs a rep a week, and deloads on the 30', async () => {
+  it('opens at 30 lb × 10 for ten minutes, climbs a rep a week, and halves on a deload', async () => {
     const deps = beginProgram()
     const request = { athlete, program, roundingIncrement: 5 }
 
@@ -1005,7 +1006,7 @@ describe('the swing EMOM', () => {
     if (first.kind !== 'started') throw new Error('expected a started workout')
     const index = swingOf(first.workout.entries)
     const set = first.workout.entries[index]?.sets[0]
-    expect(set?.plannedLoad).toBe(60)
+    expect(set?.plannedLoad).toBe(30)
     expect(set?.plannedReps).toBe(10)
     expect(set?.prescription.reps).toEqual({ kind: 'emom', reps: 10, minutes: 10 })
 
@@ -1014,7 +1015,7 @@ describe('the swing EMOM', () => {
         workoutId: first.workout.id,
         entryIndex: index,
         setIndex: 0,
-        result: { load: 60, reps: 10, outcome: 'completed' },
+        result: { load: 30, reps: 10, outcome: 'completed' },
       },
       deps,
     )
@@ -1032,6 +1033,6 @@ describe('the swing EMOM', () => {
     if (deload.kind !== 'started') throw new Error('expected a started workout')
     const deloadSet = deload.workout.entries[swingOf(deload.workout.entries)]?.sets[0]
     expect(deloadSet?.plannedLoad).toBe(30)
-    expect(deloadSet?.prescription.reps).toEqual({ kind: 'emom', reps: 10, minutes: 10 })
+    expect(deloadSet?.prescription.reps).toEqual({ kind: 'emom', reps: 5, minutes: 5 })
   })
 })

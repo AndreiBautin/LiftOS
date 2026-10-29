@@ -1,6 +1,13 @@
 /** Release notes, newest first; `WhatsNew` shows the first once. */
 export const RELEASES: readonly { readonly id: string; readonly items: readonly string[] }[] = [
   {
+    id: '2026-10-29',
+    items: [
+      'Upper days now close on a kettlebell clean and press EMOM from 30 lb; lower days keep the swings.',
+      'Deload weeks keep the bell and halve the reps and minutes.',
+    ],
+  },
+  {
     id: '2026-10-28',
     items: [
       'The week is upper, lower, upper, lower: Monday, Tuesday, Thursday and Friday, with Wednesday off.',

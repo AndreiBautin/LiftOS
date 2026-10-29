@@ -107,7 +107,7 @@ export function EmomTimer({
                 {countingIn ? 'Get ready' : `Minute ${String(reading.round)} of ${String(minutes)}`}
               </p>
               <p className="text-ink-300 text-sm">
-                {String(perMinute)} swings{bell === undefined ? '' : ` · ${bell}`}
+                {String(perMinute)} reps{bell === undefined ? '' : ` · ${bell}`}
               </p>
             </div>
           </div>
