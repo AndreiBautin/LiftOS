@@ -3003,7 +3003,10 @@ easier for deloads other than just dropping sets"_, then _"lets actually
 halve the reps"_ after a release at a quarter off: 12, 12, 10 pull-ups
 deload to 5, rounded down and allowed under the range's floor, or a
 lifter at the bottom of 5–30 would deload at the same five.
-A belted set keeps the loaded rule.
+A belted set keeps the loaded rule. **Dumbbells deload the same way**
+(`deloadsByReps`, tested in `training-flow.test.ts`) — _"all i have is
+25s"_: a quarter off a pair of 25s is a pair nobody owns, so Start keeps
+the load and halves the reps.
 
 **Two sets now, one on a deload** (it has been three, five, four, a split, two and three). It went to five on _"let's bump our
 sets up to 5 per exercise"_ and back to four with the ULPPL week, when

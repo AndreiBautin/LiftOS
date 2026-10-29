@@ -961,6 +961,44 @@ describe('a deload week', () => {
     expect(after.workout.entries[accessory]?.sets[0]?.plannedReps).toBe(17)
   })
 
+  /*
+   * "All i have is 25s": a quarter off a pair of 25s is a pair nobody
+   * owns, so a dumbbell deload keeps the bells and halves the reps.
+   */
+  it('keeps the dumbbells and halves the reps', async () => {
+    const deps = beginProgram()
+    const request = { athlete, program, roundingIncrement: 5 }
+    const dumbbells = new Set(
+      builtInExercises()
+        .filter((exercise) => exercise.equipment === 'dumbbell')
+        .map((exercise) => exercise.id),
+    )
+
+    const first = await startWorkout(request, deps)
+    if (first.kind !== 'started') throw new Error('expected a started workout')
+    const index = first.workout.entries.findIndex((entry) => dumbbells.has(entry.exerciseId))
+    expect(index).toBeGreaterThanOrEqual(0)
+    const sets = first.workout.entries[index]?.sets.length ?? 0
+    for (let setIndex = 0; setIndex < sets; setIndex += 1) {
+      await logSet(
+        {
+          workoutId: first.workout.id,
+          entryIndex: index,
+          setIndex,
+          result: { load: 25, reps: 21, outcome: 'completed' },
+        },
+        deps,
+      )
+    }
+    await finishWorkout(first.workout.id, deps)
+
+    currentTime = new Date('2026-09-02T09:00:00.000Z')
+    const deload = await startWorkout({ ...request, program: deloadProgram() }, deps)
+    if (deload.kind !== 'started') throw new Error('expected a started workout')
+    expect(deload.workout.entries[index]?.sets[0]?.plannedLoad).toBe(25)
+    expect(deload.workout.entries[index]?.sets[0]?.plannedReps).toBe(10)
+  })
+
   it('rounds the cut down to a load the increment makes', async () => {
     const deps = beginProgram()
     const first = await startOnAStrengthDay(deps)

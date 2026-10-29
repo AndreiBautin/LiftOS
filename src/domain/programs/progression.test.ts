@@ -183,6 +183,10 @@ describe('deloadRepsFor', () => {
     expect(deloadRepsFor(did(0, 1, 1), { low: 1, high: 30 })).toBe(1)
   })
 
+  it('halves the reps where the load cannot come down', () => {
+    expect(deloadRepsFor(did(25, 22, 21), { low: 15, high: 30 }, { byReps: true })).toBe(10)
+  })
+
   it('lightens a belted set by its belt, not its reps', () => {
     expect(deloadRepsFor(did(10, 8, 8, 7), range)).toBe(7)
   })

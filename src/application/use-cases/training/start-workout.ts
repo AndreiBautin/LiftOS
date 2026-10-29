@@ -18,6 +18,7 @@ import { resetKey, resetPending, type LoadResets } from '@/domain/programs/stall
 import {
   deloadLoad,
   deloadRepsFor,
+  deloadsByReps,
   firstSessionLoad,
   lastPerformance,
   nextLoad,
@@ -270,8 +271,11 @@ async function workingLoads(
       .flatMap((slot) => resolveExercise(slot, library) ?? []),
   )
 
-  const lighten = (load: number): number =>
-    deload ? deloadLoad(load, request.roundingIncrement) : load
+  /* A dumbbell deload keeps the pair and halves the reps (`deloadsByReps`). */
+  const lighten = (load: number, exercise: Exercise): number =>
+    deload && !deloadsByReps(exercise.equipment)
+      ? deloadLoad(load, request.roundingIncrement)
+      : load
 
   const entries = await Promise.all(
     ids.map(async (id): Promise<readonly [ExerciseId, number, LastTime | undefined][]> => {
@@ -299,10 +303,10 @@ async function workingLoads(
       })
       if (plan === undefined) {
         const seeded = strengthIds.has(id) ? seededLoad(id, request) : undefined
-        return seeded === undefined ? [] : [[id, lighten(seeded), undefined]]
+        return seeded === undefined ? [] : [[id, lighten(seeded, exercise), undefined]]
       }
       if (plan.load === undefined) return []
-      return [[id, lighten(plan.load), plan.lastTime]]
+      return [[id, lighten(plan.load, exercise), plan.lastTime]]
     }),
   )
 
@@ -385,6 +389,8 @@ function buildFromDay(
      */
     const lastTime = history[exerciseId]
     const emom = emoms[exerciseId]
+    const equipment = library.find((one) => one.id === exerciseId)?.equipment
+    const byReps = equipment !== undefined && deloadsByReps(equipment)
     const sets: LoggedSet[] = resolved.map((set) => {
       /* The week's EMOM, written into the set so the log says what it asked. */
       if (set.reps.kind === 'emom' && emom !== undefined) {
@@ -402,7 +408,7 @@ function buildFromDay(
       const reps =
         !set.isWarmup && set.reps.kind === 'range'
           ? deload
-            ? deloadRepsFor(lastTime?.last, set.reps)
+            ? deloadRepsFor(lastTime?.last, set.reps, { byReps })
             : plannedRepsFor(lastTime?.last, set.reps, lastTime?.bumped ?? false)
           : plannedReps(set.reps)
       return {
