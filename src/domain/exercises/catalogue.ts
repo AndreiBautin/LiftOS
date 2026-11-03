@@ -167,6 +167,22 @@ export const VARIATION_OF: Readonly<
 }
 
 /**
+ * An accessory's first session opens at a close cousin's last load.
+ *
+ * Asked for when the upper/lower week swapped the EZ bar curl for a
+ * barbell curl and the first one opened with no weight at all: months of
+ * curls sat under the other slug. **One session only, and only with no
+ * history of its own** — the moment the exercise is logged, its own log
+ * is the source. The cousin's load is taken as it stands, not progressed:
+ * last time was a different implement, so nothing has been earned on this
+ * one yet. Both directions, because either can be the one in the week.
+ */
+export const STAND_IN_FOR: Readonly<Record<string, string>> = {
+  'barbell-curl': 'ez-bar-curl',
+  'ez-bar-curl': 'barbell-curl',
+}
+
+/**
  * Pulls done in straps, and what that costs the forearms.
  *
  * The forearm credit on a heavy pull is *grip* — holding the bar is the

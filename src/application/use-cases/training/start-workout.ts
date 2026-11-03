@@ -32,6 +32,7 @@ import { applyDraft, type SessionDraft } from '@/domain/programs/session-draft'
 import type { DayMoves } from '@/domain/programs/schedule'
 import { DAY_VERSIONS, sameVersion } from '@/domain/splits/rp-splits'
 import { plannedEmom, type EmomStep } from '@/domain/programs/emom'
+import { STAND_IN_FOR } from '@/domain/exercises/catalogue'
 
 /**
  * Turning the next scheduled day into a workout that can be logged.
@@ -302,7 +303,9 @@ async function workingLoads(
         ...(request.resets !== undefined ? { resets: request.resets } : {}),
       })
       if (plan === undefined) {
-        const seeded = strengthIds.has(id) ? seededLoad(id, request) : undefined
+        const seeded = strengthIds.has(id)
+          ? seededLoad(id, request)
+          : await standInLoad(id, library, day, deps)
         return seeded === undefined ? [] : [[id, lighten(seeded, exercise), undefined]]
       }
       if (plan.load === undefined) return []
@@ -321,6 +324,29 @@ async function workingLoads(
       found.flatMap(([id, , lastTime]) => (lastTime === undefined ? [] : [[id, lastTime]])),
     ),
   }
+}
+
+/**
+ * A first session's load from its stand-in's last one (`STAND_IN_FOR`),
+ * taken as it stands rather than progressed — it was a different implement.
+ */
+async function standInLoad(
+  id: ExerciseId,
+  library: readonly Exercise[],
+  day: ProgramDay,
+  deps: StartWorkoutDeps,
+): Promise<number | undefined> {
+  const standInSlug = STAND_IN_FOR[id]
+  const standIn = library.find((one) => one.id === standInSlug)
+  if (standIn === undefined) return undefined
+  const history = await deps.workouts.forExercise(standIn.id, 10)
+  const plan = planFromHistory({
+    exercise: standIn,
+    variant: undefined,
+    range: rangeToday(day, id, library),
+    history,
+  })
+  return plan?.lastTime?.last.load ?? plan?.load
 }
 
 /** The rep range today's day prescribes for an exercise, if any. */

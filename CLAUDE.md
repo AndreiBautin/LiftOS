@@ -62,6 +62,15 @@ reason is tied to them; read those as history too.
   climbs it from history (`workingLoads`). Tonnage counts every minute.
   **Records and the bests wall read it as a 60 × 10 set** — a heavier bell
   is a real record, the estimated max beside it means nothing.
+- **A first barbell curl opens at the EZ bar curl's last load**, and the
+  other way round (`STAND_IN_FOR` in `domain/exercises/catalogue.ts`,
+  `standInLoad` in `start-workout.ts`; `training-flow.test.ts`). Reported
+  as _"todays curls workout dont specify a load"_: the upper/lower week
+  swapped the EZ bar curl for a barbell curl, and an accessory with no
+  history opens empty. **Only with no history of its own, for one
+  session**, and taken as it stands rather than progressed, since it was
+  a different implement. A short list of cousins, not a general rule —
+  an accessory still opens open by default.
 - **The Strength card and the hero's total read what the sessions
   measure** (`measuredMaxes` in `domain/strength/trend.ts`, tested;
   `isDeloadSession` in `features/train/hooks.ts`). Asked for as _"why

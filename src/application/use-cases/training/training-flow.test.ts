@@ -572,6 +572,45 @@ describe('two versions of one exercise in a week', () => {
     expect(skipped?.title).toContain('Legs A')
   })
 
+  it('opens a first barbell curl at the EZ bar curl’s last load, then its own', async () => {
+    const deps = beginProgram()
+    const curlIn = (workout: { readonly entries: readonly LogEntry[] }) =>
+      workout.entries.find((entry) => entry.exerciseId === 'barbell-curl')
+
+    // Monday 24 August: Upper A, its curl filed as the EZ bar curl at 60.
+    currentTime = new Date('2026-08-24T09:00:00.000Z')
+    const monday = await startWorkout({ athlete, program, roundingIncrement: 5 }, deps)
+    if (monday.kind !== 'started') throw new Error('expected a started workout')
+    expect(curlIn(monday.workout)?.sets.some((set) => set.plannedLoad !== undefined)).toBe(false)
+    await deps.workouts.save({
+      ...monday.workout,
+      entries: monday.workout.entries.map((entry) =>
+        entry.exerciseId === 'barbell-curl'
+          ? {
+              ...entry,
+              exerciseId: asExerciseId('ez-bar-curl'),
+              sets: entry.sets.map((set) => ({
+                ...set,
+                actualLoad: 60,
+                actualReps: 15,
+                outcome: 'completed' as const,
+              })),
+            }
+          : entry,
+      ),
+    })
+    await finishWorkout(monday.workout.id, deps)
+
+    // The next Monday: a barbell curl with no history of its own opens at 60.
+    currentTime = new Date('2026-08-31T09:00:00.000Z')
+    const next = await startWorkout({ athlete, program, roundingIncrement: 5 }, deps)
+    if (next.kind !== 'started') throw new Error('expected a started workout')
+    const curl = curlIn(next.workout)
+    const working = curl?.sets.filter((set) => !set.isWarmup) ?? []
+    expect(working.length).toBeGreaterThan(0)
+    expect(working.every((set) => set.plannedLoad === 60)).toBe(true)
+  })
+
   it('plans each calf raise from its own last time, never the other’s', async () => {
     const deps = beginProgram()
     const calfOf = (workout: { readonly entries: readonly LogEntry[] }) =>
