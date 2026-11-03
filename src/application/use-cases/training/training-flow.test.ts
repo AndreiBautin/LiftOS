@@ -4,6 +4,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { builtInExercises, STRENGTH_LIFT_SLUGS } from '@/domain/exercises/catalogue'
 import { asExerciseId, type ExerciseId, type IdGenerator, type WorkoutId } from '@/domain/ids/ids'
 import type { Clock } from '@/domain/repositories/ports'
+import type { DayMoves } from '@/domain/programs/schedule'
+import { mondayOf, shiftDay, toDayKey } from '@/domain/time/day'
 import type { AthleteState } from '@/domain/resolution/resolve'
 import type { LogEntry } from '@/domain/logging/workout-log'
 import { deriveProgram } from '@/application/use-cases/programs/current-program'
@@ -126,6 +128,20 @@ afterEach(async () => {
  */
 function beginProgram() {
   return services()
+}
+
+/**
+ * A request that skips every session earlier in the current week.
+ *
+ * Tests that jump a week ahead to meet the same session again would
+ * otherwise be handed Monday's, carried forward as missed
+ * (`carryForward`) — right for a lifter, beside the point of the test.
+ */
+function skippingTheWeekSoFar<T extends object>(request: T): T & { moves: DayMoves } {
+  const today = toDayKey(currentTime)
+  const moves: Record<string, null> = {}
+  for (let day = mondayOf(today); day < today; day = shiftDay(day, 1)) moves[day] = null
+  return { ...request, moves }
 }
 
 /** Moves the clock on a day — the only thing that changes which session is offered. */
@@ -308,7 +324,10 @@ describe('starting a session from a program', () => {
     await finishWorkout(first.workout.id, deps)
 
     for (let day = 0; day < 7; day += 1) nextDay()
-    const again = await startWorkout({ athlete, program, roundingIncrement: 5 }, deps)
+    const again = await startWorkout(
+      skippingTheWeekSoFar({ athlete, program, roundingIncrement: 5 }),
+      deps,
+    )
     if (again.kind !== 'started') throw new Error('expected a started workout')
 
     const sets =
@@ -347,7 +366,10 @@ describe('starting a session from a program', () => {
 
     // The same day next week.
     for (let day = 0; day < 7; day += 1) nextDay()
-    const again = await startWorkout({ athlete, program, roundingIncrement: 5 }, deps)
+    const again = await startWorkout(
+      skippingTheWeekSoFar({ athlete, program, roundingIncrement: 5 }),
+      deps,
+    )
     if (again.kind !== 'started') throw new Error('expected a started workout')
 
     const next = again.workout.entries.find((one) => one.exerciseId === entry.exerciseId)
@@ -533,6 +555,23 @@ describe('two versions of one exercise in a week', () => {
    * ones — the load and the reps of a different range. Each version reads
    * only its own history, and a version with none starts open.
    */
+  it('carries a missed Monday to Tuesday, and a skip leaves it behind', async () => {
+    const deps = beginProgram()
+    const first = await startWorkout({ athlete, program, roundingIncrement: 5 }, deps)
+    if (first.kind !== 'started') throw new Error('expected a started workout')
+    await finishWorkout(first.workout.id, deps)
+
+    // The next Tuesday, with Monday's session not done.
+    currentTime = new Date('2026-09-01T09:00:00.000Z')
+    const preview = await previewWorkout({ athlete, program, roundingIncrement: 5 }, deps)
+    expect(preview?.title).toContain('Upper A')
+    const skipped = await previewWorkout(
+      skippingTheWeekSoFar({ athlete, program, roundingIncrement: 5 }),
+      deps,
+    )
+    expect(skipped?.title).toContain('Legs A')
+  })
+
   it('plans each calf raise from its own last time, never the other’s', async () => {
     const deps = beginProgram()
     const calfOf = (workout: { readonly entries: readonly LogEntry[] }) =>
@@ -558,8 +597,12 @@ describe('two versions of one exercise in a week', () => {
     await finishWorkout(tuesday.workout.id, deps)
 
     // Friday: Legs B, the light version, which has never been logged.
+    // Thursday's Upper B is skipped, or it would be carried onto Friday.
     currentTime = new Date('2026-08-28T09:00:00.000Z')
-    const friday = await startWorkout({ athlete, program, roundingIncrement: 5 }, deps)
+    const friday = await startWorkout(
+      skippingTheWeekSoFar({ athlete, program, roundingIncrement: 5 }),
+      deps,
+    )
     if (friday.kind !== 'started') throw new Error('expected a started workout')
     const light = friday.workout.entries[calfOf(friday.workout)]
     expect(light?.variant).toBe('Light')
@@ -568,7 +611,10 @@ describe('two versions of one exercise in a week', () => {
 
     // The next Tuesday reads Tuesday's, and the topped range moves the bar.
     currentTime = new Date('2026-09-01T09:00:00.000Z')
-    const again = await startWorkout({ athlete, program, roundingIncrement: 5 }, deps)
+    const again = await startWorkout(
+      skippingTheWeekSoFar({ athlete, program, roundingIncrement: 5 }),
+      deps,
+    )
     if (again.kind !== 'started') throw new Error('expected a started workout')
     const next = again.workout.entries[calfOf(again.workout)]
     expect(next?.variant).toBe('Heavy')
@@ -813,7 +859,7 @@ describe('walking away from a session', () => {
 
     // A week on: one set of something else, then walk away.
     currentTime = new Date('2026-09-02T09:00:00.000Z')
-    const second = await startWorkout(request, deps)
+    const second = await startWorkout(skippingTheWeekSoFar(request), deps)
     if (second.kind !== 'started') throw new Error('expected a started workout')
     const other = second.workout.entries.findIndex(
       (entry, index) => index !== accessory && entry.sets.some((set) => !set.isWarmup),
@@ -830,7 +876,7 @@ describe('walking away from a session', () => {
     await abandonWorkout(second.workout.id, deps)
 
     currentTime = new Date('2026-09-09T09:00:00.000Z')
-    const third = await startWorkout(request, deps)
+    const third = await startWorkout(skippingTheWeekSoFar(request), deps)
     if (third.kind !== 'started') throw new Error('expected a started workout')
     expect(third.workout.entries[accessory]?.sets[0]?.plannedLoad).toBe(100)
   })
@@ -871,7 +917,7 @@ describe('a reset after a stall', () => {
      */
     const resets = { [id]: { load: 90, at: '2026-08-26T18:00:00.000Z' } }
     currentTime = new Date('2026-09-02T09:00:00.000Z')
-    const second = await startWorkout({ ...request, resets }, deps)
+    const second = await startWorkout(skippingTheWeekSoFar({ ...request, resets }), deps)
     if (second.kind !== 'started') throw new Error('expected a started workout')
     expect(second.workout.entries[accessory]?.sets[0]?.plannedLoad).toBe(90)
 
@@ -890,7 +936,7 @@ describe('a reset after a stall', () => {
 
     // Logged after the reset: the log is the source again.
     currentTime = new Date('2026-09-09T09:00:00.000Z')
-    const third = await startWorkout({ ...request, resets }, deps)
+    const third = await startWorkout(skippingTheWeekSoFar({ ...request, resets }), deps)
     if (third.kind !== 'started') throw new Error('expected a started workout')
     expect(third.workout.entries[accessory]?.sets[0]?.plannedLoad).toBe(90)
     expect(third.workout.entries[accessory]?.sets[0]?.plannedReps).toBe(17)
@@ -944,7 +990,10 @@ describe('a deload week', () => {
     await finishWorkout(first.workout.id, deps)
 
     currentTime = new Date('2026-09-02T09:00:00.000Z')
-    const deload = await startWorkout({ ...request, program: deloadProgram() }, deps)
+    const deload = await startWorkout(
+      skippingTheWeekSoFar({ ...request, program: deloadProgram() }),
+      deps,
+    )
     if (deload.kind !== 'started') throw new Error('expected a started workout')
     expect(deload.workout.deload).toBe(true)
     // 100 × 0.75, and the reps last time held rather than one past them.
@@ -961,7 +1010,7 @@ describe('a deload week', () => {
     expect(report.headline).toMatch(/^Deload done/)
 
     currentTime = new Date('2026-09-09T09:00:00.000Z')
-    const after = await startWorkout(request, deps)
+    const after = await startWorkout(skippingTheWeekSoFar(request), deps)
     if (after.kind !== 'started') throw new Error('expected a started workout')
     expect(after.workout.deload).toBeUndefined()
     expect(after.workout.entries[accessory]?.sets[0]?.plannedLoad).toBe(100)
@@ -1000,7 +1049,10 @@ describe('a deload week', () => {
     await finishWorkout(first.workout.id, deps)
 
     currentTime = new Date('2026-09-02T09:00:00.000Z')
-    const deload = await startWorkout({ ...request, program: deloadProgram() }, deps)
+    const deload = await startWorkout(
+      skippingTheWeekSoFar({ ...request, program: deloadProgram() }),
+      deps,
+    )
     if (deload.kind !== 'started') throw new Error('expected a started workout')
     expect(deload.workout.entries[index]?.sets[0]?.plannedLoad).toBe(25)
     expect(deload.workout.entries[index]?.sets[0]?.plannedReps).toBe(10)
@@ -1067,7 +1119,7 @@ describe('the EMOM', () => {
     await finishWorkout(first.workout.id, deps)
 
     currentTime = new Date('2026-09-02T09:00:00.000Z')
-    const next = await startWorkout(request, deps)
+    const next = await startWorkout(skippingTheWeekSoFar(request), deps)
     if (next.kind !== 'started') throw new Error('expected a started workout')
     const nextSet = next.workout.entries[swingOf(next.workout.entries)]?.sets[0]
     expect(nextSet?.plannedReps).toBe(11)

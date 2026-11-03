@@ -1,6 +1,13 @@
 /** Release notes, newest first; `WhatsNew` shows the first once. */
 export const RELEASES: readonly { readonly id: string; readonly items: readonly string[] }[] = [
   {
+    id: '2026-11-03',
+    items: [
+      'A missed session is carried forward to today, and the rest of the week moves back a day to make room.',
+      'Skip it from the hero if you would rather let it go.',
+    ],
+  },
+  {
     id: '2026-10-29',
     items: [
       'Upper days now close on a kettlebell clean and press EMOM from 30 lb; lower days keep the swings.',

@@ -11,7 +11,8 @@ import { SyncBadge } from '@/features/sync/SyncBadge'
 import { RestedFor } from './RestedFor'
 import { Button } from '@/components/shared/primitives'
 import { buttonStyles } from '@/components/shared/styles'
-import { weekIndexToStartOn } from '@/domain/programs/schedule'
+import { liveMoves, weekIndexToStartOn } from '@/domain/programs/schedule'
+import { parseDay } from '@/domain/time/day'
 import { strengthStandings } from '@/domain/strength/standards'
 import { measuredMaxes } from '@/domain/strength/trend'
 import { glyphFor, type Glyph } from '@/features/glyphs/glyph-for'
@@ -45,7 +46,7 @@ import { formatDate } from '@/lib/format-date'
  */
 export function HeroBanner() {
   const { clock } = useServices()
-  const { settings } = useSettings()
+  const { settings, update } = useSettings()
   const {
     day,
     week,
@@ -56,6 +57,7 @@ export function HeroBanner() {
     here,
     on,
     today: todayKey,
+    carriedFrom,
   } = useNextSession()
   const summary = useWeekSummary()
   const startWorkout = useStartWorkout()
@@ -235,6 +237,31 @@ export function HeroBanner() {
                 setMoving(false)
               }}
             />
+          )}
+          {/*
+            **A missed session is carried, not lost** (`carryForward`): the
+            hero says which day it was missed and offers the one way out.
+            Skip stores a move of nothing onto the missed day, which the
+            carry then reads as nothing owed.
+          */}
+          {carriedFrom !== undefined && todayKey !== undefined && (
+            <p className="text-ink-300 mt-2 flex flex-wrap items-center gap-x-2 text-xs">
+              <span>
+                Missed {formatDate(parseDay(carriedFrom), { weekday: 'long', timeZone: 'UTC' })} ·
+                carried over, the rest of the week moved back
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  update({
+                    dayMoves: { ...liveMoves(settings.dayMoves, todayKey), [carriedFrom]: null },
+                  })
+                }}
+                className="text-ink-300 hover:text-accent-400 tap-target -my-3 px-1 font-medium underline-offset-2 hover:underline"
+              >
+                Skip it
+              </button>
+            </p>
           )}
           <div className="mt-2 flex items-center justify-between gap-4">
             <h2

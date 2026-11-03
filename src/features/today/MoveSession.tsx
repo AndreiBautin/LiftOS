@@ -31,13 +31,16 @@ export function MoveSession({
   const blockStartedOn = schedule.data?.blockStartedOn
   if (blockStartedOn === undefined) return null
 
-  const moves = liveMoves(settings.dayMoves, today)
+  // The week as it stands, missed sessions carried; a move stores it, carries and all.
+  const moves = schedule.data?.moves
   const monday = mondayOf(on)
   const first = today > monday ? today : monday
   const days = Array.from({ length: 7 }, (_, at) => shiftDay(monday, at)).filter(
     (day) => day >= first && day !== on,
   )
-  const movedThisWeek = Object.keys(moves ?? {}).some((day) => mondayOf(day) === monday)
+  // Put back reads what was stored: a carry is not a move to undo.
+  const stored = liveMoves(settings.dayMoves, today)
+  const movedThisWeek = Object.keys(stored ?? {}).some((day) => mondayOf(day) === monday)
 
   return (
     <div className="mt-3">
@@ -78,7 +81,7 @@ export function MoveSession({
         <button
           type="button"
           onClick={() => {
-            const kept = Object.entries(moves ?? {}).filter(([day]) => mondayOf(day) !== monday)
+            const kept = Object.entries(stored ?? {}).filter(([day]) => mondayOf(day) !== monday)
             update({ dayMoves: kept.length === 0 ? undefined : Object.fromEntries(kept) })
             onDone()
           }}

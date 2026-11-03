@@ -151,6 +151,28 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   works — and every screen builds one with `rackFor(settings.plates,
 unit, settings.platePairs)`. Checked: one pair of 45s in Settings and
   the palette's 315 drew the lighter loading.
+- **A missed session is carried forward by default** (`carryForward`,
+  `missedThisWeek` and `catchUp` in `domain/programs/schedule.ts`, tested
+  in `day-moves.test.ts`; derived in `scheduleFor`, returned as
+  `Schedule.moves` and `carried`). Asked for as _"I feel like we should
+  make that the default unless I specifically want to skip… it's still the
+  Monday workout that I missed"_. A session earlier this week that went
+  undone comes to today (tomorrow once something was trained today) and
+  the rest of the week is **pushed, not swapped** — each session a day
+  later only where it must be, so a rest day absorbs it: Upper A missed
+  Monday reads Upper A Tuesday, Legs A Wednesday, Thursday and Friday as
+  they were. **Derived on every read, never stored**, so a carried session
+  missed again carries again. **Skip it** on the hero stores `null` on the
+  missed day, a move of nothing the carry reads as nothing owed; Put the
+  week back clears it. Not made when the push would run past Sunday, and
+  **nothing is owed before the first session ever filed**, or a fresh
+  install opened on a Wednesday would owe Monday. **Every reader of the
+  week takes `schedule.moves`, never `settings.dayMoves`** — the runway,
+  calendar export, adherence card, sync's upcoming list and Move; start and
+  preview get it through `scheduleFor`. Tests that jump a week ahead skip
+  the week so far (`skippingTheWeekSoFar` in `training-flow.test.ts`).
+  Checked by planting a missed Monday in the demo: carried, skipped, put
+  back.
 - **A session can be moved within its week** ("Move" beside the week
   name on the hero, `MoveSession`; `moveSession`, `liveMoves` and the
   `moves` argument of `sessionOn` in `domain/programs/schedule.ts`,
@@ -1395,7 +1417,8 @@ exercise-history.ts`), linked from its name in the session plan and
   "a program is a queue, not a calendar" rule** below — right while a
   day was a slot in a generated week, wrong once the week became the
   lifter's own routine by weekday. Finishing moves nothing, reopening
-  rewinds nothing, Skip is deleted (a missed day just passes), and
+  rewinds nothing, Skip is deleted (a missed day just passes — **since
+  reversed: a missed day is carried, see `carryForward` above**), and
   `jumpToWeek` writes a new block Monday. Today's session is offered
   until a completed log for it exists today; after that, and on a rest
   day, the next scheduled one is offered as "Start it early". **A

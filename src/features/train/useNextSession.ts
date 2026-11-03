@@ -46,6 +46,11 @@ export function useNextSession() {
     today: data?.today,
     when: data === undefined || next === undefined ? undefined : whenOf(next.on, data.today),
     doneToday: data?.doneToday === true,
+    /** Set when the next session is a missed one carried forward: the day it was missed. */
+    carriedFrom:
+      next !== undefined && data?.carried?.day.label === next.day.label
+        ? data.carried.on
+        : undefined,
     restDay: data !== undefined && data.todays === undefined,
   }
 }

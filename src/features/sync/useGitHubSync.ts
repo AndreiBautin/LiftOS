@@ -213,9 +213,10 @@ async function upcomingFor(
     const program = deriveProgram(settings, exercises)
     const today = toDayKey(services.clock.now())
     const blockStartedOn = blockStartOf(program, await services.position.get(), today)
-    const sessions = upcomingSessions(program, blockStartedOn, today, exercises, settings.dayMoves)
-    // The preview opens the next session; it is today's only when it is dated today.
+    // The week's moves are the schedule's, missed sessions carried forward.
     const schedule = await scheduleFor(program, services, settings.dayMoves)
+    const sessions = upcomingSessions(program, blockStartedOn, today, exercises, schedule.moves)
+    // The preview opens the next session; it is today's only when it is dated today.
     if (schedule.next?.on !== today) return sessions
     const preview = await previewWorkout(
       {

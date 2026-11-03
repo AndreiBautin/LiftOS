@@ -1,11 +1,11 @@
 import { CalendarRange, Check } from 'lucide-react'
 
-import { useSettings } from '@/app/context'
 import type { ProgramTemplate } from '@/domain/programs/program'
 import { weeksAhead } from '@/domain/programs/schedule'
 import { Card, CardHeading } from '@/components/shared/primitives'
 import { cn } from '@/lib/cn'
 
+import { useSchedule } from '@/features/train/hooks'
 import { splitDayLabel } from '@/features/train/useNextSession'
 
 import { CalendarExport } from './CalendarExport'
@@ -38,8 +38,8 @@ export function Runway({
   /** Labels of the sessions finished this calendar week. */
   readonly done: ReadonlySet<string>
 }) {
-  const { settings } = useSettings()
-  const weeks = weeksAhead(program, blockStartedOn, today, WEEKS, settings.dayMoves)
+  const moves = useSchedule().data?.moves
+  const weeks = weeksAhead(program, blockStartedOn, today, WEEKS, moves)
   const deloadIn = weeks.findIndex((week) => week.isDeload)
 
   return (

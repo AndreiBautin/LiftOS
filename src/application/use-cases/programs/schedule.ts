@@ -2,6 +2,8 @@ import type { ProgramPosition } from '@/domain/programs/position'
 import type { ProgramTemplate } from '@/domain/programs/program'
 import {
   blockStartFor,
+  carryForward,
+  liveMoves,
   mondayOf,
   sessionFrom,
   sessionOn,
@@ -30,6 +32,15 @@ interface Schedule {
    * tomorrow's rather than nothing.
    */
   readonly next?: ScheduledSession
+  /**
+   * The week's moves as they stand: the stored ones with every missed
+   * session carried forward (`carryForward`). **Every reader of the week
+   * takes these**, never `settings.dayMoves`, or the hero and the runway
+   * would disagree about where Monday's session went.
+   */
+  readonly moves?: DayMoves
+  /** The missed session carried forward to be offered next, dated where it was missed. */
+  readonly carried?: ScheduledSession
 }
 
 export interface ScheduleDeps {
@@ -59,12 +70,27 @@ export function blockStartOf(
 export async function scheduleFor(
   program: ProgramTemplate,
   deps: ScheduleDeps,
-  moves?: DayMoves,
+  storedMoves?: DayMoves,
 ): Promise<Schedule> {
   const today = toDayKey(deps.clock.now())
   const [stored, recent] = await Promise.all([deps.position.get(), deps.workouts.recent(20)])
   const blockStartedOn = blockStartOf(program, stored, today)
 
+  const monday = mondayOf(today)
+  // Newest first, so the last is the oldest in reach: enough to say the lifter trained before.
+  const firstFiled = recent.filter((log) => log.status === 'completed').at(-1)?.date
+  const thisWeek = recent.filter(
+    (log) => log.status === 'completed' && log.date >= monday && log.date <= today,
+  )
+  const { moves: carriedMoves, carried } = carryForward(
+    program,
+    blockStartedOn,
+    liveMoves(storedMoves, today),
+    today,
+    [...new Set(thisWeek.map((log) => log.title))],
+    { today: thisWeek.some((log) => log.date === today), since: firstFiled },
+  )
+  const moves = carriedMoves
   const todays = sessionOn(program, blockStartedOn, today, moves)
   const doneToday =
     todays !== undefined &&
@@ -88,5 +114,7 @@ export async function scheduleFor(
     ...(todays === undefined ? {} : { todays }),
     doneToday,
     ...(next === undefined ? {} : { next }),
+    ...(moves === undefined ? {} : { moves }),
+    ...(carried === undefined ? {} : { carried }),
   }
 }

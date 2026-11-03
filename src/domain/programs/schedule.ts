@@ -156,10 +156,147 @@ export function moveSession(
     [to]: moving,
     [from]: occupied ? there : null,
   }
-  // A day holding its own session needs no entry; nor does an empty rest day.
+  return tidy(program, blockStartedOn, next)
+}
+
+/** Drops entries that say nothing: a day holding its own session, or an empty rest day. */
+function tidy(
+  program: ProgramTemplate,
+  blockStartedOn: string,
+  next: Record<string, string | null>,
+): DayMoves {
   const needed = ([day, held]: [string, string | null]) =>
     held === null ? scheduledOn(program, blockStartedOn, day) !== undefined : held !== day
   return Object.fromEntries(Object.entries(next).filter(needed))
+}
+
+/**
+ * The week as it stands once every missed session has been carried
+ * forward — **the default, not an offer**. Asked for as _"I feel like we
+ * should make that the default unless I specifically want to skip… it's
+ * still the Monday workout that I missed"_: a session that went by undone
+ * is still owed, so it comes forward to today (tomorrow once something has
+ * been trained today) and the rest of the week moves back behind it, the
+ * way it would be rearranged by hand.
+ *
+ * Derived on every read from the stored moves, the clock and what is done,
+ * never stored — so it follows the week day by day without a write, and a
+ * carried session missed again simply carries again. **Skipping is a
+ * stored move** (`null` on the missed day), which this then reads as
+ * nothing owed. A carry that would run past Sunday is not made, and the
+ * sessions stay missed: the week has no room, and which to drop is the
+ * lifter's call.
+ *
+ * **Only a day after the first session ever filed can be missed**
+ * (`trained.since`): a fresh install opened on a Wednesday would otherwise
+ * owe Monday and Tuesday to somebody who was not using the app yet.
+ *
+ * `carried` is the first session brought forward — the one now offered
+ * next — dated where it was missed, for the hero to say so and offer Skip.
+ */
+export function carryForward(
+  program: ProgramTemplate,
+  blockStartedOn: string,
+  stored: DayMoves | undefined,
+  today: string,
+  done: readonly string[],
+  trained: { readonly today: boolean; readonly since: string | undefined },
+): { readonly moves: DayMoves | undefined; readonly carried?: ScheduledSession } {
+  const missed = missedThisWeek(program, blockStartedOn, stored, today, done, trained.since)
+  const [first] = missed
+  if (first === undefined) return { moves: stored }
+  const start = trained.today ? shiftDay(today, 1) : today
+  const moves = catchUp(
+    program,
+    blockStartedOn,
+    stored,
+    missed.map((one) => one.on),
+    start,
+    done,
+  )
+  return moves === undefined ? { moves: stored } : { moves, carried: first }
+}
+
+/**
+ * Sessions earlier this week that went by undone, in order — what
+ * `carryForward` brings forward. `done` is the titles finished this
+ * calendar week, matched the way `adherence` matches them, so a session
+ * done early on another day is not missed. A day on or before `since`, the
+ * first session ever filed, cannot be missed; with no history nothing can.
+ */
+export function missedThisWeek(
+  program: ProgramTemplate,
+  blockStartedOn: string,
+  moves: DayMoves | undefined,
+  today: string,
+  done: readonly string[],
+  since: string | undefined,
+): readonly ScheduledSession[] {
+  if (since === undefined) return []
+  const missed: ScheduledSession[] = []
+  for (let day = mondayOf(today); day < today; day = shiftDay(day, 1)) {
+    const session = sessionOn(program, blockStartedOn, day, moves)
+    if (day > since && session !== undefined && !done.includes(session.day.label)) {
+      missed.push(session)
+    }
+  }
+  return missed
+}
+
+/**
+ * Brings missed sessions forward to `start`, in the order they were
+ * missed, and pushes the rest of the week back behind them — each session
+ * a day later only where it has to be, so the shift is absorbed by the
+ * first rest day it meets.
+ *
+ * **Pushing, not swapping**, which is what separates it from
+ * `moveSession`: swapping a missed session with today's would send
+ * today's into the past, where it is missed instead. Upper A missed on
+ * Monday of an upper, lower, rest, upper, lower week becomes Upper A on
+ * Tuesday, Legs A on Wednesday, and Thursday and Friday as they were —
+ * upper and lower still alternate.
+ *
+ * Sessions already done this week stay where they are. **Undefined when
+ * the push would run past Sunday**: a moved session keeps its week.
+ */
+export function catchUp(
+  program: ProgramTemplate,
+  blockStartedOn: string,
+  moves: DayMoves | undefined,
+  missed: readonly string[],
+  start: string,
+  done: readonly string[] = [],
+): DayMoves | undefined {
+  const [first] = missed
+  if (first === undefined) return undefined
+  const sunday = shiftDay(mondayOf(first), 6)
+  if (start > sunday || missed.some((day) => day >= start)) return undefined
+
+  const queue: { readonly from: string; readonly source: string }[] = []
+  for (const day of missed) {
+    const source = heldOn(day, moves)
+    if (source === null || scheduledOn(program, blockStartedOn, source) === undefined)
+      return undefined
+    queue.push({ from: day, source })
+  }
+  for (let day = start; day <= sunday; day = shiftDay(day, 1)) {
+    const source = heldOn(day, moves)
+    const session = source === null ? undefined : scheduledOn(program, blockStartedOn, source)
+    if (source !== null && session !== undefined && !done.includes(session.day.label)) {
+      queue.push({ from: day, source })
+    }
+  }
+
+  const next: Record<string, string | null> = { ...moves }
+  for (const item of queue) next[item.from] = null
+  let cursor = start
+  for (const item of queue) {
+    const at = item.from > cursor ? item.from : cursor
+    if (at > sunday) return undefined
+    next[at] = item.source
+    cursor = shiftDay(at, 1)
+  }
+  return tidy(program, blockStartedOn, next)
 }
 
 /** Moves only for this week and later; anything older has lapsed. */
