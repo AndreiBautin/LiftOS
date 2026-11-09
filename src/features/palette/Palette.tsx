@@ -1,7 +1,6 @@
 import { Activity, CalendarDays, Dumbbell, LayoutGrid, Search } from 'lucide-react'
 import { MUSCLE_GROUP_LABELS, type MuscleGroup } from '@/domain/exercises/taxonomy'
-import { useServices, useSettings } from '@/app/context'
-import { toDayKey } from '@/domain/time/day'
+import { useSettings } from '@/app/context'
 import { nearestLoadable, rackFor } from '@/domain/units/plates'
 import { PlateLoader } from '@/features/train/PlateLoader'
 import { useMemo, useState } from 'react'
@@ -11,7 +10,7 @@ import { withViewTransition } from '@/app/view-transitions'
 import { useExercises, useRecentWorkouts } from '@/features/train/hooks'
 import { cn } from '@/lib/cn'
 
-import { SCREENS, screenPath } from '@/features/navigation/screens'
+import { SCREENS } from '@/features/navigation/screens'
 
 import { rankItems, type PaletteItem } from './rank'
 import { formatDate } from '@/lib/format-date'
@@ -20,7 +19,6 @@ import { formatDate } from '@/lib/format-date'
 export function Palette({ onClose }: { readonly onClose: () => void }) {
   const navigate = useNavigate()
   const { settings } = useSettings()
-  const today = toDayKey(useServices().clock.now())
   const exercises = useExercises()
   const workouts = useRecentWorkouts(30)
   const [query, setQuery] = useState('')
@@ -32,7 +30,7 @@ export function Palette({ onClose }: { readonly onClose: () => void }) {
       label: screen.label,
       kind: 'Page',
       keywords: screen.keywords,
-      to: screenPath(screen, today),
+      to: screen.to,
     }))
     const exerciseItems = (exercises.data ?? [])
       .filter((exercise) => !exercise.isArchived)
@@ -59,7 +57,7 @@ export function Palette({ onClose }: { readonly onClose: () => void }) {
       to: `/muscle/${muscle}`,
     }))
     return [...pageItems, ...muscleItems, ...exerciseItems, ...sessionItems]
-  }, [exercises.data, workouts.data, today])
+  }, [exercises.data, workouts.data])
 
   const shown = rankItems(items, query)
   /*

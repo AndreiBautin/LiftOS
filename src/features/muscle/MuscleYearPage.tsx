@@ -1,5 +1,3 @@
-import {} from 'lucide-react'
-import { PeriodStep } from '@/components/shared/PeriodStep'
 import { Link, useParams } from 'react-router-dom'
 
 import { useServices } from '@/app/context'
@@ -7,9 +5,8 @@ import { MUSCLE_GROUP_LABELS } from '@/domain/exercises/taxonomy'
 import type { ExerciseId } from '@/domain/ids/ids'
 import { mondayOf, parseDay, toDayKey } from '@/domain/time/day'
 import { muscleYear } from '@/domain/volume/muscle-year'
-import { PageHeader } from '@/components/shared/PageHeader'
 import { PageSkeleton } from '@/components/shared/PageSkeleton'
-import { Card } from '@/components/shared/primitives'
+import { LookBack } from '@/features/look-back/LookBack'
 import { useExercises, useProgram, useRecentWorkouts } from '@/features/train/hooks'
 
 /** One cell's width and a row's height, in the strip's own units. */
@@ -74,38 +71,30 @@ export function MuscleYearPage() {
   const next = String(Number(year) + 1)
 
   return (
-    <div className="mx-auto max-w-4xl space-y-4 pb-8">
-      <PageHeader
-        title={`Muscles, ${year}`}
-        subtitle={
-          busiest === undefined || busiest.sets === 0
-            ? 'Nothing trained this year yet'
-            : `${String(grid.rows.length)} trained · busiest ${MUSCLE_GROUP_LABELS[busiest.muscle as keyof typeof MUSCLE_GROUP_LABELS].toLowerCase()}, ${String(busiest.sets)} sets in a week`
-        }
-        action={
-          <>
-            <PeriodStep to={`/muscles/${previous}`} label={`Muscles in ${previous}`} back />
-            <PeriodStep
-              to={next <= today.slice(0, 4) ? `/muscles/${next}` : undefined}
-              label={`Muscles in ${next}`}
-            />
-          </>
-        }
-      />
-
+    <LookBack
+      view="muscles"
+      period={year}
+      subtitle={
+        busiest === undefined || busiest.sets === 0
+          ? 'Nothing trained this year yet'
+          : `${String(grid.rows.length)} trained · busiest ${MUSCLE_GROUP_LABELS[busiest.muscle as keyof typeof MUSCLE_GROUP_LABELS].toLowerCase()}, ${String(busiest.sets)} sets in a week`
+      }
+      older={`/muscles/${previous}`}
+      newer={next <= today.slice(0, 4) ? `/muscles/${next}` : undefined}
+      olderLabel={`Muscles in ${previous}`}
+      newerLabel={`Muscles in ${next}`}
+    >
       {grid.rows.length === 0 ? (
-        <Card>
-          <p className="text-ink-300 text-sm">
-            Nothing logged in {year}. A finished session lights its week in every muscle it worked.
-          </p>
-        </Card>
+        <p className="text-ink-500 text-sm">
+          Nothing logged in {year}. A finished session lights its week in every muscle it worked.
+        </p>
       ) : (
-        <Card>
+        <>
           <div className="grid grid-cols-[5.5rem_1fr] items-center gap-x-2 gap-y-1">
             <span aria-hidden />
             <svg viewBox={`0 0 ${String(width)} 10`} className="h-3 w-full" aria-hidden>
               {months.map((month) => (
-                <text key={month.at} x={month.at * CELL} y={8} className="fill-ink-500 text-[8px]">
+                <text key={month.at} x={month.at * CELL} y={8} className="fill-ink-500 text-[9px]">
                   {month.label}
                 </text>
               ))}
@@ -139,9 +128,9 @@ export function MuscleYearPage() {
               </span>
             )}
           </p>
-        </Card>
+        </>
       )}
-    </div>
+    </LookBack>
   )
 }
 

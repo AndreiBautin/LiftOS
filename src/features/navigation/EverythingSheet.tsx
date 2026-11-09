@@ -1,24 +1,14 @@
 import { Link } from 'react-router-dom'
 
 import { BottomSheet } from '@/components/shared/BottomSheet'
-import { useServices } from '@/app/context'
-import { toDayKey } from '@/domain/time/day'
 
-import { SCREEN_GROUPS, SCREENS, screenPath } from './screens'
-
-/** Each group's tile tint, as a hue shift off the accent, so a group reads as one. */
-const GROUP_SHIFT: Readonly<Record<(typeof SCREEN_GROUPS)[number], number>> = {
-  Train: 0,
-  Progress: 55,
-  'Look back': -40,
-  App: 180,
-}
+import { SCREEN_GROUPS, SCREENS } from './screens'
 
 /**
  * Every screen as a grid, from a button on the hero (`SCREENS`, the list
  * the palette reads). **The page has no navigation bar**, so the screens
- * reached only from a link inside a card — the year, the calculator, the
- * comparison — were reachable by somebody who already knew where they
+ * reached only from a link inside a card — the calculator, the comparison —
+ * were reachable by somebody who already knew where they
  * were, or who knew ⌘K. This is the map for everybody else.
  *
  * A bottom sheet rather than a page, because it is a way somewhere and
@@ -26,8 +16,6 @@ const GROUP_SHIFT: Readonly<Record<(typeof SCREEN_GROUPS)[number], number>> = {
  * Tiles rise once, staggered; nothing loops.
  */
 export function EverythingSheet({ onClose }: { readonly onClose: () => void }) {
-  const today = toDayKey(useServices().clock.now())
-
   let order = 0
   return (
     <BottomSheet label="Everything" title="Everything" onClose={onClose} width="max-w-2xl">
@@ -47,20 +35,11 @@ export function EverythingSheet({ onClose }: { readonly onClose: () => void }) {
                   <Link
                     data-autofocus={at === 0 ? '' : undefined}
                     viewTransition
-                    to={screenPath(screen, today)}
+                    to={screen.to}
                     onClick={onClose}
                     className="well hover:border-ink-600 flex h-full flex-col gap-2 p-3 transition-colors"
                   >
-                    <span
-                      className="flex size-8 items-center justify-center rounded-lg"
-                      style={{
-                        background: `oklch(0.45 0.09 calc(var(--accent-hue) + ${String(GROUP_SHIFT[group])}) / 0.35)`,
-                        color: `oklch(0.85 0.1 calc(var(--accent-hue) + ${String(GROUP_SHIFT[group])}))`,
-                      }}
-                      aria-hidden
-                    >
-                      <Icon size={16} />
-                    </span>
+                    <Icon size={18} className="text-ink-500" aria-hidden />
                     <span className="text-ink-50 text-sm font-medium">{screen.label}</span>
                     <span className="text-ink-500 -mt-1.5 text-xs leading-snug">
                       {screen.blurb}

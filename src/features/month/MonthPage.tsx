@@ -1,9 +1,6 @@
 import type { CSSProperties } from 'react'
-import { ArrowDown, ArrowUp, Play, Star } from 'lucide-react'
-
-import { PeriodStep } from '@/components/shared/PeriodStep'
 import { LIFT_COLOURS } from '@/features/charts/palette'
-import { Link, Navigate, useParams } from 'react-router-dom'
+import { Navigate, useParams } from 'react-router-dom'
 
 import { useServices, useSettings } from '@/app/context'
 import { RECORD_LABELS } from '@/domain/logging/records'
@@ -11,9 +8,10 @@ import { monthRecap, monthsTrained, type MonthRecap } from '@/domain/logging/mon
 import { toDayKey } from '@/domain/time/day'
 import { describeHeft, heftOf } from '@/domain/units/heft'
 import { formatLoad, type WeightUnit } from '@/domain/units/weight'
-import { PageHeader } from '@/components/shared/PageHeader'
+import { DetailHero } from '@/components/shared/DetailHero'
+import { Module } from '@/components/shared/Module'
 import { PageSkeleton } from '@/components/shared/PageSkeleton'
-import { Card, CardHeading } from '@/components/shared/primitives'
+import { LookBack } from '@/features/look-back/LookBack'
 import { ShareSession } from '@/features/share/ShareSession'
 import { useExercises, useRecentWorkouts } from '@/features/train/hooks'
 import { cn } from '@/lib/cn'
@@ -44,7 +42,16 @@ export function MonthPage() {
   if (month === undefined) {
     const latest = months[0]
     return latest === undefined ? (
-      <PageHeader title="Month" subtitle="Nothing finished yet." />
+      <LookBack
+        view="month"
+        period="Month"
+        older={undefined}
+        newer={undefined}
+        olderLabel="Earlier month"
+        newerLabel="Later month"
+      >
+        <p className="text-ink-500 text-sm">A finished session starts the first month here.</p>
+      </LookBack>
     ) : (
       <Navigate to={`/month/${latest}`} replace />
     )
@@ -58,131 +65,87 @@ export function MonthPage() {
   const title = monthName(month, today)
 
   return (
-    <div className="mx-auto max-w-2xl space-y-4 pb-8 lg:max-w-5xl">
-      <PageHeader
-        title={title}
-        subtitle={`${String(recap.sessions)} sessions · ${String(Object.keys(recap.days).length)} days trained`}
-        action={
-          <>
-            <PeriodStep
-              to={older === undefined ? undefined : `/month/${older}`}
-              label="Earlier month"
-              back
-            />
-            <PeriodStep
-              to={newer === undefined ? undefined : `/month/${newer}`}
-              label="Later month"
-            />
-          </>
-        }
-      />
-
-      <section className="hero-panel p-5 sm:p-6" aria-label="Month totals">
-        <div className="mb-4 flex items-center justify-between">
-          <p className="text-accent-400 text-xs font-semibold tracking-[0.14em] uppercase">
-            The month
+    <LookBack
+      view="month"
+      period={title}
+      subtitle={`${String(recap.sessions)} sessions · ${String(Object.keys(recap.days).length)} days trained`}
+      older={older === undefined ? undefined : `/month/${older}`}
+      newer={newer === undefined ? undefined : `/month/${newer}`}
+      olderLabel="Earlier month"
+      newerLabel="Later month"
+      play={recap.sessions > 0 ? `/wrapped/${month}` : undefined}
+      share={
+        recap.sessions > 0 ? (
+          <ShareSession
+            card={{
+              eyebrow: 'Month in lifting',
+              title,
+              date: `${month}-01`,
+              dateLine: `${String(recap.sessions)} sessions · ${String(Object.keys(recap.days).length)} days trained`,
+              sets: recap.sets,
+              volume: `${Math.round(recap.tonnage).toLocaleString()} ${settings.units}`,
+              minutes: Math.round(recap.minutes / 60),
+              timeLabel: 'Hours',
+              ...heftLine(recap.tonnage, settings.units),
+              /*
+               * The month's picture leads with what each lift's estimate
+               * did — four of thirty records picked by date said little —
+               * and falls back to records when no lift was measured.
+               */
+              records:
+                recap.lifts.length > 0
+                  ? recap.lifts.map(({ lift, from, to }) => ({
+                      name: LIFT_NAMES[lift],
+                      detail: `${to - from >= 0 ? '+' : ''}${String(to - from)} ${settings.units}`,
+                      label: `Estimated max ${String(from)} → ${String(to)}`,
+                    }))
+                  : recap.records.slice(0, 4).map((record) => ({
+                      name: nameOf(record.exerciseId),
+                      detail: `${record.set.load === undefined ? 'BW' : formatLoad(record.set.load, settings.units)} × ${String(record.set.reps ?? '—')}`,
+                      label: RECORD_LABELS[record.kind],
+                    })),
+              recordsHeading:
+                recap.lifts.length > 0
+                  ? `${String(recap.records.length)} records · the lifts`
+                  : undefined,
+            }}
+          />
+        ) : undefined
+      }
+    >
+      <DetailHero
+        label="Month totals"
+        figure={recap.sets.toLocaleString()}
+        unit={`sets${withChange(recap.sets, recap.previous.sets)}`}
+        facts={[
+          {
+            term: 'Volume',
+            value: `${Math.round(recap.tonnage).toLocaleString()} ${settings.units}${withChange(recap.tonnage, recap.previous.tonnage)}`,
+          },
+          {
+            term: 'Hours',
+            value: `${String(Math.round(recap.minutes / 60))}${withChange(recap.minutes, recap.previous.minutes)}`,
+          },
+        ]}
+      >
+        {recap.previous.sessions > 0 && (
+          <p className="text-ink-500 mt-1 text-[0.8125rem]">
+            Against{' '}
+            {recap.previousThrough.endsWith('-31')
+              ? monthName(recap.previousThrough.slice(0, 7), today)
+              : `${shortDay(`${recap.previousThrough.slice(0, 7)}-01`)}–${String(Number(recap.previousThrough.slice(8)))}`}
           </p>
-          {recap.sessions > 0 && (
-            <span className="ml-auto flex items-center gap-1">
-              <Link
-                viewTransition
-                to={`/wrapped/${month}`}
-                className="text-ink-100 hover:text-accent-400 tap-target flex items-center gap-1.5 px-2 text-sm font-medium"
-              >
-                <Play size={14} aria-hidden /> Play
-              </Link>
-              <Link
-                viewTransition
-                to={`/year/${month.slice(0, 4)}`}
-                className="text-ink-500 hover:text-accent-400 tap-target flex items-center px-2 text-sm"
-              >
-                Year
-              </Link>
-              <Link
-                viewTransition
-                to={`/wrapped/${month.slice(0, 4)}`}
-                className="text-ink-500 hover:text-accent-400 tap-target flex items-center px-2 text-sm"
-              >
-                Play the year
-              </Link>
-            </span>
-          )}
-          {recap.sessions > 0 && (
-            <ShareSession
-              card={{
-                eyebrow: 'Month in lifting',
-                title,
-                date: `${month}-01`,
-                dateLine: `${String(recap.sessions)} sessions · ${String(Object.keys(recap.days).length)} days trained`,
-                sets: recap.sets,
-                volume: `${Math.round(recap.tonnage).toLocaleString()} ${settings.units}`,
-                minutes: Math.round(recap.minutes / 60),
-                timeLabel: 'Hours',
-                ...heftLine(recap.tonnage, settings.units),
-                /*
-                 * The month's picture leads with what each lift's estimate
-                 * did — four of thirty records picked by date said little —
-                 * and falls back to records when no lift was measured.
-                 */
-                records:
-                  recap.lifts.length > 0
-                    ? recap.lifts.map(({ lift, from, to }) => ({
-                        name: LIFT_NAMES[lift],
-                        detail: `${to - from >= 0 ? '+' : ''}${String(to - from)} ${settings.units}`,
-                        label: `Estimated max ${String(from)} → ${String(to)}`,
-                      }))
-                    : recap.records.slice(0, 4).map((record) => ({
-                        name: nameOf(record.exerciseId),
-                        detail: `${record.set.load === undefined ? 'BW' : formatLoad(record.set.load, settings.units)} × ${String(record.set.reps ?? '—')}`,
-                        label: RECORD_LABELS[record.kind],
-                      })),
-                recordsHeading:
-                  recap.lifts.length > 0
-                    ? `${String(recap.records.length)} records · the lifts`
-                    : undefined,
-              }}
-            />
-          )}
-        </div>
-        {/* From `lg` the totals stand left and the calendar right, at a phone's size. */}
-        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start lg:gap-8">
-          <div>
-            <dl className="grid grid-cols-3 gap-3">
-              <Total label="Sets" now={recap.sets} before={recap.previous.sets} />
-              <Total
-                label="Volume"
-                now={Math.round(recap.tonnage)}
-                before={Math.round(recap.previous.tonnage)}
-                suffix={settings.units}
-              />
-              <Total
-                label="Hours"
-                now={Math.round(recap.minutes / 60)}
-                before={Math.round(recap.previous.minutes / 60)}
-              />
-            </dl>
-            {recap.previous.sessions > 0 && (
-              <p className="text-ink-500 mt-2 text-xs">
-                Against{' '}
-                {recap.previousThrough.endsWith('-31')
-                  ? monthName(recap.previousThrough.slice(0, 7), today)
-                  : `${shortDay(`${recap.previousThrough.slice(0, 7)}-01`)}–${String(Number(recap.previousThrough.slice(8)))}`}
-              </p>
-            )}
-          </div>
-          <MonthCalendar recap={recap} today={today} />
-        </div>
-      </section>
+        )}
+        <MonthCalendar recap={recap} today={today} />
+      </DetailHero>
 
-      {/* From `lg` the lifts and the records stand side by side. */}
-      <div className="space-y-4 lg:grid lg:grid-cols-2 lg:items-start lg:gap-4 lg:space-y-0">
-        {recap.lifts.length > 0 && (
-          <Card>
-            <CardHeading title="Estimated max, start to end of month" />
-            <ul className="space-y-2.5">
+      {recap.lifts.length > 0 && (
+        <div className="mt-4">
+          <Module title="Estimated max, start to end of month">
+            <ul className="mt-1 space-y-2">
               {recap.lifts.map(({ lift, from, to }) => (
                 <li key={lift} className="flex items-center justify-between gap-3 text-sm">
-                  <span className="text-ink-100 flex items-center gap-2">
+                  <span className="flex items-center gap-2">
                     <span
                       className="size-2 rounded-full"
                       style={{ background: LIFT_COLOURS[lift] }}
@@ -190,95 +153,53 @@ export function MonthPage() {
                     />
                     {LIFT_NAMES[lift]}
                   </span>
-                  <span className="numeric text-ink-300">
-                    {from} → <span className="text-ink-50 font-semibold">{to}</span>{' '}
-                    <Change by={to - from} />
+                  <span className="numeric text-ink-500">
+                    {from} → <span className="text-ink-50 font-semibold">{to}</span>
+                    {to === from ? '' : ` · ${to > from ? '+' : '−'}${String(Math.abs(to - from))}`}
                   </span>
                 </li>
               ))}
             </ul>
-          </Card>
-        )}
-
-        {recap.records.length > 0 && (
-          <Card>
-            <CardHeading
-              icon={<Star size={16} aria-hidden />}
-              title={`${String(recap.records.length)} ${recap.records.length === 1 ? 'record' : 'records'}`}
-            />
-            <ul className="space-y-2">
-              {recap.records.map((record) => (
-                <li
-                  key={`${record.exerciseId}-${record.date}`}
-                  className="flex items-center justify-between gap-3 text-sm"
-                >
-                  <span className="min-w-0">
-                    <span className="text-ink-100 block truncate">{nameOf(record.exerciseId)}</span>
-                    <span className="text-ink-500 text-xs">
-                      {shortDay(record.date)} · {RECORD_LABELS[record.kind]}
-                    </span>
-                  </span>
-                  <span className="numeric shrink-0 font-semibold text-gold-400">
-                    {record.set.load === undefined
-                      ? 'BW'
-                      : formatLoad(record.set.load, settings.units)}{' '}
-                    × {record.set.reps ?? '—'}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </Card>
-        )}
-      </div>
-    </div>
-  )
-}
-
-function Total({
-  label,
-  now,
-  before,
-  suffix,
-}: {
-  readonly label: string
-  readonly now: number
-  readonly before: number
-  readonly suffix?: string
-}) {
-  return (
-    <div className="min-w-0">
-      <dt className="text-ink-500 text-xs font-medium tracking-wide uppercase">{label}</dt>
-      <dd className="numeric text-ink-50 mt-1 truncate text-lg font-semibold">
-        {now.toLocaleString()}
-        {suffix !== undefined && (
-          <span className="text-ink-500 text-xs font-normal"> {suffix}</span>
-        )}
-      </dd>
-      {before > 0 && (
-        <dd className="text-ink-500 numeric text-xs">
-          <Change by={now - before} percentOf={before} />
-        </dd>
+          </Module>
+        </div>
       )}
-    </div>
+
+      {recap.records.length > 0 && (
+        <Module
+          title={`${String(recap.records.length)} ${recap.records.length === 1 ? 'record' : 'records'}`}
+        >
+          <ul className="mt-1 space-y-2">
+            {recap.records.map((record) => (
+              <li
+                key={`${record.exerciseId}-${record.date}`}
+                className="flex items-center justify-between gap-3 text-sm"
+              >
+                <span className="min-w-0">
+                  <span className="block truncate">{nameOf(record.exerciseId)}</span>
+                  <span className="text-ink-500 text-[0.8125rem]">
+                    {shortDay(record.date)} · {RECORD_LABELS[record.kind]}
+                  </span>
+                </span>
+                <span className="numeric text-gold-400 shrink-0 font-semibold">
+                  {record.set.load === undefined
+                    ? 'BW'
+                    : formatLoad(record.set.load, settings.units)}{' '}
+                  × {record.set.reps ?? '—'}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Module>
+      )}
+    </LookBack>
   )
 }
 
-/** Quiet either way: a lighter month is often the plan (a deload). */
-function Change({ by, percentOf }: { readonly by: number; readonly percentOf?: number }) {
-  if (by === 0) return <span className="text-ink-500">±0</span>
-  const Icon = by > 0 ? ArrowUp : ArrowDown
-  const text =
-    percentOf === undefined
-      ? `${by > 0 ? '+' : ''}${String(by)}`
-      : `${by > 0 ? '+' : ''}${String(Math.round((by / percentOf) * 100))}%`
-  return (
-    <span
-      className={cn('inline-flex items-center gap-0.5', by > 0 ? 'text-good-500' : 'text-ink-500')}
-    >
-      <Icon size={12} aria-hidden />
-      {text}
-    </span>
-  )
+/** ", +12%" against the month before. Quiet either way: a lighter month is often the plan. */
+function withChange(now: number, before: number): string {
+  if (before <= 0) return ''
+  const percent = Math.round(((now - before) / before) * 100)
+  return percent === 0 ? '' : `, ${percent > 0 ? '+' : '−'}${String(Math.abs(percent))}%`
 }
 
 /** The month as it falls on a wall calendar, Monday first; a trained day lit by its sets. */
@@ -290,7 +211,7 @@ function MonthCalendar({ recap, today }: { readonly recap: MonthRecap; readonly 
   const most = Math.max(1, ...Object.values(recap.days))
 
   return (
-    <div className="mt-5 lg:mt-0">
+    <div className="mt-4 lg:max-w-md">
       <div className="text-ink-500 mb-1.5 grid grid-cols-7 gap-1.5 text-center text-xs">
         {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((letter, index) => (
           <span key={index} aria-hidden>
@@ -311,7 +232,7 @@ function MonthCalendar({ recap, today }: { readonly recap: MonthRecap; readonly 
               aria-label={sets === 0 ? undefined : `${shortDay(day)}: ${String(sets)} sets`}
               className={cn(
                 'numeric flex aspect-square items-center justify-center rounded-lg text-xs',
-                sets === 0 ? 'text-ink-500 bg-ink-900/50' : 'month-lit text-ink-950 font-semibold',
+                sets === 0 ? 'text-ink-500 bg-ink-900' : 'month-lit text-ink-950 font-semibold',
                 day === today && 'ring-accent-400 ring-2',
                 day > today && 'opacity-40',
               )}

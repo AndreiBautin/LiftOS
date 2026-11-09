@@ -25,8 +25,8 @@ export function DetailHero({
   readonly facts: readonly { readonly term: string; readonly value: string }[]
   /** A small picture beside the figure. */
   readonly aside?: ReactNode
-  /** The chart. */
-  readonly children: ReactNode
+  /** The chart, where it has one. */
+  readonly children?: ReactNode
 }) {
   return (
     <section aria-label={label}>

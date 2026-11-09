@@ -1,13 +1,11 @@
-import {} from 'lucide-react'
-import { PeriodStep } from '@/components/shared/PeriodStep'
 import { Link, useParams } from 'react-router-dom'
 
 import { useServices } from '@/app/context'
 import { yearInSquares } from '@/domain/logging/year'
 import { shiftDay, toDayKey } from '@/domain/time/day'
-import { PageHeader } from '@/components/shared/PageHeader'
+import { DetailHero } from '@/components/shared/DetailHero'
 import { PageSkeleton } from '@/components/shared/PageSkeleton'
-import { Card } from '@/components/shared/primitives'
+import { LookBack } from '@/features/look-back/LookBack'
 import { useRecentWorkouts } from '@/features/train/hooks'
 import { SharePicture } from '@/features/share/ShareSession'
 import { drawYearCard } from '@/features/share/year-card'
@@ -37,76 +35,80 @@ export function YearPage() {
   const squares = yearInSquares(workouts.data, year, today)
   const previous = String(Number(year) - 1)
   const next = String(Number(year) + 1)
+  /*
+   * The months the year has had. Before the first session and past today they
+   * are blank squares to scroll by on a phone, in the way of the months that
+   * were trained; an empty year still shows its months as a wall planner would.
+   */
+  const started = squares.months.findIndex((one) => one.sessions > 0)
+  const months = squares.months.filter(
+    (one, at) => started === -1 || (at >= started && one.month <= today.slice(0, 7)),
+  )
 
   return (
-    <div className="mx-auto max-w-4xl space-y-4 pb-8">
-      <PageHeader
-        title={year}
-        subtitle={`${String(squares.sessions)} sessions · ${String(squares.daysTrained)} days trained`}
-        action={
-          <>
-            {squares.sessions > 0 && (
-              <SharePicture
-                draw={() =>
-                  drawYearCard({
-                    year,
-                    days: squares.days,
-                    today,
-                    sessions: squares.sessions,
-                    weeksTrained: squares.weeksTrained,
-                    bestStreak: squares.bestStreak,
-                    currentStreak: squares.currentStreak,
-                  })
-                }
-                fileName={`liftos-${year}.png`}
-                title={`${year} in training`}
-                alt={`${year}: ${String(squares.sessions)} sessions`}
-              />
-            )}
-            <PeriodStep to={`/year/${previous}`} label={`Year ${previous}`} back />
-            <PeriodStep
-              to={next <= today.slice(0, 4) ? `/year/${next}` : undefined}
-              label={`Year ${next}`}
-            />
-          </>
-        }
-      />
+    <LookBack
+      view="year"
+      period={year}
+      subtitle={`${String(squares.sessions)} sessions · ${String(squares.daysTrained)} days trained`}
+      older={`/year/${previous}`}
+      newer={next <= today.slice(0, 4) ? `/year/${next}` : undefined}
+      olderLabel={`Year ${previous}`}
+      newerLabel={`Year ${next}`}
+      play={squares.sessions > 0 ? `/wrapped/${year}` : undefined}
+      share={
+        squares.sessions > 0 ? (
+          <SharePicture
+            draw={() =>
+              drawYearCard({
+                year,
+                days: squares.days,
+                today,
+                sessions: squares.sessions,
+                weeksTrained: squares.weeksTrained,
+                bestStreak: squares.bestStreak,
+                currentStreak: squares.currentStreak,
+              })
+            }
+            fileName={`liftos-${year}.png`}
+            title={`${year} in training`}
+            alt={`${year}: ${String(squares.sessions)} sessions`}
+          />
+        ) : undefined
+      }
+    >
+      {squares.sessions === 0 ? (
+        <p className="text-ink-500 mb-4 text-sm">
+          Nothing trained in {year} yet. A finished session lights its day, and the weeks in a row
+          count up here.
+        </p>
+      ) : (
+        <DetailHero
+          label="The year's streaks"
+          figure={String(squares.weeksTrained)}
+          unit="weeks trained"
+          facts={[
+            { term: 'Best streak', value: `${String(squares.bestStreak)} wk` },
+            { term: 'Current', value: `${String(squares.currentStreak)} wk` },
+          ]}
+        />
+      )}
 
-      <section className="hero-panel p-5 sm:p-6" aria-label="The year's streaks">
-        {squares.sessions === 0 ? (
-          <p className="text-ink-300 text-sm">
-            Nothing trained in {year} yet. A finished session lights its day, and the weeks in a row
-            count up here.
-          </p>
-        ) : (
-          <dl className="grid grid-cols-3 gap-3">
-            <Figure label="Weeks trained" value={squares.weeksTrained} />
-            <Figure label="Best streak" value={squares.bestStreak} unit="wk" />
-            <Figure label="Current" value={squares.currentStreak} unit="wk" />
-          </dl>
-        )}
-      </section>
-
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-        {squares.months.map((month) => (
-          <Card key={month.month} className="p-3">
-            <div className="mb-2 flex items-baseline justify-between">
-              <Link
-                viewTransition
-                to={`/month/${month.month}`}
-                className="text-ink-100 hover:text-accent-400 text-sm font-medium"
-              >
+      <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-3">
+        {months.map((month) => (
+          <div key={month.month}>
+            <div className="mb-1.5 flex items-baseline justify-between">
+              <Link viewTransition to={`/month/${month.month}`} className="text-sm font-medium">
                 {monthName(month.month)}
               </Link>
               <span className="numeric text-ink-500 text-xs">
-                {month.sessions > 0 ? `${String(month.sessions)} · ${String(month.sets)} sets` : ''}
+                {month.sessions > 0 ? `${String(month.sets)} sets` : ''}
               </span>
             </div>
             <MonthSquares month={month.month} days={squares.days} today={today} />
-          </Card>
+          </div>
         ))}
       </div>
-    </div>
+    </LookBack>
   )
 }
 
@@ -155,26 +157,6 @@ function shade(sets: number): string {
   const band = BANDS.filter((floor) => sets >= floor).length
   if (band === 0) return 'var(--color-ink-800)'
   return `color-mix(in oklab, var(--color-accent-500) ${String(25 + band * 18)}%, var(--color-ink-800))`
-}
-
-function Figure({
-  label,
-  value,
-  unit,
-}: {
-  readonly label: string
-  readonly value: number
-  readonly unit?: string
-}) {
-  return (
-    <div>
-      <dt className="text-ink-500 text-xs tracking-wide uppercase">{label}</dt>
-      <dd className="numeric text-ink-50 mt-1 text-3xl font-semibold">
-        {value}
-        {unit !== undefined && <span className="text-ink-500 ml-1 text-sm">{unit}</span>}
-      </dd>
-    </div>
-  )
 }
 
 function monthName(month: string): string {

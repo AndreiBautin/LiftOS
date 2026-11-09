@@ -1,6 +1,12 @@
 /** Release notes, newest first; `WhatsNew` shows the first once. */
 export const RELEASES: readonly { readonly id: string; readonly items: readonly string[] }[] = [
   {
+    id: '2026-11-08e',
+    items: [
+      'Look back is one screen now: switch between month, block, year and muscles, and step through time. Play and Share sit beside the period they belong to.',
+    ],
+  },
+  {
     id: '2026-11-08d',
     items: [
       'Settings is now a short list that says what each thing is set to. Press a row to change it.',

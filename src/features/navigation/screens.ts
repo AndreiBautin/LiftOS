@@ -1,23 +1,19 @@
 import {
-  BarChart3,
   CalendarDays,
   CalendarRange,
   Calculator,
   Dumbbell,
   GitCompareArrows,
-  Gift,
-  Grid3x3,
   History,
   Home,
-  Layers,
   Settings,
   Trophy,
   type LucideIcon,
 } from 'lucide-react'
 
-type ScreenGroup = 'Train' | 'Progress' | 'Look back' | 'App'
+type ScreenGroup = 'Train' | 'Progress' | 'App'
 
-export const SCREEN_GROUPS: readonly ScreenGroup[] = ['Train', 'Progress', 'Look back', 'App']
+export const SCREEN_GROUPS: readonly ScreenGroup[] = ['Train', 'Progress', 'App']
 
 interface Screen {
   readonly id: string
@@ -28,8 +24,7 @@ interface Screen {
   readonly icon: LucideIcon
   /** Extra words the palette matches without showing. */
   readonly keywords: string
-  /** A path, or one read off today for a screen addressed by a date. */
-  readonly to: string | ((today: string) => string)
+  readonly to: string
 }
 
 /**
@@ -95,58 +90,23 @@ export const SCREENS: readonly Screen[] = [
     to: '/compare',
   },
   {
-    id: 'block',
-    label: 'Block report',
-    blurb: 'What this block moved',
+    id: 'look-back',
+    label: 'Look back',
+    blurb: 'A month, a block, a year, and the story of each',
     group: 'Progress',
-    icon: Layers,
-    keywords: 'block deload cycle',
-    to: '/block',
+    icon: CalendarDays,
+    keywords:
+      'month recap block deload cycle year calendar streak muscle heat map wrapped story review',
+    to: '/month',
   },
   {
     id: 'history',
     label: 'History',
     blurb: 'Every session, on one line',
-    group: 'Look back',
+    group: 'Progress',
     icon: History,
     keywords: 'sessions log search past',
     to: '/history',
-  },
-  {
-    id: 'month',
-    label: 'This month',
-    blurb: 'The month against the last',
-    group: 'Look back',
-    icon: CalendarDays,
-    keywords: 'recap month',
-    to: '/month',
-  },
-  {
-    id: 'year',
-    label: 'The year',
-    blurb: 'Twelve calendars and the streaks',
-    group: 'Look back',
-    icon: BarChart3,
-    keywords: 'year calendar streak',
-    to: '/year',
-  },
-  {
-    id: 'muscles',
-    label: 'Muscles by week',
-    blurb: 'Every muscle across the year',
-    group: 'Look back',
-    icon: Grid3x3,
-    keywords: 'muscle heat map year volume landscape',
-    to: '/muscles',
-  },
-  {
-    id: 'wrapped',
-    label: 'Year wrapped',
-    blurb: 'The year, played back',
-    group: 'Look back',
-    icon: Gift,
-    keywords: 'wrapped story year review',
-    to: (today) => `/wrapped/${today.slice(0, 4)}`,
   },
   {
     id: 'settings',
@@ -158,7 +118,3 @@ export const SCREENS: readonly Screen[] = [
     to: '/settings',
   },
 ]
-
-export function screenPath(screen: Screen, today: string): string {
-  return typeof screen.to === 'string' ? screen.to : screen.to(today)
-}

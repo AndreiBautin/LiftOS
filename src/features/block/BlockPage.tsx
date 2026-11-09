@@ -1,15 +1,13 @@
-import { TrendingUp } from 'lucide-react'
-
-import { PeriodStep } from '@/components/shared/PeriodStep'
 import { Link, useSearchParams } from 'react-router-dom'
 
 import { useServices, useSettings } from '@/app/context'
 import { blockReport, blockWindow, type BlockLift } from '@/domain/logging/block'
 import { shiftDay, toDayKey } from '@/domain/time/day'
 import { formatLoad, type WeightUnit } from '@/domain/units/weight'
-import { PageHeader } from '@/components/shared/PageHeader'
+import { DetailHero } from '@/components/shared/DetailHero'
+import { Module } from '@/components/shared/Module'
 import { PageSkeleton } from '@/components/shared/PageSkeleton'
-import { Card, CardHeading } from '@/components/shared/primitives'
+import { LookBack } from '@/features/look-back/LookBack'
 import { useExercises, useProgram, useRecentWorkouts, useSchedule } from '@/features/train/hooks'
 import { cn } from '@/lib/cn'
 import { formatDate } from '@/lib/format-date'
@@ -50,81 +48,74 @@ export function BlockPage() {
   const nameOf = (id: string) => exercises.data?.find((one) => one.id === id)?.name ?? id
 
   return (
-    <div className="mx-auto max-w-2xl space-y-4 pb-8">
-      <PageHeader
-        title={running ? 'This block' : ago === 1 ? 'Last block' : `${String(ago)} blocks ago`}
-        subtitle={`${range(window.start, window.end, today)}${running ? ' · running' : ''}`}
-        action={
-          <>
-            <PeriodStep to={`/block?ago=${String(ago + 1)}`} label="Earlier block" back />
-            <PeriodStep
-              to={ago === 0 ? undefined : `/block?ago=${String(ago - 1)}`}
-              label="Later block"
-            />
-          </>
-        }
-      />
+    <LookBack
+      view="block"
+      period={running ? 'This block' : ago === 1 ? 'Last block' : `${String(ago)} blocks ago`}
+      subtitle={`${range(window.start, window.end, today)}${running ? ' · running' : ''}`}
+      older={`/block?ago=${String(ago + 1)}`}
+      newer={ago === 0 ? undefined : `/block?ago=${String(ago - 1)}`}
+      olderLabel="Earlier block"
+      newerLabel="Later block"
+    >
+      {/* Four zeros said nothing a sentence does not say better. */}
+      {report.sessions === 0 ? (
+        <p className="text-ink-500 text-sm">
+          {running
+            ? 'Nothing finished this block yet. Its first session starts the count.'
+            : 'Nothing was finished in this block.'}
+        </p>
+      ) : (
+        <DetailHero
+          label="Block totals"
+          figure={report.sets.toLocaleString()}
+          unit="sets"
+          facts={[
+            { term: 'Sessions', value: String(report.sessions) },
+            { term: 'Volume', value: `${(report.tonnage / 1000).toFixed(1)}k ${settings.units}` },
+            { term: 'Records', value: String(report.records) },
+          ]}
+        />
+      )}
+      <ol className="mt-4 mb-4 flex gap-1.5" aria-label="Sets by week">
+        {report.perWeek.map((sets, week) => {
+          const most = Math.max(1, ...report.perWeek)
+          const deload = weeks[week]?.isDeload === true
+          const future = shiftDay(window.start, week * 7) > report.through
+          return (
+            <li key={week} className="flex flex-1 flex-col items-center gap-1">
+              <span className="flex h-20 w-full items-end">
+                <span
+                  className={cn(
+                    'w-full rounded-md transition-[height] duration-500',
+                    future
+                      ? 'border-ink-700 h-full border border-dashed'
+                      : deload
+                        ? 'bg-cool-500/60'
+                        : 'bg-accent-500/80',
+                  )}
+                  style={
+                    future ? undefined : { height: `${String(Math.max(6, (sets / most) * 100))}%` }
+                  }
+                />
+              </span>
+              <span className="numeric text-ink-500 text-xs">
+                {deload ? 'DL' : `W${String(week + 1)}`}
+              </span>
+              <span className="sr-only">{future ? 'Not yet' : `${String(sets)} sets`}</span>
+            </li>
+          )
+        })}
+      </ol>
 
-      <section className="hero-panel p-5 sm:p-6" aria-label="Block totals">
-        {/* Four zeros said nothing a sentence does not say better. */}
-        {report.sessions === 0 ? (
-          <p className="text-ink-300 text-sm">
-            {running
-              ? 'Nothing finished this block yet — its first session starts the count.'
-              : 'Nothing was finished in this block.'}
-          </p>
-        ) : (
-          <dl className="grid grid-cols-4 gap-3">
-            <Figure label="Sessions" value={String(report.sessions)} />
-            <Figure label="Sets" value={String(report.sets)} />
-            <Figure label="Volume" value={`${(report.tonnage / 1000).toFixed(1)}k`} />
-            <Figure label="Records" value={String(report.records)} />
-          </dl>
-        )}
-        <ol className="mt-5 flex gap-1.5" aria-label="Sets by week">
-          {report.perWeek.map((sets, week) => {
-            const most = Math.max(1, ...report.perWeek)
-            const deload = weeks[week]?.isDeload === true
-            const future = shiftDay(window.start, week * 7) > report.through
-            return (
-              <li key={week} className="flex flex-1 flex-col items-center gap-1">
-                <span className="flex h-14 w-full items-end">
-                  <span
-                    className={cn(
-                      'w-full rounded-md transition-[height] duration-500',
-                      future
-                        ? 'border-ink-700 h-full border border-dashed'
-                        : deload
-                          ? 'bg-cool-500/60'
-                          : 'bg-accent-500/80',
-                    )}
-                    style={
-                      future
-                        ? undefined
-                        : { height: `${String(Math.max(6, (sets / most) * 100))}%` }
-                    }
-                  />
-                </span>
-                <span className="numeric text-ink-500 text-xs">
-                  {deload ? 'DL' : `W${String(week + 1)}`}
-                </span>
-                <span className="sr-only">{future ? 'Not yet' : `${String(sets)} sets`}</span>
-              </li>
-            )
-          })}
-        </ol>
-      </section>
-
-      <Card>
-        <CardHeading icon={<TrendingUp size={16} aria-hidden />} title="Top sets, start to end" />
+      <Module title="Top sets, start to end">
         {report.lifts.length === 0 ? (
-          <p className="text-ink-500 text-sm">
+          <p className="text-ink-500 mt-1 text-sm">
             An exercise appears once it has been loaded in two sessions this block.
           </p>
         ) : (
           <>
             <Fan lifts={report.lifts.slice(0, FAN_LINES)} nameOf={nameOf} />
-            <ul className="divide-ink-800/60 mt-3 divide-y">
+            <ul className="divide-ink-800 mt-3 divide-y">
               {report.lifts.map((lift) => (
                 <LiftRow
                   key={`${lift.exerciseId}|${lift.version ?? ''}`}
@@ -136,8 +127,8 @@ export function BlockPage() {
             </ul>
           </>
         )}
-      </Card>
-    </div>
+      </Module>
+    </LookBack>
   )
 }
 
@@ -174,7 +165,7 @@ function Fan({
         className="stroke-ink-700"
         strokeDasharray="3 4"
       />
-      <text x={left} y={mid + 14} textAnchor="middle" className="fill-ink-500 text-[8px]">
+      <text x={left} y={mid + 14} textAnchor="middle" className="fill-ink-500 text-[10px]">
         Start
       </text>
       {lifts.map((lift, at) => {
@@ -197,7 +188,7 @@ function Fan({
               pathLength={1}
             />
             <circle cx={right} cy={end} r="3" className={up ? 'fill-accent-400' : 'fill-ink-500'} />
-            <text x={right + 8} y={labelY(end + 3)} className="fill-ink-300 text-[8.5px]">
+            <text x={right + 8} y={labelY(end + 3)} className="fill-ink-300 text-[10px]">
               {pct(lift.change)} {shortName(lineName(lift, nameOf))}
             </text>
           </g>
@@ -232,22 +223,13 @@ function LiftRow({
       </span>
       <span
         className={cn(
-          'numeric w-12 text-right text-sm font-semibold',
+          'numeric w-14 shrink-0 text-right text-sm font-semibold',
           lift.change > 0 ? 'text-accent-400' : lift.change < 0 ? 'text-warn-500' : 'text-ink-500',
         )}
       >
         {pct(lift.change)}
       </span>
     </li>
-  )
-}
-
-function Figure({ label, value }: { readonly label: string; readonly value: string }) {
-  return (
-    <div>
-      <dt className="text-ink-500 text-xs tracking-wide uppercase">{label}</dt>
-      <dd className="numeric text-ink-50 mt-1 text-2xl font-semibold">{value}</dd>
-    </div>
   )
 }
 

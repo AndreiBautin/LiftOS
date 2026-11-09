@@ -104,8 +104,14 @@ surfaces it removed were moved verbatim to [docs/HISTORY.md](docs/HISTORY.md).
   only copy, a failed sync). **The open sheet is in the address** (`?open=data`), so
   Back closes it and a link can open it. Each area is its own file (`LookSettings`,
   `UnitSettings`, `SessionSettings`, `DataSettings`), and `Section` went with the chips.
-- **Not done in this pass**: the look-back pages only picked up the flat look; they were not restructured, and about fifty colour literals
-  remain in components.
+- **Month, block, year and muscles are one screen at four zooms** (`LookBack`): the view,
+  the period with a step either way, and Play and Share where a view has them. **Their
+  addresses did not move**, because a shortcut outlives a screen. Each keeps its own
+  picture: a wall calendar, a fan, twelve small months, a landscape. They are one tile
+  in `SCREENS` now, and `to` is a plain path, so a new screen cannot ask to be
+  addressed by date. A year shows only the months it has had. Empty views say a
+  sentence (`LookBack` holds them too).
+- **Not done**: about fifty colour literals remain in components.
 
 **There is no gamification, and the history of it lives in
 [docs/HISTORY.md](docs/HISTORY.md).** Two cuts, asked for in turn:
@@ -560,7 +566,7 @@ crest.ts`, tested; `SessionCrest` in `features/history`): a ring cut into
 - **Every screen is one list** (`SCREENS` in `features/navigation/
 screens.ts`), read by the palette and by the **Everything sheet** — a
   grid button beside Settings on the hero opens every screen as tiles,
-  grouped Train, Progress, Look back, App. The page has no navigation,
+  grouped Train, Progress, App. The page has no navigation,
   so the year, the calculator and the comparison were reachable only by
   somebody who knew the card that linked them or knew ⌘K. **Add a screen
   here, not in the palette**, or the two drift. A screen that needs a
