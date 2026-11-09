@@ -2,7 +2,6 @@ import { STRENGTH_LIFT_SLUGS } from '@/domain/exercises/catalogue'
 import { asExerciseId, type ExerciseId } from '@/domain/ids/ids'
 import type { AppSettings } from '@/domain/settings/settings'
 import type { WeightUnit } from '@/domain/units/weight'
-import { Card, Section } from '@/components/shared/primitives'
 
 /**
  * Where a strength lift starts before it has any history.
@@ -29,12 +28,12 @@ interface Props {
 
 export function MaxesEditor({ settings, onChange }: Props) {
   return (
-    <Section
-      id="maxes"
-      title="Current maxes"
-      description="Where a lift starts before it has any history. After the first session the bar is carried forward from what you actually lifted, so these only matter once each."
-    >
-      <Card className="inset-list p-0 sm:p-0 lg:p-0">
+    <>
+      <p className="text-ink-500 text-sm">
+        Where a lift starts before it has any history. After the first session the bar is carried
+        forward from what you actually lifted, so these only matter once each.
+      </p>
+      <div className="inset-list mt-1">
         {LIFTS.map((lift) => (
           <MaxRow
             key={lift.id}
@@ -47,8 +46,8 @@ export function MaxesEditor({ settings, onChange }: Props) {
             }}
           />
         ))}
-      </Card>
-    </Section>
+      </div>
+    </>
   )
 }
 

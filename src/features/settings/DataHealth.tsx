@@ -1,11 +1,12 @@
-import { CheckCircle2, Stethoscope } from 'lucide-react'
+import { CheckCircle2 } from 'lucide-react'
 import { useState } from 'react'
 
 import { useServices } from '@/app/context'
 import type { WorkoutId } from '@/domain/ids/ids'
 import { dataHealth, type Finding } from '@/domain/logging/health'
 import { parseDay } from '@/domain/time/day'
-import { Button, Card, CardHeading } from '@/components/shared/primitives'
+import { Module } from '@/components/shared/Module'
+import { Button } from '@/components/shared/primitives'
 import { useDeleteWorkout } from '@/features/history/hooks'
 import { useAbandonWorkout, useExercises, useRecentWorkouts } from '@/features/train/hooks'
 import { formatDate } from '@/lib/format-date'
@@ -27,8 +28,7 @@ export function DataHealth() {
   const { counts, findings } = dataHealth(workouts.data, known, clock.now())
 
   return (
-    <Card>
-      <CardHeading icon={<Stethoscope size={16} aria-hidden />} title="Health check" />
+    <Module title="Health check">
       <p className="text-ink-300 text-sm">
         <span className="numeric text-ink-50 font-semibold">{counts.sessions}</span> sessions ·{' '}
         <span className="numeric text-ink-50 font-semibold">{counts.sets.toLocaleString()}</span>{' '}
@@ -51,7 +51,7 @@ export function DataHealth() {
           ))}
         </ul>
       )}
-    </Card>
+    </Module>
   )
 }
 

@@ -23,7 +23,7 @@ export function SampleNotice() {
         You&rsquo;re looking at sample data. Everything stays in this browser.{' '}
         <Link
           viewTransition
-          to="/settings"
+          to="/settings?open=data"
           className="text-accent-400 font-medium whitespace-nowrap"
         >
           Start fresh →

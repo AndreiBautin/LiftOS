@@ -1,830 +1,147 @@
-import { useQuery } from '@tanstack/react-query'
-import { DataHealth } from './DataHealth'
-import { ExportCsv } from './ExportCsv'
-import { ImportOther } from './ImportOther'
-import { ACCENT_HUES, DEFAULT_ACCENT_HUE } from '@/domain/settings/settings'
-import { BuildLine } from '@/features/pwa/BuildLine'
-import { PageHeader } from '@/components/shared/PageHeader'
-
-import { COUNT_LABELS } from './count-labels'
-import { AlertTriangle, Download, HardDrive, RotateCcw, Sparkles, Upload } from 'lucide-react'
-import { useId, useRef, useState, useSyncExternalStore } from 'react'
+import { ChevronRight } from 'lucide-react'
+import { useCallback, useSyncExternalStore, type ReactNode } from 'react'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 
 import { useServices, useSettings } from '@/app/context'
-import { cn } from '@/lib/cn'
-import { DEFAULT_INCREMENT } from '@/domain/units/weight'
-import { backupAge } from '@/domain/settings/settings'
-import { Badge, Button, Card, Section } from '@/components/shared/primitives'
-import { useBackup } from '@/features/backup/useBackup'
-import { useSampleData } from '@/features/backup/useSampleData'
-import { SyncSection } from '@/features/sync/SyncSection'
-
-import { SectionChips } from './SectionChips'
-import { PLATES, platesToHand } from '@/domain/units/plates'
+import { BottomSheet } from '@/components/shared/BottomSheet'
+import { PageHeader } from '@/components/shared/PageHeader'
+import { STRENGTH_LIFT_SLUGS } from '@/domain/exercises/catalogue'
+import { asExerciseId } from '@/domain/ids/ids'
+import { ACCENT_HUES, DEFAULT_ACCENT_HUE, backupAge } from '@/domain/settings/settings'
+import { platesToHand } from '@/domain/units/plates'
+import { BuildLine } from '@/features/pwa/BuildLine'
 import { syncStore } from '@/features/sync/sync-store'
+import { SyncSection } from '@/features/sync/SyncSection'
+import { cn } from '@/lib/cn'
+
+import { DataSettings } from './DataSettings'
+import { LookSettings } from './LookSettings'
 import { MaxesEditor } from './MaxesEditor'
-import {
-  describePersistence,
-  formatBytes,
-  storageStatus,
-} from '@/infrastructure/storage/durability'
+import { SessionSettings } from './SessionSettings'
+import { UnitSettings } from './UnitSettings'
+
+const AREAS = ['look', 'units', 'session', 'maxes', 'sync', 'data'] as const
+type Area = (typeof AREAS)[number]
+
+const TITLES: Readonly<Record<Area, string>> = {
+  look: 'Look',
+  units: 'Units and plates',
+  session: 'During a session',
+  maxes: 'Current maxes',
+  sync: 'Sync across devices',
+  data: 'Your data',
+}
 
 /**
- * Settings, and the honest account of where the data lives.
+ * Settings as a short list, each row saying what it is set to.
  *
- * The storage section is not boilerplate. With no server, a lifter needs
- * to understand that clearing site data destroys everything and that
- * "clear cookies" in most browsers means exactly that — and they need to
- * be told before it happens, not after.
+ * **The index is the answer most visits want.** It was 3,520 pixels and 58
+ * controls with a row of chips to jump around them, so finding one switch
+ * meant reading past the lot. Now six rows fit on a phone, each with its
+ * current value, so "am I in pounds, did I export, is sync on" takes no presses
+ * at all and changing one takes one.
+ *
+ * **The open sheet is in the address** (`?open=data`), so the phone's Back closes
+ * it and a link can open it: the sample notice's Start fresh lands on the data.
  */
-/** The page's sections, in order, for the chips at the top. */
-const SECTIONS = [
-  { id: 'look', label: 'Look' },
-  { id: 'units', label: 'Units' },
-  { id: 'session', label: 'Session' },
-  { id: 'maxes', label: 'Maxes' },
-  { id: 'sync', label: 'Sync' },
-  { id: 'data', label: 'Data' },
-] as const
-
 export function SettingsPage() {
   const { settings, update } = useSettings()
+  const { clock } = useServices()
+  const sync = useSyncExternalStore(syncStore.subscribe, syncStore.get)
+  const navigate = useNavigate()
+  const location = useLocation()
+  const [params] = useSearchParams()
+  const asked = params.get('open')
+  const open = AREAS.find((area) => area === asked)
+  /* Opened from this list, Back undoes it; arriving on a link, there is no list behind. */
+  const fromList = (location.state as { readonly fromList?: boolean } | null)?.fromList === true
+  /* Stable: a sheet refocuses itself whenever its close handler changes. */
+  const close = useCallback(() => {
+    if (fromList) void navigate(-1)
+    else void navigate('/settings', { replace: true })
+  }, [fromList, navigate])
 
-  const services = useServices()
-  const backup = useBackup()
-  const fileInput = useRef<HTMLInputElement>(null)
-  const [confirmReplace, setConfirmReplace] = useState('')
+  const hue = settings.accentHue ?? DEFAULT_ACCENT_HUE
+  const age = backupAge(settings, clock.now())
+  const syncing = sync.config !== undefined
+  const total = [STRENGTH_LIFT_SLUGS.squat, STRENGTH_LIFT_SLUGS.bench, STRENGTH_LIFT_SLUGS.deadlift]
+    .map((slug) => settings.estimatedMaxes[asExerciseId(slug)] ?? 0)
+    .reduce((sum, max) => sum + max, 0)
+  const plates = platesToHand(settings.plates, settings.units)
 
-  const storage = useQuery({ queryKey: ['storage-status'], queryFn: storageStatus })
-  const exercises = useQuery({ queryKey: ['exercises'], queryFn: () => services.exercises.all() })
+  const values: Readonly<Record<Area, string>> = {
+    look: `${ACCENT_HUES.find((one) => one.hue === hue)?.name ?? 'Cyan'} · ${settings.trueBlack === true ? 'Pure black' : 'Dark'}`,
+    units: `${settings.units} · rounds to ${String(settings.roundingIncrement)} · ${String(plates.length)} plates`,
+    session: `Rest timer ${settings.restTimerEnabled ? 'on' : 'off'} · sounds ${settings.restSounds ? 'on' : 'off'}`,
+    maxes: total > 0 ? `${total.toLocaleString()} ${settings.units} total` : 'Not set',
+    sync: !syncing ? 'Not connected' : sync.phase === 'error' ? 'Sync failed' : 'Connected',
+    data:
+      age.days === undefined
+        ? 'Never exported'
+        : age.days === 0
+          ? 'Exported today'
+          : `Exported ${String(age.days)} ${age.days === 1 ? 'day' : 'days'} ago`,
+  }
+  /* Only what is worth acting on is amber: an old backup that is the only copy. */
+  const warn: Readonly<Partial<Record<Area, boolean>>> = {
+    sync: syncing && sync.phase === 'error',
+    data: age.stale && !syncing,
+  }
 
-  const age = backupAge(settings, services.clock.now())
-  /*
-   * Whether a second copy exists, read rather than assumed. The sentences
-   * below said "nowhere else" unconditionally once, and the same claim
-   * went stale the last time sync existed — a warning that cannot check
-   * its own premise is worse than none.
-   */
-  const syncing = useSyncExternalStore(syncStore.subscribe, syncStore.get).config !== undefined
-  const sample = useSampleData()
-  const [confirmFresh, setConfirmFresh] = useState(false)
-  /*
-   * Whether there is anything to wipe, and so which of the two actions
-   * is on offer. The same record `seedDemoData` asks about before it will
-   * fill anything.
-   */
-  const empty = useQuery({
-    queryKey: ['storage-empty'],
-    queryFn: async () => {
-      return (await services.workouts.count()) === 0
-    },
-  })
-
-  return (
-    <div className="lg:mx-auto lg:max-w-5xl">
-      <PageHeader title="Settings" />
-      {/* From `lg` the chips stand down the left as a contents list. */}
-      <div className="lg:grid lg:grid-cols-[10rem_minmax(0,1fr)] lg:gap-10">
-        <SectionChips sections={SECTIONS} />
-        <div className="min-w-0">
-          <Section id="look" title="Look">
-            <Card>
-              <p className="text-ink-300 mb-3 text-sm">Accent</p>
-              <div className="flex flex-wrap gap-3" role="radiogroup" aria-label="Accent colour">
-                {ACCENT_HUES.map(({ hue, name }) => {
-                  const chosen = (settings.accentHue ?? DEFAULT_ACCENT_HUE) === hue
-                  return (
-                    <button
-                      key={hue}
-                      type="button"
-                      role="radio"
-                      aria-checked={chosen}
-                      aria-label={name}
-                      onClick={() => {
-                        update({ accentHue: hue })
-                      }}
-                      className="tap-target flex flex-col items-center gap-1.5"
-                    >
-                      <span
-                        className={cn(
-                          'size-9 rounded-full ring-2 ring-offset-2 ring-offset-transparent transition-shadow',
-                          chosen ? 'ring-ink-100' : 'ring-transparent',
-                        )}
-                        style={{
-                          background: `radial-gradient(circle at 35% 30%, oklch(0.85 0.1 ${String(hue)}), oklch(0.63 0.12 ${String(hue)}))`,
-                        }}
-                        aria-hidden
-                      />
-                      <span className={cn('text-xs', chosen ? 'text-ink-50' : 'text-ink-500')}>
-                        {name}
-                      </span>
-                    </button>
-                  )
-                })}
-              </div>
-              <p className="text-ink-300 mt-5 mb-3 text-sm">Background</p>
-              <div className="grid grid-cols-2 gap-3" role="radiogroup" aria-label="Background">
-                {BACKGROUNDS.map(({ black, name, page, card }) => {
-                  const chosen = (settings.trueBlack === true) === black
-                  return (
-                    <button
-                      key={name}
-                      type="button"
-                      role="radio"
-                      aria-checked={chosen}
-                      onClick={() => {
-                        update({ trueBlack: black })
-                      }}
-                      className={cn(
-                        'tap-target overflow-hidden rounded-xl border-2 text-left transition-colors',
-                        chosen ? 'border-accent-500' : 'border-ink-800 hover:border-ink-700',
-                      )}
-                    >
-                      {/* A page with a card on it, drawn in that background. */}
-                      <span className="block p-2.5" style={{ background: page }} aria-hidden>
-                        <span
-                          className="border-ink-800 block rounded-md border p-2"
-                          style={{ background: card }}
-                        >
-                          <span className="bg-accent-500 block h-1.5 w-1/2 rounded-full" />
-                          <span className="bg-ink-700 mt-1.5 block h-1 w-3/4 rounded-full" />
-                        </span>
-                      </span>
-                      <span
-                        className={cn(
-                          'block px-2.5 py-1.5 text-xs',
-                          chosen ? 'text-ink-50' : 'text-ink-500',
-                        )}
-                      >
-                        {name}
-                      </span>
-                    </button>
-                  )
-                })}
-              </div>
-            </Card>
-          </Section>
-
-          <Section id="units" title="Units">
-            <Card className="inset-list p-0 sm:p-0 lg:p-0">
-              <div className="inset-row flex gap-2">
-                {(['lb', 'kg'] as const).map((unit) => (
-                  <Button
-                    key={unit}
-                    variant={settings.units === unit ? 'primary' : 'outline'}
-                    className="flex-1"
-                    onClick={() => {
-                      update({ units: unit, roundingIncrement: DEFAULT_INCREMENT[unit] })
-                    }}
-                  >
-                    {unit}
-                  </Button>
-                ))}
-              </div>
-
-              <NumberSetting
-                label="Round loads to the nearest"
-                suffix={settings.units}
-                value={settings.roundingIncrement}
-                onChange={(roundingIncrement) => {
-                  update({ roundingIncrement })
-                }}
-              />
-
-              <PlateSetting />
-
-              <NumberSetting
-                label="Bodyweight"
-                suffix={settings.units}
-                value={settings.bodyweight ?? 0}
-                onChange={(bodyweight) => {
-                  update({ bodyweight })
-                }}
-              />
-            </Card>
-          </Section>
-          {/*
-        Nothing here autoregulates, whatever this used to say.
-
-        The description claimed "session length moves the day count,
-        performance moves the block length". Both were built, both were
-        tested, neither was ever called; they have since been deleted.
-        The copy described an intention rather than the app, which is the
-        one thing a settings screen must not do — every other number here
-        is checkable against a session, and a claim about behaviour that
-        does not happen cannot be checked at all.
-      */}
-          {/*
-        **There is no Block section any more.** It held one control —
-        days per week — which chose between four splits. Asked for as
-        _"we probably don't need any of the customize workout stuff,
-        let's gut it."_ There is one split now and nothing to choose;
-        see `rp-splits.ts` for why the other three were already worse
-        than the one that shipped.
-      */}
-          <Section id="session" title="During a session">
-            <Card className="inset-list p-0 sm:p-0 lg:p-0">
-              <Toggle
-                label="Rest timer"
-                checked={settings.restTimerEnabled}
-                onChange={(restTimerEnabled) => {
-                  update({ restTimerEnabled })
-                }}
-              />
-              <Toggle
-                label="Rest sounds — ticks before the end, a chime at it"
-                checked={settings.restSounds}
-                onChange={(restSounds) => {
-                  update({ restSounds })
-                }}
-              />
-              <Toggle
-                label="Vibrate — a set logged, a skip, a record, the rest's end"
-                checked={settings.haptics}
-                onChange={(haptics) => {
-                  update({ haptics })
-                }}
-              />
-              <Toggle
-                label="Keep the screen awake"
-                checked={settings.keepScreenAwake}
-                onChange={(keepScreenAwake) => {
-                  update({ keepScreenAwake })
-                }}
-              />
-            </Card>
-          </Section>
-
-          {/* ---------------------------------------------------------------- */}
-
-          <MaxesEditor
-            settings={settings}
-            onChange={(estimatedMaxes) => {
-              update({ estimatedMaxes })
-            }}
-          />
-
-          <SyncSection />
-
-          <Section
-            id="data"
-            title="Your data"
-            description={
-              syncing
-                ? 'In this browser, and in your GitHub repository after each sync'
-                : 'All of it is in this browser and nowhere else'
-            }
-          >
-            <Card className="inset-list p-0 sm:p-0 lg:p-0">
-              <div className="inset-row flex items-start gap-3">
-                <HardDrive size={18} className="text-ink-500 mt-0.5 shrink-0" aria-hidden />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <p className="text-ink-50 text-sm font-medium">Storage</p>
-                    {/*
-                  An installed app on best-effort is not a warning. Safari
-                  refuses `persist()` outright, so every iPhone reads
-                  best-effort — and an installed one is exempt from the
-                  eviction that actually happens there. A permanent amber
-                  badge over a state nobody can change is how a person
-                  learns to ignore the badge.
-                */}
-                    {storage.data !== undefined && (
-                      <Badge
-                        tone={
-                          storage.data.state === 'persisted'
-                            ? 'good'
-                            : storage.data.state === 'best-effort' && storage.data.installed
-                              ? 'neutral'
-                              : 'warn'
-                        }
-                      >
-                        {storage.data.state === 'persisted' ? 'persistent' : storage.data.state}
-                      </Badge>
-                    )}
-                  </div>
-                  {storage.data !== undefined && (
-                    <>
-                      <p className="text-ink-300 mt-1 text-sm">
-                        {describePersistence(storage.data.state, storage.data.installed)}
-                      </p>
-                      {storage.data.usageBytes !== undefined &&
-                        storage.data.quotaBytes !== undefined && (
-                          <p className="text-ink-500 numeric mt-1 text-xs">
-                            {formatBytes(storage.data.usageBytes)} used of{' '}
-                            {formatBytes(storage.data.quotaBytes)} available
-                            {exercises.data !== undefined &&
-                              ` · ${String(exercises.data.length)} exercises`}
-                          </p>
-                        )}
-                    </>
-                  )}
-                </div>
-              </div>
-
-              <div className="inset-row flex items-center justify-between gap-3">
-                <span className="text-ink-100 text-sm font-medium">Last export</span>
-                <span
-                  className={cn(
-                    'numeric text-sm',
-                    age.stale && age.days !== undefined ? 'text-warn-500' : 'text-ink-300',
-                  )}
-                >
-                  {age.days === undefined
-                    ? 'Never'
-                    : age.days === 0
-                      ? 'Today'
-                      : `${String(age.days)} ${age.days === 1 ? 'day' : 'days'} ago`}
-                </span>
-              </div>
-              <div className="inset-row">
-                <div className="border-warn-500/30 bg-warn-500/5 flex gap-3 rounded-lg border p-3">
-                  <AlertTriangle size={16} className="text-warn-500 mt-0.5 shrink-0" aria-hidden />
-                  <div className="text-ink-300 space-y-1.5 text-xs">
-                    <p className="text-ink-100 font-medium">What will delete this data</p>
-                    <p>
-                      Clearing site data, and in most browsers clearing cookies — the control is
-                      usually labelled &ldquo;cookies and other site data&rdquo; and it takes this
-                      database with it.
-                    </p>
-                    <p>
-                      Uninstalling the app, switching browser, or moving to a new phone.{' '}
-                      {syncing
-                        ? 'Connecting the new browser to the same repository brings it all back.'
-                        : 'None of it transfers; there is no account and no server.'}
-                    </p>
-                    <p className="text-ink-100 font-medium">
-                      {syncing
-                        ? 'The repository and an export both survive all of it.'
-                        : 'Export is the only thing that survives all of it.'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="inset-row space-y-3">
-                <div className="flex gap-2">
-                  <Button
-                    variant="primary"
-                    className="flex-1"
-                    disabled={backup.exportBackup.isPending}
-                    onClick={() => {
-                      backup.exportBackup.mutate()
-                    }}
-                  >
-                    <Download size={16} aria-hidden />
-                    Export
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => {
-                      fileInput.current?.click()
-                    }}
-                  >
-                    <Upload size={16} aria-hidden />
-                    Import
-                  </Button>
-                </div>
-                <ExportCsv />
-                <ImportOther />
-              </div>
-
-              <input
-                ref={fileInput}
-                type="file"
-                accept="application/json,.json"
-                className="hidden"
-                aria-label="Choose a backup file"
-                onChange={(event) => {
-                  const file = event.target.files?.[0]
-                  if (file === undefined) return
-                  backup.inspectFile(file)
-                  event.target.value = ''
-                }}
-              />
-
-              {backup.preview !== undefined && (
-                <div className="inset-row">
-                  <ImportPanel
-                    preview={backup.preview}
-                    canImport={backup.canImport}
-                    confirmReplace={confirmReplace}
-                    onConfirmChange={setConfirmReplace}
-                    onMerge={() => {
-                      backup.runImport.mutate('merge')
-                    }}
-                    onReplace={() => {
-                      backup.runImport.mutate('replace')
-                      setConfirmReplace('')
-                    }}
-                    onCancel={() => {
-                      backup.clearPreview()
-                      setConfirmReplace('')
-                    }}
-                    busy={backup.runImport.isPending}
-                  />
-                </div>
-              )}
-
-              {/*
-            **Start fresh and load the sample are never on screen together.**
-            Which one is offered follows whether there is anything here:
-            a database with records can only be wiped, and an empty one
-            can only be filled. The wipe asks twice and offers the export
-            first, because it is the one control here that cannot be undone.
-          */}
-              <div className="inset-row space-y-2">
-                {/*
-              **No sample on a synced device.** The next round would upload
-              it into the real history, and sync cannot tell it apart
-              afterwards — the same reason connecting clears it first.
-            */}
-                {empty.data === true && syncing ? (
-                  <p className="text-ink-500 text-xs">
-                    Sample data is unavailable while this device syncs — it would be uploaded into
-                    your history. Disconnect sync first to try it.
-                  </p>
-                ) : empty.data === true ? (
-                  <>
-                    <Button
-                      variant="outline"
-                      full
-                      disabled={sample.loadSample.isPending}
-                      onClick={() => {
-                        sample.loadSample.mutate()
-                      }}
-                    >
-                      <Sparkles size={16} aria-hidden />
-                      Load sample data
-                    </Button>
-                    <p className="text-ink-500 text-xs">
-                      Fills the app with a made-up person&rsquo;s quests, lifts and places, to see
-                      what every screen does. Start fresh again whenever you like.
-                    </p>
-                  </>
-                ) : confirmFresh ? (
-                  <div className="border-bad-500/30 bg-bad-500/5 space-y-3 rounded-lg border p-3">
-                    <p className="text-ink-100 text-sm font-medium">
-                      Delete everything in the app?
-                    </p>
-                    <p className="text-ink-300 text-xs">
-                      Every session and exercise you added on this browser goes, and it cannot be
-                      undone. Export first if you want any of it back. Your settings are kept.
-                    </p>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="danger"
-                        className="flex-1"
-                        disabled={sample.startFresh.isPending}
-                        onClick={() => {
-                          sample.startFresh.mutate(undefined, {
-                            onSuccess: () => {
-                              setConfirmFresh(false)
-                            },
-                          })
-                        }}
-                      >
-                        Delete everything
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="flex-1"
-                        onClick={() => {
-                          setConfirmFresh(false)
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <Button
-                    variant="outline"
-                    full
-                    onClick={() => {
-                      setConfirmFresh(true)
-                    }}
-                  >
-                    <RotateCcw size={16} aria-hidden />
-                    Start fresh
-                  </Button>
-                )}
-              </div>
-            </Card>
-            <DataHealth />
-          </Section>
-
-          {/* Not a Section — a footer, not a thing to decide about. */}
-          <BuildLine />
-        </div>
-      </div>
-    </div>
-  )
-}
-
-/* -------------------------------------------------------------------- */
-
-interface ImportPanelProps {
-  readonly preview: import('@/domain/backup/envelope').ImportPreview
-  readonly canImport: boolean
-  readonly confirmReplace: string
-  readonly onConfirmChange: (value: string) => void
-  readonly onMerge: () => void
-  readonly onReplace: () => void
-  readonly onCancel: () => void
-  readonly busy: boolean
-}
-
-const REPLACE_PHRASE = 'replace'
-
-function ImportPanel({
-  preview,
-  canImport,
-  confirmReplace,
-  onConfirmChange,
-  onMerge,
-  onReplace,
-  onCancel,
-  busy,
-}: ImportPanelProps) {
-  const confirmId = useId()
-
-  return (
-    <div className="border-ink-800 bg-ink-850 space-y-3 rounded-lg border p-3">
-      {!preview.valid ? (
-        <>
-          <p className="text-bad-500 text-sm font-medium">This file cannot be imported</p>
-          <ul className="text-ink-300 space-y-1 text-xs">
-            {preview.problems.map((problem, index) => (
-              <li key={index}>{problem.message}</li>
-            ))}
-          </ul>
-        </>
-      ) : (
-        <>
-          <p className="text-ink-50 text-sm font-medium">Ready to import</p>
-          <ul className="text-ink-300 numeric space-y-0.5 text-xs">
-            {/*
-              Every collection with something in it, rather than the three
-              that used to be listed. A file whose backlog and places went
-              unmentioned looked like a training-only backup, which is
-              exactly what it used to be.
-            */}
-            {COUNT_LABELS.filter(([key]) => (preview.counts?.[key] ?? 0) > 0).map(
-              ([key, label]) => (
-                <li key={key}>
-                  {preview.counts?.[key] ?? 0} {label}
-                </li>
-              ),
-            )}
-            {preview.dateRange !== undefined && (
-              <li className="text-ink-500">
-                {preview.dateRange.from} to {preview.dateRange.to}
-              </li>
-            )}
-          </ul>
-
-          <Button variant="primary" full disabled={!canImport || busy} onClick={onMerge}>
-            Merge into what is here
-          </Button>
-
-          <div>
-            <label htmlFor={confirmId} className="text-ink-500 block text-xs">
-              Or replace everything — type{' '}
-              <strong className="text-ink-300">{REPLACE_PHRASE}</strong> to confirm. This deletes
-              all current data.
-            </label>
-            <div className="mt-1.5 flex gap-2">
-              <input
-                id={confirmId}
-                value={confirmReplace}
-                onChange={(event) => {
-                  onConfirmChange(event.target.value)
-                }}
-                className="bg-ink-900 border-ink-800 text-ink-50 tap-target flex-1 rounded-lg border px-3 text-sm"
-              />
-              <Button
-                variant="danger"
-                disabled={confirmReplace.trim().toLowerCase() !== REPLACE_PHRASE || busy}
-                onClick={onReplace}
-              >
-                Replace
-              </Button>
-            </div>
-          </div>
-        </>
-      )}
-
-      <Button variant="ghost" full onClick={onCancel}>
-        Cancel
-      </Button>
-    </div>
-  )
-}
-
-function NumberSetting({
-  label,
-  suffix,
-  value,
-  onChange,
-}: {
-  readonly label: string
-  readonly suffix?: string
-  readonly value: number
-  readonly onChange: (value: number) => void
-}) {
-  const id = `setting-${label.toLowerCase().replace(/[^a-z]+/g, '-')}`
-
-  return (
-    <div className="inset-row flex items-center justify-between gap-3">
-      <label htmlFor={id} className="text-ink-100 text-sm font-medium">
-        {label}
-      </label>
-      <div className="flex items-center gap-1.5">
-        <input
-          id={id}
-          type="number"
-          inputMode="decimal"
-          value={value === 0 ? '' : value}
-          placeholder="—"
-          onChange={(event) => {
-            const next = Number(event.target.value)
-            if (Number.isFinite(next)) onChange(next)
-          }}
-          className="inline-value numeric tap-target w-24"
-        />
-        {suffix !== undefined && <span className="text-ink-500 text-xs">{suffix}</span>}
-      </div>
-    </div>
-  )
-}
-
-function Toggle({
-  label,
-  checked,
-  onChange,
-}: {
-  readonly label: string
-  readonly checked: boolean
-  readonly onChange: (value: boolean) => void
-}) {
-  /* "Title — what it does": the clause after the dash is a detail line. */
-  const [title, detail] = label.split(' — ') as [string, string | undefined]
-  return (
-    <label className="inset-row tap-target flex cursor-pointer items-center justify-between gap-3">
-      <span className="min-w-0">
-        <span className="text-ink-100 block text-sm font-medium">{title}</span>
-        {detail === undefined ? null : (
-          <span className="text-ink-500 mt-0.5 block text-xs first-letter:uppercase">{detail}</span>
-        )}
-      </span>
-      {/*
-        A switch, not the platform's checkbox: the native box rendered as
-        a bright system-blue square, the one control on the screen that
-        looked borrowed from another app. The input stays a real checkbox
-        underneath, so keyboard and screen reader behaviour is unchanged.
-      */}
-      <input
-        type="checkbox"
-        role="switch"
-        checked={checked}
-        onChange={(event) => {
-          onChange(event.target.checked)
+  const sheets: Readonly<Record<Area, ReactNode>> = {
+    look: <LookSettings />,
+    units: <UnitSettings />,
+    session: <SessionSettings />,
+    maxes: (
+      <MaxesEditor
+        settings={settings}
+        onChange={(estimatedMaxes) => {
+          update({ estimatedMaxes })
         }}
-        className="peer sr-only"
       />
-      <span
-        aria-hidden
-        className="border-ink-700 bg-ink-850 peer-checked:border-accent-500/70 peer-checked:bg-accent-500/25 peer-focus-visible:outline-accent-500 relative h-7 w-12 shrink-0 rounded-full border transition-colors peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-checked:[&>span]:translate-x-5 peer-checked:[&>span]:bg-accent-400"
-      >
-        <span className="bg-ink-500 absolute top-1 left-1 size-[1.125rem] rounded-full shadow transition-transform" />
-      </span>
-    </label>
-  )
-}
-
-/**
- * Which plates the gym has, so the plate loader and the warm-up ramp only
- * ever ask for a bar that can be built. Every plate starts on; turning
- * one off is the home gym with no 35s. The last one cannot be turned off
- * — a gym with no plates loads nothing, and `platesToHand` would read it
- * as the standard set anyway.
- */
-function PlateSetting() {
-  const { settings, update } = useSettings()
-  const toHand = platesToHand(settings.plates, settings.units)
-
-  return (
-    <div className="inset-row">
-      <p className="text-ink-100 text-sm font-medium">Plates you have</p>
-      <div className="mt-2 flex flex-wrap gap-1.5" role="group" aria-label="Plates you have">
-        {PLATES[settings.units].map((plate) => {
-          const has = toHand.includes(plate)
-          const last = has && toHand.length === 1
-          return (
-            <Button
-              key={plate}
-              size="sm"
-              variant={has ? 'primary' : 'outline'}
-              aria-pressed={has}
-              disabled={last}
-              className="numeric min-w-12"
-              onClick={() => {
-                update({
-                  plates: has ? toHand.filter((one) => one !== plate) : [...toHand, plate],
-                })
-              }}
-            >
-              {plate}
-            </Button>
-          )
-        })}
-      </div>
-      <p className="text-ink-500 mt-1.5 text-xs">
-        The plate loader and the warm-up ramp only use these.
-      </p>
-      <PlatePairs plates={toHand} />
-    </div>
-  )
-}
-
-/**
- * How many pairs of each plate the rack holds (`settings.platePairs`),
- * folded because most gyms never run out. Unset is any number; a count
- * caps how many of that plate one side can take, so 315 with one pair of
- * 45s is loaded with 35s and 10s rather than three 45s that are not there.
- */
-function PlatePairs({ plates }: { readonly plates: readonly number[] }) {
-  const { settings, update } = useSettings()
-  const pairs = settings.platePairs ?? {}
-  const set = (plate: number, count: number | undefined) => {
-    const { [String(plate)]: _old, ...rest } = pairs
-    const next = count === undefined ? rest : { ...rest, [String(plate)]: count }
-    update({ platePairs: Object.keys(next).length === 0 ? undefined : next })
+    ),
+    sync: <SyncSection />,
+    data: <DataSettings />,
   }
 
   return (
-    <details className="mt-3">
-      <summary className="text-ink-300 hover:text-accent-400 tap-target flex cursor-pointer items-center text-sm">
-        How many of each?{' '}
-        {Object.keys(pairs).length > 0 ? `(${String(Object.keys(pairs).length)} counted)` : ''}
-      </summary>
-      <ul className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
-        {plates.map((plate) => {
-          const count = pairs[String(plate)]
-          return (
-            <li key={plate} className="well flex items-center justify-between gap-2 px-3 py-1">
-              <span className="numeric text-ink-100 text-sm">
-                {plate} {settings.units}
-              </span>
-              <span className="flex items-center gap-1">
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  aria-label={`Fewer pairs of ${String(plate)}`}
-                  disabled={count === undefined}
-                  onClick={() => {
-                    set(plate, count === undefined || count <= 1 ? undefined : count - 1)
-                  }}
+    <div className="mx-auto max-w-2xl">
+      <PageHeader title="Settings" />
+      <ul className="border-ink-800 border-t">
+        {AREAS.map((area) => (
+          <li key={area} className="border-ink-800 border-b">
+            <button
+              type="button"
+              aria-haspopup="dialog"
+              onClick={() => {
+                void navigate(`/settings?open=${area}`, { state: { fromList: true } })
+              }}
+              className="flex min-h-[4.25rem] w-full items-center justify-between gap-3 text-left"
+            >
+              <span className="min-w-0">
+                <span className="block font-medium">{TITLES[area]}</span>
+                <span
+                  className={cn(
+                    'numeric block truncate text-sm',
+                    warn[area] === true ? 'text-warn-500' : 'text-ink-500',
+                  )}
                 >
-                  −
-                </Button>
-                <span className="numeric text-ink-300 w-16 text-center text-xs">
-                  {count === undefined
-                    ? 'any'
-                    : `${String(count)} ${count === 1 ? 'pair' : 'pairs'}`}
+                  {values[area]}
                 </span>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  aria-label={`More pairs of ${String(plate)}`}
-                  onClick={() => {
-                    set(plate, (count ?? 0) + 1)
-                  }}
-                >
-                  +
-                </Button>
               </span>
-            </li>
-          )
-        })}
+              <ChevronRight size={18} className="text-ink-500 shrink-0" aria-hidden />
+            </button>
+          </li>
+        ))}
       </ul>
-      <p className="text-ink-500 mt-1.5 text-xs">
-        Any means as many as a bar needs. Below one pair is any again.
-      </p>
-    </details>
+      <div className="mt-6">
+        <BuildLine />
+      </div>
+      {open !== undefined && (
+        <BottomSheet label={TITLES[open]} title={TITLES[open]} onClose={close}>
+          {sheets[open]}
+        </BottomSheet>
+      )}
+    </div>
   )
 }
-
-/** The two pages on offer, each drawn in its own colours for the picker. */
-const BACKGROUNDS = [
-  {
-    black: false,
-    name: 'Dark',
-    page: 'oklch(0.16 0.008 265)',
-    card: 'oklch(0.2 0.008 265)',
-  },
-  { black: true, name: 'Pure black · OLED', page: '#000', card: 'oklch(0.14 0.006 265)' },
-] as const

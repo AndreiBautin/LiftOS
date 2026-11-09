@@ -6001,3 +6001,13 @@ border` boxes that each drew a fourth, flat level; **an inset box
 - **The date and name of a history row are the link**, not the whole
   row: reopen and delete are buttons, and a button inside an anchor is
   invalid markup that swallows the tap.
+
+- **Settings has a sticky row of section chips** (`SectionChips`):
+  Look, Units, Session, Maxes, Sync, Data, the one in view lit — the
+  last section whose top has passed a third of the way down, or the last
+  at the foot of the page. A press scrolls there. `Section` takes an
+  `id` and a scroll margin for this. **Add a section, add its chip.**
+  Unverified by watching: the agent's hidden pane fires no scroll events
+  (they ride rendering frames) and does not advance a smooth scroll, so
+  the lit chip was checked by dispatching `scroll` by hand after each
+  jump.

@@ -4,7 +4,7 @@ import { useId, useState, useSyncExternalStore } from 'react'
 
 import { cn } from '@/lib/cn'
 import { useServices, useSettings } from '@/app/context'
-import { Button, Card, Section } from '@/components/shared/primitives'
+import { Button } from '@/components/shared/primitives'
 import { holdsSampleData } from '@/domain/settings/settings'
 import { useSampleData } from '@/features/backup/useSampleData'
 import {
@@ -68,12 +68,11 @@ export function SyncSection() {
   }
 
   return (
-    <Section
-      id="sync"
-      title="Sync across devices"
-      description="Through a private GitHub repository of your own — free, and nothing of ours in between."
-    >
-      <Card className="inset-list p-0 sm:p-0 lg:p-0">
+    <>
+      <p className="text-ink-500 text-sm">
+        Through a private GitHub repository of your own: free, and nothing of ours in between.
+      </p>
+      <div className="inset-list mt-1">
         {connected === undefined ? (
           <div className="inset-row space-y-4">
             <ol className="text-ink-300 list-decimal space-y-1 pl-5 text-xs">
@@ -229,8 +228,8 @@ export function SyncSection() {
             </div>
           </>
         )}
-      </Card>
-    </Section>
+      </div>
+    </>
   )
 }
 

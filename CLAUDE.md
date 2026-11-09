@@ -97,8 +97,14 @@ surfaces it removed were moved verbatim to [docs/HISTORY.md](docs/HISTORY.md).
   timing are folded in a `details`, for looking something up. A verdict is words in
   quiet ink and never red, the rule the set rows hold. `SessionStats` stays on the
   session's own page. The session bar now morphs into the title row, not a panel.
-- **Not done in this pass**: the look-back pages and Settings only
-  picked up the flat look; they were not restructured, and about fifty colour literals
+- **Settings is a short index** (`SettingsPage`): six rows, each saying what it is set
+  to, each opening a sheet. It was 3,520 px and 58 controls. **The row is the answer most
+  visits want**, so its value is worth keeping true: add a setting, ask what its row
+  should now say. Amber only for what is worth acting on (a stale backup that is the
+  only copy, a failed sync). **The open sheet is in the address** (`?open=data`), so
+  Back closes it and a link can open it. Each area is its own file (`LookSettings`,
+  `UnitSettings`, `SessionSettings`, `DataSettings`), and `Section` went with the chips.
+- **Not done in this pass**: the look-back pages only picked up the flat look; they were not restructured, and about fifty colour literals
   remain in components.
 
 **There is no gamification, and the history of it lives in
@@ -518,25 +524,10 @@ crest.ts`, tested; `SessionCrest` in `features/history`): a ring cut into
   (one `h1`, no skipped heading levels, every control and field named,
   every `role="img"` labelled or titled) passed on the thirteen
   screens; an SVG's `<title>` names it, so those are not failures.
-- **The newer pages have a desktop shape, from `lg` only.** Measured at
-  1400: Settings ran the full 1356 px with toggles at the far edge, and
-  the exercise page, the calculator and the month were one 714 px column
-  two screens long. Settings is now a 5xl page with the chips as a
-  contents list down the left; the exercise page puts the cue beside the
-  notes and the rep-max table beside the weekly towers; the calculator's
-  two tables stand side by side; the month's hero puts the totals left
-  and the calendar right, at a phone's size — at 5xl its cells were
-  each a hand wide. All `lg:` utilities, so a phone cannot reach them
-  (checked: no overflow at 375, chips still a row).
-- **Settings has a sticky row of section chips** (`SectionChips`):
-  Look, Units, Session, Maxes, Sync, Data, the one in view lit — the
-  last section whose top has passed a third of the way down, or the last
-  at the foot of the page. A press scrolls there. `Section` takes an
-  `id` and a scroll margin for this. **Add a section, add its chip.**
-  Unverified by watching: the agent's hidden pane fires no scroll events
-  (they ride rendering frames) and does not advance a smooth scroll, so
-  the lit chip was checked by dispatching `scroll` by hand after each
-  jump.
+- **The newer pages have a desktop shape, from `lg` only.** The exercise page sets its
+  modules in two columns, the calculator's two tables stand side by side, and the
+  month's hero puts the totals left and the calendar right, at a phone's size: at 5xl
+  its cells were each a hand wide. All `lg:` utilities, so a phone cannot reach them.
 - **A page with nothing to count says so in a sentence** — the block
   report, the year, the balance card and the body map were checked on an
   emptied demo (`sampleData: 'cleared'`, database deleted) and drew rows

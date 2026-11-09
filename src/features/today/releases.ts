@@ -1,6 +1,12 @@
 /** Release notes, newest first; `WhatsNew` shows the first once. */
 export const RELEASES: readonly { readonly id: string; readonly items: readonly string[] }[] = [
   {
+    id: '2026-11-08d',
+    items: [
+      'Settings is now a short list that says what each thing is set to. Press a row to change it.',
+    ],
+  },
+  {
     id: '2026-11-08c',
     items: [
       'Finishing a session now opens on the verdict: what you moved, your records and what next time holds, with Done under your thumb.',

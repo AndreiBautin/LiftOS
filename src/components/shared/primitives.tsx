@@ -41,55 +41,13 @@ export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return <div className={cn('card p-4 sm:p-5 lg:p-6', className)} {...props} />
 }
 
-interface SectionProps {
-  /** An anchor, for a page that jumps between its sections. */
-  readonly id?: string | undefined
-  readonly title: string
-  readonly description?: string | undefined
-  readonly action?: ReactNode
-  readonly children: ReactNode
-}
-
-export function Section({ id, title, description, action, children }: SectionProps) {
-  return (
-    // The scroll margin clears a sticky bar a jump lands under.
-    <section id={id} className="mb-8 scroll-mt-20">
-      <div className="mb-3 flex items-end justify-between gap-3">
-        <div className="min-w-0">
-          <h2 className="text-ink-50 text-lg font-semibold tracking-tight">{title}</h2>
-          {description !== undefined && (
-            <p className="text-ink-500 mt-0.5 text-sm">{description}</p>
-          )}
-        </div>
-        {action}
-      </div>
-      {children}
-    </section>
-  )
-}
-
 /**
  * A card that names itself, with its controls on the same line.
  *
- * The alternative is `Section`, which puts a large heading and a lit
- * accent rule *above* the card. That reads as a settings pane — a title
- * over a grey line is what a form looks like — and it is what the home
- * screen dropped when it was asked to stop breaking up the flow of the
- * cards. A game screen is cards; a card says what it is inside itself.
- *
- * **Used inside a card, or directly above a run of them.** Quests is the
- * second case: `ActiveQuests` and every `ProjectCard` draw their own
- * card, so a wrapper would be a card inside a card. The heading row is
- * the same either way, which is the point — the two screens should not
- * grow two different ideas of what a block title looks like.
- *
- * `Section` remains for the case it was written for: a heading that has
- * to carry a **description** as well, and read as a division of the page
- * rather than a label on a panel.
- *
- * The heading is deliberately `text-sm` and dim: it is a label on a
- * panel rather than the page's own title, and the largest thing on a
- * screen should be the thing you came to read.
+ * The heading is deliberately `text-sm` and dim: it is a label on a panel rather
+ * than the page's own title, and the largest thing on a screen should be the
+ * thing you came to read. On the ground rather than in a panel, the same line is
+ * `Module`.
  */
 export function CardHeading({
   icon,

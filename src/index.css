@@ -1198,18 +1198,15 @@ svg.lucide {
   }
 }
 
-/* A grouped inset list, the settings idiom: rows edge to edge inside one
-   card, parted by hairlines inset from the left, a row lit while held. */
+/* The settings idiom: rows parted by hairlines, a row lit while held. */
 .inset-list > .inset-row {
-  padding: 0.75rem 1rem;
+  padding: 0.75rem 0;
   min-height: 3.25rem;
   transition: background-color var(--dur-fast) ease-out;
 }
 
 .inset-list > .inset-row ~ .inset-row {
-  border-top: 1px solid color-mix(in oklab, var(--color-ink-800) 70%, transparent);
-  margin-left: 1rem;
-  padding-left: 0;
+  border-top: 1px solid var(--color-ink-800);
 }
 
 .inset-list > .inset-row:active {

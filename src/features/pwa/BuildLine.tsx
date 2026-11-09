@@ -98,7 +98,7 @@ export function BuildLine() {
   return (
     <div className="mb-8 flex flex-col items-center gap-1">
       <div className="flex items-center gap-3">
-        <span className="text-ink-700 numeric text-xs">
+        <span className="text-ink-500 numeric text-xs">
           LiftOS {import.meta.env.VITE_APP_VERSION ?? 'dev'}
           {import.meta.env.VITE_COMMIT_SHA !== undefined &&
             ` · ${import.meta.env.VITE_COMMIT_SHA.slice(0, 7)}`}
@@ -114,7 +114,7 @@ export function BuildLine() {
           Check for updates
         </Button>
       </div>
-      {MESSAGES[state] !== undefined && <p className="text-ink-700 text-xs">{MESSAGES[state]}</p>}
+      {MESSAGES[state] !== undefined && <p className="text-ink-500 text-xs">{MESSAGES[state]}</p>}
     </div>
   )
 }
