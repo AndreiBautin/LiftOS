@@ -93,7 +93,7 @@ export function YearPage() {
         />
       )}
 
-      <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-3">
+      <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-3 lg:grid-cols-4 lg:gap-x-8">
         {months.map((month) => (
           <div key={month.month}>
             <div className="mb-1.5 flex items-baseline justify-between">

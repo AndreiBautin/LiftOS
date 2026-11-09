@@ -4,8 +4,37 @@ import { asExerciseId, asWorkoutId } from '@/domain/ids/ids'
 import { anEntry, aSet, aWorkout } from '@/test/builders/workout'
 
 import { bestsByExercise } from './bests'
+import { estimateFromWorkout } from './workout-log'
 
 const BENCH = asExerciseId('bench-press')
+
+/* A heavier bell is a real record; a max read off ten reps a minute is not. */
+describe('an EMOM on the wall', () => {
+  it('keeps its bell as the best set and reads no estimated max', () => {
+    const emom = aWorkout({
+      entries: [
+        anEntry({
+          exerciseId: BENCH,
+          sets: [
+            aSet({
+              actualLoad: 30,
+              actualReps: 10,
+              prescription: {
+                load: { kind: 'rpe', target: 8 },
+                reps: { kind: 'emom', reps: 10, minutes: 10 },
+              },
+            }),
+          ],
+        }),
+      ],
+    })
+    const [best] = bestsByExercise([emom])
+    expect(best?.heaviest.load).toBe(30)
+    expect(best?.estimate).toBeUndefined()
+    // The report and the trend read this one; it is what offered 40 lb as a basis.
+    expect(estimateFromWorkout(emom, BENCH)).toBeUndefined()
+  })
+})
 
 describe('all-time bests', () => {
   const older = aWorkout({

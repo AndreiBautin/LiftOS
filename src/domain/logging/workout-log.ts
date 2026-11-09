@@ -255,6 +255,17 @@ export function loggedVolume(
 }
 
 /**
+ * Whether a set says anything about a one-rep max. **An EMOM does not**: ten reps
+ * a minute for ten minutes with a 30 lb bell is logged as one set of 30 × 10, and
+ * the formula would read that as ten reps to failure. The bell is a real record;
+ * the 40 lb "estimated max" beside it, offered as the basis for future loads,
+ * meant nothing.
+ */
+export function readsAnEstimate(set: LoggedSet): boolean {
+  return set.prescription.reps.kind !== 'emom'
+}
+
+/**
  * The best one-rep-max estimate this workout produced for an exercise.
  *
  * Under 5/3/1 this is what makes every cycle a test: the AMRAP set is a
@@ -268,6 +279,7 @@ export function estimateFromWorkout(
   const sets = log.entries
     .filter((entry) => entry.exerciseId === exerciseId)
     .flatMap((entry) => workingSets(entry))
+    .filter(readsAnEstimate)
     .flatMap((set) =>
       set.actualLoad !== undefined && set.actualReps !== undefined
         ? [{ load: set.actualLoad, reps: set.actualReps }]

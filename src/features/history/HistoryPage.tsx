@@ -73,7 +73,7 @@ export function HistoryPage() {
   const shown = searching || older ? months : months.slice(0, MONTHS)
 
   return (
-    <div className="mx-auto max-w-2xl pb-8">
+    <div className="mx-auto max-w-2xl pb-8 lg:max-w-5xl">
       <PageHeader
         title="History"
         subtitle={
@@ -89,7 +89,7 @@ export function HistoryPage() {
         </Empty>
       ) : (
         <>
-          <label className="relative block">
+          <label className="relative block lg:max-w-md">
             <span className="sr-only">Search sessions</span>
             <Search
               size={16}
@@ -124,7 +124,7 @@ export function HistoryPage() {
             </p>
           )}
 
-          <div className="mt-5 space-y-6">
+          <div className="mt-5 space-y-6 lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-10 lg:gap-y-6 lg:space-y-0">
             {shown.map(({ month, sessions: inMonth }) => (
               <section key={month} aria-label={monthName(month)}>
                 <h2 className="text-ink-500 mb-1 font-sans text-sm font-medium tracking-normal">

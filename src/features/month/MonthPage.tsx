@@ -113,34 +113,36 @@ export function MonthPage() {
         ) : undefined
       }
     >
-      <DetailHero
-        label="Month totals"
-        figure={recap.sets.toLocaleString()}
-        unit={`sets${withChange(recap.sets, recap.previous.sets)}`}
-        facts={[
-          {
-            term: 'Volume',
-            value: `${Math.round(recap.tonnage).toLocaleString()} ${settings.units}${withChange(recap.tonnage, recap.previous.tonnage)}`,
-          },
-          {
-            term: 'Hours',
-            value: `${String(Math.round(recap.minutes / 60))}${withChange(recap.minutes, recap.previous.minutes)}`,
-          },
-        ]}
-      >
-        {recap.previous.sessions > 0 && (
-          <p className="text-ink-500 mt-1 text-[0.8125rem]">
-            Against{' '}
-            {recap.previousThrough.endsWith('-31')
-              ? monthName(recap.previousThrough.slice(0, 7), today)
-              : `${shortDay(`${recap.previousThrough.slice(0, 7)}-01`)}–${String(Number(recap.previousThrough.slice(8)))}`}
-          </p>
-        )}
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start lg:gap-10">
+        <DetailHero
+          label="Month totals"
+          figure={recap.sets.toLocaleString()}
+          unit={`sets${withChange(recap.sets, recap.previous.sets)}`}
+          facts={[
+            {
+              term: 'Volume',
+              value: `${Math.round(recap.tonnage).toLocaleString()} ${settings.units}${withChange(recap.tonnage, recap.previous.tonnage)}`,
+            },
+            {
+              term: 'Hours',
+              value: `${String(Math.round(recap.minutes / 60))}${withChange(recap.minutes, recap.previous.minutes)}`,
+            },
+          ]}
+        >
+          {recap.previous.sessions > 0 && (
+            <p className="text-ink-500 mt-1 text-[0.8125rem]">
+              Against{' '}
+              {recap.previousThrough.endsWith('-31')
+                ? monthName(recap.previousThrough.slice(0, 7), today)
+                : `${shortDay(`${recap.previousThrough.slice(0, 7)}-01`)}–${String(Number(recap.previousThrough.slice(8)))}`}
+            </p>
+          )}
+        </DetailHero>
         <MonthCalendar recap={recap} today={today} />
-      </DetailHero>
+      </div>
 
-      {recap.lifts.length > 0 && (
-        <div className="mt-4">
+      <div className="mt-4 lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-10">
+        {recap.lifts.length > 0 && (
           <Module title="Estimated max, start to end of month">
             <ul className="mt-1 space-y-2">
               {recap.lifts.map(({ lift, from, to }) => (
@@ -161,36 +163,36 @@ export function MonthPage() {
               ))}
             </ul>
           </Module>
-        </div>
-      )}
+        )}
 
-      {recap.records.length > 0 && (
-        <Module
-          title={`${String(recap.records.length)} ${recap.records.length === 1 ? 'record' : 'records'}`}
-        >
-          <ul className="mt-1 space-y-2">
-            {recap.records.map((record) => (
-              <li
-                key={`${record.exerciseId}-${record.date}`}
-                className="flex items-center justify-between gap-3 text-sm"
-              >
-                <span className="min-w-0">
-                  <span className="block truncate">{nameOf(record.exerciseId)}</span>
-                  <span className="text-ink-500 text-[0.8125rem]">
-                    {shortDay(record.date)} · {RECORD_LABELS[record.kind]}
+        {recap.records.length > 0 && (
+          <Module
+            title={`${String(recap.records.length)} ${recap.records.length === 1 ? 'record' : 'records'}`}
+          >
+            <ul className="mt-1 space-y-2">
+              {recap.records.map((record) => (
+                <li
+                  key={`${record.exerciseId}-${record.date}`}
+                  className="flex items-center justify-between gap-3 text-sm"
+                >
+                  <span className="min-w-0">
+                    <span className="block truncate">{nameOf(record.exerciseId)}</span>
+                    <span className="text-ink-500 text-[0.8125rem]">
+                      {shortDay(record.date)} · {RECORD_LABELS[record.kind]}
+                    </span>
                   </span>
-                </span>
-                <span className="numeric text-gold-400 shrink-0 font-semibold">
-                  {record.set.load === undefined
-                    ? 'BW'
-                    : formatLoad(record.set.load, settings.units)}{' '}
-                  × {record.set.reps ?? '—'}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </Module>
-      )}
+                  <span className="numeric text-gold-400 shrink-0 font-semibold">
+                    {record.set.load === undefined
+                      ? 'BW'
+                      : formatLoad(record.set.load, settings.units)}{' '}
+                    × {record.set.reps ?? '—'}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </Module>
+        )}
+      </div>
     </LookBack>
   )
 }
@@ -211,7 +213,7 @@ function MonthCalendar({ recap, today }: { readonly recap: MonthRecap; readonly 
   const most = Math.max(1, ...Object.values(recap.days))
 
   return (
-    <div className="mt-4 lg:max-w-md">
+    <div className="mt-4 lg:mt-0">
       <div className="text-ink-500 mb-1.5 grid grid-cols-7 gap-1.5 text-center text-xs">
         {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((letter, index) => (
           <span key={index} aria-hidden>

@@ -111,7 +111,13 @@ surfaces it removed were moved verbatim to [docs/HISTORY.md](docs/HISTORY.md).
   in `SCREENS` now, and `to` is a plain path, so a new screen cannot ask to be
   addressed by date. A year shows only the months it has had. Empty views say a
   sentence (`LookBack` holds them too).
-- **Not done**: about fifty colour literals remain in components.
+- **Colour literals that remain are paint, not meaning**: plates, dumbbells and the
+  iron are the colour of the object; `features/share` draws on a canvas, which cannot read a
+  token; the wrapped cards and the accent swatches are each computed from a hue. Anything
+  that means something (a record, a warning, a deload) reads its token.
+- **Look back, History and the muscle page have a desktop shape, from `lg` only**: 5xl, the
+  picture beside the figures. Today, the player, the exercise page and the calculator
+  already did. Settings and the report stay one column on purpose.
 
 **There is no gamification, and the history of it lives in
 [docs/HISTORY.md](docs/HISTORY.md).** Two cuts, asked for in turn:
@@ -154,8 +160,9 @@ reason is tied to them; read those as history too.
   sounds were not heard (the agent's pane plays none). It resets if the
   card is paged away from mid-EMOM. The template plans the start and Start
   climbs it from history (`workingLoads`). Tonnage counts every minute.
-  **Records and the bests wall read it as a 60 × 10 set** — a heavier bell
-  is a real record, the estimated max beside it means nothing.
+  **Records and the bests wall read it as a 60 × 10 set**, because a heavier bell is a real
+  record. **It reads no estimated max** (`readsAnEstimate`, tested): ten reps a minute is not
+  ten reps to failure, and the report used to offer that figure as the basis for future loads.
 - **A first barbell curl opens at the EZ bar curl's last load**, and the
   other way round (`STAND_IN_FOR` in `domain/exercises/catalogue.ts`,
   `standInLoad` in `start-workout.ts`; `training-flow.test.ts`). Reported

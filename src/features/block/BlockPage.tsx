@@ -57,77 +57,86 @@ export function BlockPage() {
       olderLabel="Earlier block"
       newerLabel="Later block"
     >
-      {/* Four zeros said nothing a sentence does not say better. */}
-      {report.sessions === 0 ? (
-        <p className="text-ink-500 text-sm">
-          {running
-            ? 'Nothing finished this block yet. Its first session starts the count.'
-            : 'Nothing was finished in this block.'}
-        </p>
-      ) : (
-        <DetailHero
-          label="Block totals"
-          figure={report.sets.toLocaleString()}
-          unit="sets"
-          facts={[
-            { term: 'Sessions', value: String(report.sessions) },
-            { term: 'Volume', value: `${(report.tonnage / 1000).toFixed(1)}k ${settings.units}` },
-            { term: 'Records', value: String(report.records) },
-          ]}
-        />
-      )}
-      <ol className="mt-4 mb-4 flex gap-1.5" aria-label="Sets by week">
-        {report.perWeek.map((sets, week) => {
-          const most = Math.max(1, ...report.perWeek)
-          const deload = weeks[week]?.isDeload === true
-          const future = shiftDay(window.start, week * 7) > report.through
-          return (
-            <li key={week} className="flex flex-1 flex-col items-center gap-1">
-              <span className="flex h-20 w-full items-end">
-                <span
-                  className={cn(
-                    'w-full rounded-md transition-[height] duration-500',
-                    future
-                      ? 'border-ink-700 h-full border border-dashed'
-                      : deload
-                        ? 'bg-cool-500/60'
-                        : 'bg-accent-500/80',
-                  )}
-                  style={
-                    future ? undefined : { height: `${String(Math.max(6, (sets / most) * 100))}%` }
-                  }
-                />
-              </span>
-              <span className="numeric text-ink-500 text-xs">
-                {deload ? 'DL' : `W${String(week + 1)}`}
-              </span>
-              <span className="sr-only">{future ? 'Not yet' : `${String(sets)} sets`}</span>
-            </li>
-          )
-        })}
-      </ol>
+      <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-10">
+        <div>
+          {/* Four zeros said nothing a sentence does not say better. */}
+          {report.sessions === 0 ? (
+            <p className="text-ink-500 text-sm">
+              {running
+                ? 'Nothing finished this block yet. Its first session starts the count.'
+                : 'Nothing was finished in this block.'}
+            </p>
+          ) : (
+            <DetailHero
+              label="Block totals"
+              figure={report.sets.toLocaleString()}
+              unit="sets"
+              facts={[
+                { term: 'Sessions', value: String(report.sessions) },
+                {
+                  term: 'Volume',
+                  value: `${(report.tonnage / 1000).toFixed(1)}k ${settings.units}`,
+                },
+                { term: 'Records', value: String(report.records) },
+              ]}
+            />
+          )}
+          <ol className="mt-4 mb-4 flex gap-1.5" aria-label="Sets by week">
+            {report.perWeek.map((sets, week) => {
+              const most = Math.max(1, ...report.perWeek)
+              const deload = weeks[week]?.isDeload === true
+              const future = shiftDay(window.start, week * 7) > report.through
+              return (
+                <li key={week} className="flex flex-1 flex-col items-center gap-1">
+                  <span className="flex h-20 w-full items-end">
+                    <span
+                      className={cn(
+                        'w-full rounded-md transition-[height] duration-500',
+                        future
+                          ? 'border-ink-700 h-full border border-dashed'
+                          : deload
+                            ? 'bg-cool-500/60'
+                            : 'bg-accent-500/80',
+                      )}
+                      style={
+                        future
+                          ? undefined
+                          : { height: `${String(Math.max(6, (sets / most) * 100))}%` }
+                      }
+                    />
+                  </span>
+                  <span className="numeric text-ink-500 text-xs">
+                    {deload ? 'DL' : `W${String(week + 1)}`}
+                  </span>
+                  <span className="sr-only">{future ? 'Not yet' : `${String(sets)} sets`}</span>
+                </li>
+              )
+            })}
+          </ol>
+        </div>
 
-      <Module title="Top sets, start to end">
-        {report.lifts.length === 0 ? (
-          <p className="text-ink-500 mt-1 text-sm">
-            An exercise appears once it has been loaded in two sessions this block.
-          </p>
-        ) : (
-          <>
-            <Fan lifts={report.lifts.slice(0, FAN_LINES)} nameOf={nameOf} />
-            <ul className="divide-ink-800 mt-3 divide-y">
-              {report.lifts.map((lift) => (
-                <LiftRow
-                  key={`${lift.exerciseId}|${lift.version ?? ''}`}
-                  lift={lift}
-                  name={lineName(lift, nameOf)}
-                  units={settings.units}
-                />
-              ))}
-            </ul>
-          </>
-        )}
-      </Module>
+        <Module title="Top sets, start to end">
+          {report.lifts.length === 0 ? (
+            <p className="text-ink-500 mt-1 text-sm">
+              An exercise appears once it has been loaded in two sessions this block.
+            </p>
+          ) : (
+            <>
+              <Fan lifts={report.lifts.slice(0, FAN_LINES)} nameOf={nameOf} />
+              <ul className="divide-ink-800 mt-3 divide-y">
+                {report.lifts.map((lift) => (
+                  <LiftRow
+                    key={`${lift.exerciseId}|${lift.version ?? ''}`}
+                    lift={lift}
+                    name={lineName(lift, nameOf)}
+                    units={settings.units}
+                  />
+                ))}
+              </ul>
+            </>
+          )}
+        </Module>
+      </div>
     </LookBack>
   )
 }

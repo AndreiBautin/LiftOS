@@ -12,7 +12,7 @@ import { useExercises, useProgram, useRecentWorkouts } from '@/features/train/ho
 /** One cell's width and a row's height, in the strip's own units. */
 const CELL = 10
 const ROW = 12
-const DELOAD = 'oklch(0.72 0.14 285)'
+const DELOAD = 'var(--color-cool-500)'
 
 /**
  * Every muscle across a year (`muscleYear`): a row a muscle, a cell a

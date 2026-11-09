@@ -1,7 +1,7 @@
 import type { ExerciseId, WorkoutId } from '@/domain/ids/ids'
 import { mondayOf, shiftDay } from '@/domain/time/day'
 import { topSet, type Performance } from '@/domain/logging/versus-last'
-import { workingSets, type WorkoutLog } from '@/domain/logging/workout-log'
+import { readsAnEstimate, workingSets, type WorkoutLog } from '@/domain/logging/workout-log'
 import { DAY_VERSIONS } from '@/domain/splits/rp-splits'
 import { bestEstimate } from '@/domain/strength/one-rep-max'
 
@@ -57,11 +57,13 @@ export function exerciseHistory(
       if (top === undefined) continue
 
       const estimate = bestEstimate(
-        done.flatMap((set) =>
-          set.actualLoad !== undefined && set.actualReps !== undefined && set.actualLoad > 0
-            ? [{ load: set.actualLoad, reps: set.actualReps }]
-            : [],
-        ),
+        done
+          .filter(readsAnEstimate)
+          .flatMap((set) =>
+            set.actualLoad !== undefined && set.actualReps !== undefined && set.actualLoad > 0
+              ? [{ load: set.actualLoad, reps: set.actualReps }]
+              : [],
+          ),
       )
       /*
        * A slot's variant is usually its sub-category — Compound, Working —

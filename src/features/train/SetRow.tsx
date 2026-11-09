@@ -416,7 +416,7 @@ function SetEditorPanel({
                 className={cn(
                   'tap-target rounded-full border px-3 text-xs font-medium',
                   niggle === region
-                    ? 'border-[oklch(0.78_0.15_85)] bg-[oklch(0.78_0.15_85_/_0.15)] text-gold-400'
+                    ? 'border-warn-500 bg-warn-500/15 text-warn-500'
                     : 'border-ink-800 text-ink-300',
                 )}
               >

@@ -140,7 +140,7 @@ export function RecordsPage() {
                   to={to}
                   className={cn(
                     'card flex h-full flex-col p-3.5 transition-transform hover:-translate-y-0.5',
-                    isFresh && 'record-fresh ring-1 ring-[oklch(0.86_0.13_85/45%)]',
+                    isFresh && 'record-fresh ring-1 ring-gold-400/45',
                   )}
                 >
                   <span className="flex items-start justify-between gap-2">

@@ -46,7 +46,7 @@ export function RepMaxCard({
                   <span
                     className={cn(
                       'absolute inset-y-[3px] left-0 rounded-full',
-                      reached ? 'bg-[oklch(0.86_0.13_85)]' : 'bg-accent-500',
+                      reached ? 'bg-gold-400' : 'bg-accent-500',
                     )}
                     style={{ width: `${String((row.actual / scale) * 100)}%` }}
                   />

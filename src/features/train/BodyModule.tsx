@@ -191,10 +191,10 @@ function Niggles({
               cy={cy}
               r={4.2}
               fill="none"
-              stroke="oklch(0.82 0.15 85)"
+              stroke="var(--color-warn-500)"
               strokeWidth={1.4}
             />
-            <circle cx={cx} cy={cy} r={1.4} fill="oklch(0.82 0.15 85)" />
+            <circle cx={cx} cy={cy} r={1.4} fill="var(--color-warn-500)" />
           </g>
         )),
       )}

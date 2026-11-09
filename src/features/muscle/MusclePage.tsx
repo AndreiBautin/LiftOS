@@ -46,7 +46,7 @@ export function MusclePage() {
   const niggles = nigglesForMuscle(recentNiggles(workouts.data, today), muscle)
 
   return (
-    <div className="mx-auto max-w-2xl pb-8">
+    <div className="mx-auto max-w-2xl pb-8 lg:max-w-5xl">
       <PageHeader
         title={label}
         subtitle={
@@ -56,73 +56,77 @@ export function MusclePage() {
         }
       />
 
-      <DetailHero
-        label={`${label} over twelve weeks`}
-        figure={String(history.sets)}
-        unit={`sets in ${String(MUSCLE_WEEKS)} weeks`}
-        facts={[
-          { term: 'A week', value: (history.sets / MUSCLE_WEEKS).toFixed(1) },
-          { term: 'Share', value: `${String(Math.round(history.share * 100))}%` },
-        ]}
-        aside={<BodyHighlight muscle={muscle} className="w-28 shrink-0" />}
-      >
-        <Tide weeks={history.weeks} today={today} />
-      </DetailHero>
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start lg:gap-x-10">
+        <div>
+          <DetailHero
+            label={`${label} over twelve weeks`}
+            figure={String(history.sets)}
+            unit={`sets in ${String(MUSCLE_WEEKS)} weeks`}
+            facts={[
+              { term: 'A week', value: (history.sets / MUSCLE_WEEKS).toFixed(1) },
+              { term: 'Share', value: `${String(Math.round(history.share * 100))}%` },
+            ]}
+            aside={<BodyHighlight muscle={muscle} className="w-28 shrink-0" />}
+          >
+            <Tide weeks={history.weeks} today={today} />
+          </DetailHero>
 
-      {niggles.length > 0 && (
-        <div className="mt-2 mb-4">
-          <p className="text-warn-500 text-sm">
-            {niggles
-              .map(
-                (one) =>
-                  `${NIGGLE_LABELS[one.region]} flagged ${one.count === 1 ? 'once' : one.count === 2 ? 'twice' : `${String(one.count)} times`} in three weeks`,
-              )
-              .join(' · ')}
-          </p>
-          <p className="text-ink-500 mt-1 text-sm">
-            The work this muscle does loads that joint. On{' '}
-            {niggles
-              .flatMap((one) => one.exercises)
-              .filter((one, at, all) => all.indexOf(one) === at)
-              .map((one) => lookup(one)?.name ?? one)
-              .join(', ')}
-            .
-          </p>
+          {niggles.length > 0 && (
+            <div className="mt-2 mb-4">
+              <p className="text-warn-500 text-sm">
+                {niggles
+                  .map(
+                    (one) =>
+                      `${NIGGLE_LABELS[one.region]} flagged ${one.count === 1 ? 'once' : one.count === 2 ? 'twice' : `${String(one.count)} times`} in three weeks`,
+                  )
+                  .join(' · ')}
+              </p>
+              <p className="text-ink-500 mt-1 text-sm">
+                The work this muscle does loads that joint. On{' '}
+                {niggles
+                  .flatMap((one) => one.exercises)
+                  .filter((one, at, all) => all.indexOf(one) === at)
+                  .map((one) => lookup(one)?.name ?? one)
+                  .join(', ')}
+                .
+              </p>
+            </div>
+          )}
         </div>
-      )}
-      <Module title="What trained it">
-        {history.exercises.length === 0 ? (
-          <p className="text-ink-500 mt-1 text-sm">
-            Nothing has trained the {label.toLowerCase()} in the last twelve weeks. The exercises
-            appear here as their sets are logged.
-          </p>
-        ) : (
-          <ul className="mt-2 space-y-3">
-            {history.exercises.map((one) => (
-              <li key={one.exerciseId}>
-                <div className="flex items-baseline justify-between gap-3">
-                  <Link
-                    viewTransition
-                    to={`/exercise/${one.exerciseId}`}
-                    className="text-ink-100 hover:text-accent-400 min-w-0 truncate text-sm"
-                  >
-                    {lookup(one.exerciseId)?.name ?? one.exerciseId}
-                  </Link>
-                  <span className="numeric text-ink-500 shrink-0 text-xs">
-                    {one.sets} sets · {one.sessions} session{one.sessions === 1 ? '' : 's'}
+        <Module title="What trained it">
+          {history.exercises.length === 0 ? (
+            <p className="text-ink-500 mt-1 text-sm">
+              Nothing has trained the {label.toLowerCase()} in the last twelve weeks. The exercises
+              appear here as their sets are logged.
+            </p>
+          ) : (
+            <ul className="mt-2 space-y-3">
+              {history.exercises.map((one) => (
+                <li key={one.exerciseId}>
+                  <div className="flex items-baseline justify-between gap-3">
+                    <Link
+                      viewTransition
+                      to={`/exercise/${one.exerciseId}`}
+                      className="text-ink-100 hover:text-accent-400 min-w-0 truncate text-sm"
+                    >
+                      {lookup(one.exerciseId)?.name ?? one.exerciseId}
+                    </Link>
+                    <span className="numeric text-ink-500 shrink-0 text-xs">
+                      {one.sets} sets · {one.sessions} session{one.sessions === 1 ? '' : 's'}
+                    </span>
+                  </div>
+                  <span className="bg-ink-800 mt-1.5 block h-1.5 overflow-hidden rounded-full">
+                    <span
+                      className="bg-accent-500 block h-full rounded-full"
+                      style={{ width: `${String((one.sets / most) * 100)}%` }}
+                    />
                   </span>
-                </div>
-                <span className="bg-ink-800 mt-1.5 block h-1.5 overflow-hidden rounded-full">
-                  <span
-                    className="bg-accent-500 block h-full rounded-full"
-                    style={{ width: `${String((one.sets / most) * 100)}%` }}
-                  />
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Module>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Module>
+      </div>
     </div>
   )
 }

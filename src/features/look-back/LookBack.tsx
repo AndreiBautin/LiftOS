@@ -21,6 +21,10 @@ const VIEWS = [
  * step either way, and Play and Share where a view has them. Their addresses are
  * unchanged, so a link or a home-screen shortcut still lands, and each view keeps
  * its own picture: a wall calendar, a fan, twelve small months, a landscape.
+ *
+ * From `lg` the page is 5xl and each view sets its picture beside its figures, so
+ * a monitor is not one 700-pixel column down the middle. All `lg:` utilities, so
+ * a phone cannot reach them.
  */
 export function LookBack({
   view,
@@ -47,7 +51,7 @@ export function LookBack({
   readonly children: ReactNode
 }) {
   return (
-    <div className="mx-auto max-w-2xl pb-8">
+    <div className="mx-auto max-w-2xl pb-8 lg:max-w-5xl">
       <PageHeader
         title={period}
         {...(subtitle === undefined ? {} : { subtitle })}
@@ -58,7 +62,10 @@ export function LookBack({
           </>
         }
       />
-      <nav aria-label="Look back by" className="bg-ink-900 -mt-2 flex gap-1 rounded-[0.875rem] p-1">
+      <nav
+        aria-label="Look back by"
+        className="bg-ink-900 -mt-2 flex gap-1 rounded-[0.875rem] p-1 lg:max-w-md"
+      >
         {VIEWS.map((one) => (
           <Link
             key={one.id}

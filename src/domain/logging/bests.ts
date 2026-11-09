@@ -1,7 +1,7 @@
 import type { ExerciseId, WorkoutId } from '@/domain/ids/ids'
 import { estimateOneRepMax, inferredReserve, type E1rmFormula } from '@/domain/strength/one-rep-max'
 
-import type { WorkoutLog } from './workout-log'
+import { readsAnEstimate, type WorkoutLog } from './workout-log'
 
 /**
  * Each exercise's best, all time: the heaviest bar it has carried (most
@@ -53,14 +53,15 @@ export function bestsByExercise(
         set.actualLoad > 0 &&
         set.actualReps !== undefined &&
         set.actualReps > 0
-          ? [{ load: set.actualLoad, reps: set.actualReps }]
+          ? [{ load: set.actualLoad, reps: set.actualReps, estimable: readsAnEstimate(set) }]
           : [],
       )
-      for (const [index, { load, reps }] of done.entries()) {
+      for (const [index, { load, reps, estimable }] of done.entries()) {
         const here: BestSet = { load, reps, date: log.date, workoutId: log.id }
         const current = found.get(entry.exerciseId)
         const estimate = estimateOneRepMax(load, reps, formula, inferredReserve(done, index))
-        const candidate = estimate.isReliable ? { ...here, value: estimate.value } : undefined
+        const candidate =
+          estimate.isReliable && estimable ? { ...here, value: estimate.value } : undefined
 
         if (current === undefined) {
           found.set(entry.exerciseId, {
