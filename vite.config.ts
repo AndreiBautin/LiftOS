@@ -180,8 +180,8 @@ export default defineConfig(({ mode }) => {
           scope: base,
           display: 'standalone',
           orientation: 'portrait',
-          background_color: '#0a0a0b',
-          theme_color: '#0a0a0b',
+          background_color: '#0a0c0d',
+          theme_color: '#0a0c0d',
           categories: ['health', 'fitness'],
           icons: [
             { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' },

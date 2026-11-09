@@ -70,11 +70,11 @@ export function BarSection({
       {steps.length > 0 && (
         <div className="mt-4">
           <div className="mb-1.5 flex items-center justify-between gap-2">
-            <p className="text-ink-500 text-[0.7rem] font-semibold tracking-[0.12em] uppercase">
+            <p className="text-ink-500 text-xs font-semibold tracking-[0.12em] uppercase">
               Warm up to it
             </p>
             {done.size > 0 && (
-              <span className="text-ink-500 numeric text-[0.7rem]">
+              <span className="text-ink-500 numeric text-xs">
                 {done.size}/{steps.length} done
               </span>
             )}

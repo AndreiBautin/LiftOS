@@ -62,7 +62,7 @@ export function InstallCard() {
                   className="record-in text-ink-300 flex items-center gap-2"
                   style={{ '--i': at } as CSSProperties}
                 >
-                  <span className="numeric bg-accent-500/20 text-accent-400 flex size-5 shrink-0 items-center justify-center rounded-full text-[0.65rem] font-semibold">
+                  <span className="numeric bg-accent-500/20 text-accent-400 flex size-5 shrink-0 items-center justify-center rounded-full text-xs font-semibold">
                     {at + 1}
                   </span>
                   <span>{step}</span>

@@ -149,7 +149,7 @@ function LiftRow({
       </div>
       <Band standing={standing} colour={colour} />
       {reach !== undefined && standing.next !== undefined && today !== undefined && (
-        <p className="text-ink-500 mt-0.5 text-right text-[0.7rem]">
+        <p className="text-ink-500 mt-0.5 text-right text-xs">
           At this rate, {standing.next.multiple}× around{' '}
           <span className="text-ink-300">{whenOf(reach, today)}</span>
         </p>
@@ -188,7 +188,7 @@ function Band({ standing, colour }: { readonly standing: LiftStanding; readonly 
           }}
         />
       </div>
-      <p className="text-ink-500 numeric mt-1 flex justify-between text-[0.7rem]">
+      <p className="text-ink-500 numeric mt-1 flex justify-between text-xs">
         <span>{from}×</span>
         {standing.next === undefined ? (
           <span>Top standard reached</span>

@@ -147,7 +147,7 @@ export function SessionReport({ report, units, onDismiss }: Props) {
   return (
     <div className="mx-auto max-w-2xl space-y-4 pb-8">
       <section
-        className="hero-panel report-hero p-5 sm:p-6"
+        className="hero-panel p-5 sm:p-6"
         aria-labelledby="report-title"
         // The session bar grows into this on finish; see `HomePage`.
         style={{ viewTransitionName: 'session-hero' }}

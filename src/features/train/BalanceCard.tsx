@@ -52,7 +52,7 @@ function TugRow({ balance }: { readonly balance: PairBalance }) {
         <span className="text-ink-300">
           {pair.left.label} <span className="numeric text-ink-50 font-semibold">{total.left}</span>
         </span>
-        <span className={cn('text-[0.7rem]', even ? 'text-ink-500' : 'text-warn-500')}>
+        <span className={cn('text-xs', even ? 'text-ink-500' : 'text-warn-500')}>
           {describeLean(balance)}
         </span>
         <span className="text-ink-300">

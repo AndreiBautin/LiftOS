@@ -125,7 +125,7 @@ export function SessionOutline({
         const count = `${String(section.slots.length)} ${section.slots.length === 1 ? 'movement' : 'movements'}`
 
         const title = (
-          <span className="text-ink-700 text-[0.7rem] font-semibold tracking-[0.12em] uppercase">
+          <span className="text-ink-700 text-xs font-semibold tracking-[0.12em] uppercase">
             {section.title}
           </span>
         )

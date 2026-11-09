@@ -180,7 +180,7 @@ export function RestTimer({
           </svg>
 
           <div className="min-w-0 flex-1">
-            <p className="text-ink-500 truncate text-[0.7rem] font-medium tracking-wide uppercase">
+            <p className="text-ink-500 truncate text-xs font-medium tracking-wide uppercase">
               {elapsed
                 ? 'Rest complete'
                 : pausedAt !== undefined

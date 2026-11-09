@@ -69,7 +69,7 @@ export function RepMaxCard({
           )
         })}
       </ul>
-      <p className="text-ink-500 mt-3 text-[0.7rem]">
+      <p className="text-ink-500 mt-3 text-xs">
         Dashed: what the estimate predicts. Solid: the heaviest done for that many reps, gold where
         it reaches the prediction.
       </p>

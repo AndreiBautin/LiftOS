@@ -80,15 +80,15 @@ export function ExercisePeek({
       <dl className="mt-4 grid grid-cols-2 gap-3">
         {series !== undefined && (
           <div className="bg-ink-850 rounded-xl px-3 py-2">
-            <dt className="text-ink-500 text-[0.65rem] tracking-wide uppercase">Best set</dt>
-            <dd className="numeric text-[oklch(0.86_0.13_85)] mt-0.5 font-semibold">
+            <dt className="text-ink-500 text-xs tracking-wide uppercase">Best set</dt>
+            <dd className="numeric text-gold-400 mt-0.5 font-semibold">
               {describe(series.best, bodyweight, settings.units)}
             </dd>
           </div>
         )}
         {cue !== undefined && (
           <div className="bg-ink-850 rounded-xl px-3 py-2">
-            <dt className="text-ink-500 text-[0.65rem] tracking-wide uppercase">Your cue</dt>
+            <dt className="text-ink-500 text-xs tracking-wide uppercase">Your cue</dt>
             <dd className="text-accent-400 mt-0.5 text-sm italic">{cue}</dd>
           </div>
         )}

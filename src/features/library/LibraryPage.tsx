@@ -163,7 +163,7 @@ function ShelfRow({ row, today }: { readonly row: LibraryRow; readonly today: st
           >
             {row.exercise.name}
           </MorphText>
-          <span className="text-ink-500 block text-[0.7rem]">
+          <span className="text-ink-500 block text-xs">
             {row.inWeek && <span className="text-accent-400">In your week · </span>}
             {row.lastDone === undefined ? 'Not done yet' : `Done ${lastLabel(row.lastDone, today)}`}
           </span>

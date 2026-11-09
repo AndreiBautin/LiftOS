@@ -12,7 +12,7 @@ import { formatDate } from '@/lib/format-date'
 
 /** Months drawn before "Older" is asked for. */
 const SHOWN_MONTHS = 3
-const GOLD = 'oklch(0.86 0.13 85)'
+const GOLD = 'var(--color-gold-400)'
 
 /**
  * The records as a history (`recordTimeline`): a gold spine down the

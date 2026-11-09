@@ -105,7 +105,7 @@ export function BlockPage() {
                     }
                   />
                 </span>
-                <span className="numeric text-ink-500 text-[0.65rem]">
+                <span className="numeric text-ink-500 text-xs">
                   {deload ? 'DL' : `W${String(week + 1)}`}
                 </span>
                 <span className="sr-only">{future ? 'Not yet' : `${String(sets)} sets`}</span>
@@ -245,7 +245,7 @@ function LiftRow({
 function Figure({ label, value }: { readonly label: string; readonly value: string }) {
   return (
     <div>
-      <dt className="text-ink-500 text-[0.65rem] tracking-wide uppercase">{label}</dt>
+      <dt className="text-ink-500 text-xs tracking-wide uppercase">{label}</dt>
       <dd className="numeric text-ink-50 mt-1 text-2xl font-semibold">{value}</dd>
     </div>
   )

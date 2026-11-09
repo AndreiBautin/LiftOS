@@ -34,7 +34,7 @@ export function SessionMap({
       aria-label="Session"
       className="card hidden p-3 lg:sticky lg:top-28 lg:block lg:self-start"
     >
-      <p className="text-ink-500 px-2 pb-2 text-[0.7rem] font-semibold tracking-[0.12em] uppercase">
+      <p className="text-ink-500 px-2 pb-2 text-xs font-semibold tracking-[0.12em] uppercase">
         This session
       </p>
       <ol className="space-y-1">

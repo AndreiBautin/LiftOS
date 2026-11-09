@@ -12,7 +12,7 @@ import { MoveGlyph } from '@/features/glyphs/MoveGlyph'
 import { useExercises, useRecentWorkouts, useSessionPreview } from './hooks'
 import { useNextSession } from './useNextSession'
 
-const GOLD = 'oklch(0.86 0.13 85)'
+const GOLD = 'var(--color-gold-400)'
 
 /**
  * What the next session is ready to push (`ripeLifts`): each lift whose bar
@@ -78,7 +78,7 @@ export function RipeCard() {
               </span>
               {lift.heaviest === true && (
                 <span
-                  className="flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-[0.65rem] font-semibold"
+                  className="flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold"
                   style={{
                     color: GOLD,
                     borderColor: 'color-mix(in oklab, currentColor 40%, transparent)',

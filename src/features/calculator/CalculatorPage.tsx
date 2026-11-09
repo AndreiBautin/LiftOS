@@ -93,7 +93,7 @@ export function CalculatorPage() {
                       row.reps === Number(reps) && 'ring-accent-500/60 ring-1',
                     )}
                   >
-                    <span className="text-ink-500 block text-[0.65rem]">× {row.reps}</span>
+                    <span className="text-ink-500 block text-xs">× {row.reps}</span>
                     <span className="numeric text-ink-50 block text-sm font-semibold">
                       {formatLoad(row.load, units)}
                     </span>

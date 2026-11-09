@@ -79,7 +79,7 @@ export function MusclePage() {
 
       {niggles.length > 0 && (
         <Card className="border-[oklch(0.78_0.15_85_/_0.35)]">
-          <p className="text-sm text-[oklch(0.85_0.12_85)]">
+          <p className="text-sm text-gold-400">
             {niggles
               .map(
                 (one) =>
@@ -221,9 +221,9 @@ function Figure({
 }) {
   return (
     <div>
-      <dt className="text-ink-500 text-[0.65rem] tracking-wide uppercase">{label}</dt>
+      <dt className="text-ink-500 text-xs tracking-wide uppercase">{label}</dt>
       <dd className="numeric text-ink-50 mt-1 text-2xl font-semibold">{value}</dd>
-      <dd className="text-ink-500 text-[0.7rem]">{note}</dd>
+      <dd className="text-ink-500 text-xs">{note}</dd>
     </div>
   )
 }

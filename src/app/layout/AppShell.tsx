@@ -3,8 +3,6 @@ import { Outlet } from 'react-router-dom'
 
 import { useSettings } from '@/app/context'
 import { DEFAULT_ACCENT_HUE } from '@/domain/settings/settings'
-import { AmbientBackdrop } from './AmbientBackdrop'
-import { useCardSpotlight } from './useCardSpotlight'
 import { useGitHubSync } from '@/features/sync/useGitHubSync'
 import { ReadFailure } from '@/features/errors/ReadFailure'
 import { UpdatePrompt } from '@/features/pwa/UpdatePrompt'
@@ -33,11 +31,6 @@ import { SessionPill } from '@/features/train/SessionPill'
  * stops a column getting too narrow on a wide monitor.
  */
 export function AppShell() {
-  /*
-   * One document-level listener feeds every card's spotlight. Mounted
-   * here so it exists exactly once, for as long as the app does.
-   */
-  useCardSpotlight()
   useGitHubSync()
 
   /*
@@ -56,14 +49,6 @@ export function AppShell() {
    * follows it**, so the status bar on an installed app is not a grey
    * stripe above a black page.
    */
-  /* Gym mode scales the player's type through the root, like pure black. */
-  const gym = settings.gymMode === true
-  useEffect(() => {
-    const root = document.documentElement
-    if (gym) root.dataset.gym = ''
-    else delete root.dataset.gym
-  }, [gym])
-
   const black = settings.trueBlack === true
   useEffect(() => {
     const root = document.documentElement
@@ -71,7 +56,7 @@ export function AppShell() {
     else delete root.dataset.black
     document
       .querySelector('meta[name="theme-color"]')
-      ?.setAttribute('content', black ? '#000000' : '#0a0a0b')
+      ?.setAttribute('content', black ? '#000000' : '#0a0c0d')
   }, [black])
 
   /*
@@ -89,7 +74,6 @@ export function AppShell() {
         Skip to content
       </a>
 
-      <AmbientBackdrop />
       <UpdatePrompt />
       <CommandPalette />
       <ReadFailure />

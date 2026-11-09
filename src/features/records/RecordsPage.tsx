@@ -155,7 +155,7 @@ export function RecordsPage() {
                       <Star
                         size={14}
                         fill="currentColor"
-                        className="shrink-0 text-[oklch(0.86_0.13_85)]"
+                        className="shrink-0 text-gold-400"
                         aria-label="Set this week"
                       />
                     )}
@@ -164,7 +164,7 @@ export function RecordsPage() {
                     {formatLoad(best.heaviest.load, settings.units)}
                   </span>
                   <span className="numeric text-ink-300 mt-1 text-sm">× {best.heaviest.reps}</span>
-                  <span className="text-ink-500 numeric mt-auto pt-3 text-[0.7rem]">
+                  <span className="text-ink-500 numeric mt-auto pt-3 text-xs">
                     {best.heaviest.date < stale ? (
                       <span className="text-warn-500">
                         Since {shortDate(best.heaviest.date, today)}

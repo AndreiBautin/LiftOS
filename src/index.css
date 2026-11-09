@@ -51,11 +51,11 @@
 }
 
 @theme {
-  --color-ink-950: oklch(0.16 0.008 265);
-  --color-ink-900: oklch(0.2 0.008 265);
-  --color-ink-850: oklch(0.24 0.009 265);
-  --color-ink-800: oklch(0.29 0.01 265);
-  --color-ink-700: oklch(0.38 0.012 265);
+  --color-ink-950: oklch(0.155 0.004 220);
+  --color-ink-900: oklch(0.205 0.005 220);
+  --color-ink-850: oklch(0.245 0.006 220);
+  --color-ink-800: oklch(0.3 0.007 220);
+  --color-ink-700: oklch(0.4 0.008 220);
   /*
    * **This was missing, and twenty call sites were quietly rendering
    * near-white because of it.** `text-ink-600` compiles to nothing when
@@ -70,14 +70,14 @@
    * importance. Found by inspecting a computed colour rather than by
    * reading the class, because the class is spelled correctly.
    */
-  --color-ink-600: oklch(0.48 0.013 265);
+  --color-ink-600: oklch(0.5 0.009 220);
   /* 0.66, not 0.58: every caption in the app is this ink at text-xs, and
      at 0.58 it measured about 3.8:1 on a card — under WCAG AA's 4.5. At
      0.66 it clears 5:1 on a card and 4.5 on the lightest well. */
-  --color-ink-500: oklch(0.66 0.014 265);
-  --color-ink-300: oklch(0.76 0.01 265);
-  --color-ink-100: oklch(0.93 0.006 265);
-  --color-ink-50: oklch(0.97 0.004 265);
+  --color-ink-500: oklch(0.73 0.01 220);
+  --color-ink-300: oklch(0.82 0.008 220);
+  --color-ink-100: oklch(0.94 0.004 220);
+  --color-ink-50: oklch(0.97 0.003 220);
 
   /*
    * **The accent is cool, and it was orange.** Asked for directly:
@@ -91,9 +91,15 @@
    * sit in the same family, far enough from `cool` below that a level
    * badge and an Elite badge are still telling two different things.
    */
+  /* The words on a lit control: the accent, nearly white. */
+  --color-accent-200: oklch(0.92 0.06 var(--accent-hue));
   --color-accent-500: oklch(0.72 0.12 var(--accent-hue));
   --color-accent-400: oklch(0.79 0.11 var(--accent-hue));
   --color-accent-600: oklch(0.63 0.12 var(--accent-hue));
+
+  /* A record, and only a record: ahead of every time, where the accent
+     says ahead of last time. */
+  --color-gold-400: oklch(0.84 0.13 88);
 
   --color-good-500: oklch(0.72 0.16 152);
   --color-warn-500: oklch(0.78 0.15 85);
@@ -134,37 +140,6 @@
   --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
 }
 
-/* The sky's four numbers, registered so a new reading eases rather than
-   jumps — an unregistered property is a string and snaps. */
-@property --sky-x {
-  syntax: '<percentage>';
-  inherits: false;
-  initial-value: 50%;
-}
-@property --sky-y {
-  syntax: '<percentage>';
-  inherits: false;
-  initial-value: -10%;
-}
-@property --sky-hue {
-  syntax: '<number>';
-  inherits: false;
-  initial-value: 200;
-}
-@property --sky-strength {
-  syntax: '<number>';
-  inherits: false;
-  initial-value: 0.1;
-}
-
-/* Registered so it can be transitioned: an unregistered custom property
-   is a string and snaps between values rather than easing. */
-@property --spot {
-  syntax: '<number>';
-  inherits: false;
-  initial-value: 0;
-}
-
 @layer base {
   :root {
     /* The notch, the status bar and the home indicator.
@@ -196,33 +171,6 @@
     --surface-inset: var(--color-ink-850);
     --border-subtle: var(--color-ink-800);
 
-    /* The lit top edge of a panel, and the shadow under it.
-
-       These are what make a card read as a surface with a thickness
-       rather than as a rectangle of a slightly different colour.
-
-       They stay **tokens rather than literals**, and the reason has
-       narrowed: it used to be that they had to invert for the light
-       theme, since a highlight is white on dark and the *absence* of one
-       on white. With no light theme there is nothing to invert for, and
-       what is left is still worth having — a sheen and a shadow named
-       once are a sheen and a shadow every card agrees about. */
-    --card-sheen: rgb(255 255 255 / 5%);
-    --card-shadow: 0 8px 24px -14px rgb(0 0 0 / 70%);
-    --card-tint: transparent;
-    /* A fine grain laid over the two raised tiers, so a surface reads as
-       a material rather than as a flat fill on a screen. Fractal noise
-       rendered once to a 160px tile by the browser and repeated — no
-       per-frame cost. Only the bright half of the noise shows (alpha is
-       the red channel less a floor), so it speckles rather than laying
-       an even white fog that greys the surface it sits on. */
-    --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .16 0 0 0 -.07'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-
-    /* The glow behind the whole app. Warm at the top, cool at one corner
-       — enough to give the background a direction without competing with
-       anything on it. */
-    --glow-accent: color-mix(in oklab, var(--color-accent-500) 13%, transparent);
-    --glow-cool: color-mix(in oklab, var(--color-cool-500) 9%, transparent);
     --text-primary: var(--color-ink-50);
     --text-secondary: var(--color-ink-300);
     --text-muted: var(--color-ink-500);
@@ -315,17 +263,6 @@
 
   body {
     background-color: var(--surface);
-    /* Two soft washes, fixed so they belong to the app rather than
-       scrolling away with the content. This is the change that is on
-       screen on every route with no data required — the previous pass
-       put its effort into a chart that needs two weigh-ins and meters
-       six pixels tall, and a flat background underneath all of it meant
-       the app looked the same as before. */
-    background-image:
-      radial-gradient(130% 55% at 50% -12%, var(--glow-accent), transparent 62%),
-      radial-gradient(90% 45% at 105% 2%, var(--glow-cool), transparent 58%);
-    background-attachment: fixed;
-    background-repeat: no-repeat;
     color: var(--text-primary);
     font-family: var(--font-sans);
     /* Inter's single-storey a and open digits: rounder, and a 1 that
@@ -367,194 +304,43 @@
 
 @layer components {
   /*
-   * The third tier: a well, pressed into the card it sits in.
-   *
-   * Three depths, so a screen reads as layered rather than as one flat
-   * level: the hero is the loudest, a card is raised, and a well is
-   * sunken — darker than its card, a shadow along its *top* inner edge
-   * where a recess catches it, and a hairline that is lighter at the
-   * bottom lip. It took over a dozen hand-written `border-ink-800
-   * rounded-xl border` boxes that each drew a fourth, flat level.
+   * **One ground, one surface, one line.** The instrument look: nothing here
+   * pretends to be a material. There were three depths built from gradients,
+   * grain, a pointer spotlight, inset sheens and shadows, and every card on
+   * a page carried them equally, so nothing on the page outranked anything
+   * else. A surface is a flat fill with a hairline; hierarchy comes from the
+   * size of the type on it and from the accent, which is spent on the next
+   * action and on live state and nowhere else.
    */
   .well {
     border-radius: 0.75rem;
-    border: 1px solid color-mix(in oklab, var(--color-ink-800) 80%, transparent);
-    border-bottom-color: color-mix(in oklab, var(--color-ink-700) 70%, transparent);
-    background-color: color-mix(in oklab, var(--color-ink-950) 70%, transparent);
-    box-shadow: inset 0 2px 6px -2px rgb(0 0 0 / 55%);
+    border: 1px solid var(--border-subtle);
+    background-color: var(--surface);
   }
 
-  /* A panel with a thickness, rather than a rectangle in another colour.
-
-     Three things do that and none of them is expensive: a vertical
-     gradient so the surface is not uniform, an inset hairline along the
-     top so it catches light, and a shadow beneath so it sits above the
-     page. No `backdrop-filter`: this is the surface that
-     scrolls, and it is the one place blur must not go. */
   .card {
-    /* Where the pointer is over this card, and how lit that spot is.
-       `useCardSpotlight` writes the position; `--spot` is 0 until a
-       real pointer hovers, so on a phone every layer that reads it
-       resolves to transparent and the card is exactly the flat panel it
-       always was. */
-    --mx: 50%;
-    --my: -20%;
     background-color: var(--surface-raised);
-    /* Four layers, clipped two ways. The inner two paint the surface:
-       the spotlight wash over the lit-from-above gradient. The outer two
-       paint the 1px border — the same spotlight, stronger, over the flat
-       hairline — which is what makes the edge nearest the pointer catch
-       light the way a real bevel would. A transparent border and a
-       border-box layer is the only way to light part of a border without
-       a pseudo-element, and a pseudo-element would need `position:
-       relative` on every card in the app. */
-    background-image:
-      var(--grain),
-      radial-gradient(
-        420px circle at var(--mx) var(--my),
-        color-mix(in oklab, var(--color-accent-500) calc(var(--spot) * 7%), transparent),
-        transparent 70%
-      ),
-      linear-gradient(
-        180deg,
-        color-mix(in oklab, var(--surface-raised) 92%, var(--text-primary) 8%),
-        var(--surface-raised) 55%
-      ),
-      radial-gradient(
-        260px circle at var(--mx) var(--my),
-        color-mix(in oklab, var(--color-accent-400) calc(var(--spot) * 70%), transparent),
-        transparent 75%
-      ),
-      linear-gradient(var(--border-subtle), var(--border-subtle));
-    background-clip: padding-box, padding-box, padding-box, border-box, border-box;
-    background-origin: border-box;
-    border: 1px solid transparent;
-    border-radius: 0.875rem;
-    box-shadow:
-      inset 0 1px 0 0 var(--card-sheen),
-      var(--card-shadow);
+    border: 1px solid var(--border-subtle);
+    border-radius: 1rem;
   }
 
   /*
-   * A card lifts under a pointer that can actually hover.
-   *
-   * **`(hover: hover)` rather than a bare `:hover`**, because a touch tap
-   * *is* a hover event on most mobile browsers with nothing to end it
-   * until the next tap lands elsewhere — a card on a phone would lift and
-   * stay lifted. This app is used one-handed on a phone as often as on a
-   * desktop, so the effect is scoped to the input that can withdraw.
-   *
-   * Reported as wanting the desktop screen to feel "alive and premium"
-   * rather than sparse; a card that answers a pointer is cheap motion
-   * that costs nothing on the surfaces that cannot trigger it.
-   */
-  @media (hover: hover) {
-    .card {
-      transition:
-        transform 220ms var(--ease-out-expo),
-        box-shadow 220ms var(--ease-out-expo),
-        --spot 320ms ease-out;
-    }
-
-    a.well,
-    button.well {
-      transition:
-        transform var(--dur-fast) var(--ease-out),
-        border-color var(--dur-fast) ease-out;
-    }
-
-    a.well:hover,
-    button.well:hover {
-      transform: translateY(-2px);
-      border-color: color-mix(in oklab, var(--color-accent-500) 30%, var(--color-ink-700));
-    }
-
-    .card:hover {
-      --spot: 1;
-      transform: translateY(-3px);
-      box-shadow:
-        inset 0 1px 0 0 var(--card-sheen),
-        0 20px 36px -18px rgb(0 0 0 / 85%);
-    }
-  }
-
-  /*
-   * A card arrives rather than simply being there on the next paint.
-   * `both` holds the `from` state before the animation starts and the
-   * `to` state after it ends, so there is no flash of full-opacity
-   * content before the animation engine has taken over on a slow paint.
-   * Covered by the reduced-motion block above like everything else here
-   * — it collapses the duration to 0.01ms rather than needing a second
-   * gate.
-   */
-  @keyframes card-in {
-    from {
-      opacity: 0;
-      transform: translateY(8px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  /* `--stagger` is set by `Masonry` per card, so a page of cards
-     arrives one after another rather than as a single block. Inherited,
-     so a card nested inside a staggered wrapper keeps its parent's slot. */
-  .card {
-    animation: card-in 560ms var(--ease-out-expo) var(--stagger, 0ms) both;
-  }
-
-  /*
-   * A control built out of the same three things a card is.
-   *
-   * Reported against the old primary button: *"I don't like the style of
-   * this button. Let's make all of these similar to the glassmorphism
-   * cards."* It was a solid saturated fill with black text — a paint
-   * swatch sitting on a page made of panels, and the one element that
-   * looked like it came from a different app.
-   *
-   * **It is not `backdrop-filter`, and that is deliberate rather than a
-   * shortcut.** Real glass re-samples what is behind it on every frame,
-   * which is the single most expensive thing a mobile browser can be
-   * asked for on a surface that scrolls — and these buttons sit in lists.
-   * `.card` gets its material from a vertical gradient, an inset hairline
-   * along the top and a shadow underneath; that is what makes a surface
-   * read as lit rather than as filled, and it costs nothing to composite.
-   * This is the same recipe with the tint left to the caller.
-   *
-   * The tint arrives as `--control-tint` so one class serves every
-   * variant: the fill is that colour over the raised surface, the top
-   * edge catches the same light a card's does, and the border is the
-   * tint again at low alpha.
+   * A control takes its tint from `--control-tint`, so one class serves every
+   * variant. **Lit means a dark fill of the colour with an edge of it, and
+   * words nearly white**: the primary was a solid saturated fill with black
+   * text once, and was turned down for looking like a paint swatch —
+   * _"I don't like the style of this button"_ — so it stays a panel, just
+   * the one panel on the screen with a colour.
    */
   .control-surface {
-    /* Overridden by `.control-surface-lit`; a quiet control sits here. */
-    --control-fill: 16%;
-    background-color: var(--surface-raised);
-    background-image: linear-gradient(
-      180deg,
-      color-mix(in oklab, var(--control-tint) var(--control-fill), transparent),
-      color-mix(in oklab, var(--control-tint) calc(var(--control-fill) / 2), transparent) 65%
-    );
-    border: 1px solid color-mix(in oklab, var(--control-tint) 40%, transparent);
-    box-shadow:
-      inset 0 1px 0 0 var(--card-sheen),
-      var(--card-shadow);
+    background-color: color-mix(in oklab, var(--control-tint) 7%, var(--surface-raised));
+    border: 1px solid color-mix(in oklab, var(--control-tint) 26%, var(--border-subtle));
   }
 
-  /*
-   * The one control on a screen you actually came to press keeps a glow,
-   * which is what stops "made of the same stuff as the cards" turning
-   * into "indistinguishable from the cards". A card does not glow.
-   */
   .control-surface-lit {
-    --control-fill: 40%;
-    border-color: color-mix(in oklab, var(--control-tint) 70%, transparent);
-    box-shadow:
-      inset 0 1px 0 0 var(--card-sheen),
-      0 0 20px -6px color-mix(in oklab, var(--control-tint) 70%, transparent),
-      var(--card-shadow);
+    background-color: color-mix(in oklab, var(--control-tint) 26%, var(--surface));
+    border-color: var(--control-tint);
+    box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 10%);
   }
 
   /* Every interactive control clears the 44px minimum touch target. This
@@ -748,158 +534,6 @@ html {
   background-clip: padding-box;
 }
 
-/*
- * The ambient layer — see `AmbientBackdrop.tsx` for why it looks the way
- * it does. Behind everything (`z-index: -1` on a fixed box paints above
- * the body's own background and below every screen), and never a target
- * for a tap.
- */
-.ambient {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.ambient-sky {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    70vmax 55vmax at var(--sky-x) var(--sky-y),
-    oklch(0.72 0.13 var(--sky-hue) / var(--sky-strength)),
-    transparent 70%
-  );
-  transition:
-    --sky-x 60s linear,
-    --sky-y 60s linear,
-    --sky-hue 60s linear,
-    --sky-strength 60s linear;
-}
-
-.ambient-wash {
-  position: absolute;
-  width: 75vmax;
-  height: 75vmax;
-  border-radius: 9999px;
-  background: radial-gradient(
-    closest-side,
-    color-mix(in oklab, var(--wash) 13%, transparent),
-    transparent
-  );
-  will-change: transform;
-}
-
-.ambient-wash-a {
-  top: -35vmax;
-  left: -20vmax;
-  animation: wash-drift-a 64s ease-in-out infinite alternate;
-}
-
-.ambient-wash-b {
-  top: -20vmax;
-  right: -30vmax;
-  opacity: 0.8;
-  animation: wash-drift-b 78s ease-in-out infinite alternate;
-}
-
-.ambient-wash-c {
-  bottom: -45vmax;
-  left: 15vw;
-  opacity: 0.6;
-  animation: wash-drift-c 92s ease-in-out infinite alternate;
-}
-
-@keyframes wash-drift-a {
-  to {
-    transform: translate(18vw, 12vh) scale(1.1);
-  }
-}
-
-@keyframes wash-drift-b {
-  to {
-    transform: translate(-16vw, 18vh) scale(0.92);
-  }
-}
-
-@keyframes wash-drift-c {
-  to {
-    transform: translate(-12vw, -14vh) scale(1.15);
-  }
-}
-
-.ambient-particle {
-  position: absolute;
-  top: 0;
-  opacity: 0.32;
-  animation-name: particle-fall;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-  will-change: transform;
-}
-
-@keyframes particle-fall {
-  from {
-    transform: translate(0, -8vh) rotate(0deg);
-  }
-  to {
-    transform: translate(var(--sway), 108vh) rotate(420deg);
-  }
-}
-
-@keyframes particle-rise {
-  0% {
-    transform: translate(0, 104vh);
-    opacity: 0;
-  }
-  25% {
-    opacity: 0.55;
-  }
-  80% {
-    opacity: 0.35;
-  }
-  100% {
-    transform: translate(var(--sway), 40vh);
-    opacity: 0;
-  }
-}
-
-/* A leaf: two opposite corners rounded, falling and turning. */
-[data-season='autumn'] .ambient-particle {
-  border-radius: 0 80% 0 80%;
-  background: color-mix(in oklab, var(--color-warn-500) 70%, var(--color-bad-500));
-}
-
-/* Snow: small, pale, and slower than it looks. */
-[data-season='winter'] .ambient-particle {
-  border-radius: 9999px;
-  background: var(--color-ink-100);
-  opacity: 0.4;
-  transform-origin: center;
-}
-
-/* A petal, pale pink out of the palette's own red. */
-[data-season='spring'] .ambient-particle {
-  border-radius: 70% 0 70% 0;
-  background: color-mix(in oklab, var(--color-bad-500) 45%, var(--color-ink-50));
-}
-
-/* Fireflies: they rise from the lower half and fade, rather than fall. */
-[data-season='summer'] .ambient-particle {
-  border-radius: 9999px;
-  width: 4px !important;
-  height: 4px !important;
-  background: var(--color-warn-500);
-  box-shadow: 0 0 8px 2px color-mix(in oklab, var(--color-warn-500) 60%, transparent);
-  animation-name: particle-rise;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ambient-particle {
-    display: none;
-  }
-}
-
 /* A small rise and settle, once — the trend line's end marker arriving. */
 @keyframes figure-in {
   from {
@@ -913,10 +547,7 @@ html {
  *
  * Every `Link` carries `viewTransition`, so React Router wraps the route
  * change in `document.startViewTransition`. The page content leaves with a
- * small lift and fade and the next one rises into place; the navigation
- * and the ambient layer are named separately so they hold still rather
- * than fading out and back in with everything else — a rail that blinked
- * on every tap would undo the whole point.
+ * small lift and fade and the next one rises into place.
  *
  * A browser without the API simply navigates, which is the same app one
  * frame sooner.
@@ -925,15 +556,8 @@ html {
   view-transition-name: page;
 }
 
-.ambient {
-  view-transition-name: ambient;
-}
-
 ::view-transition-old(root),
-::view-transition-new(root),
-::view-transition-group(ambient),
-::view-transition-old(ambient),
-::view-transition-new(ambient) {
+::view-transition-new(root) {
   animation: none;
 }
 
@@ -1018,72 +642,17 @@ html {
 }
 
 /*
- * The hero: the one surface louder than a card.
- *
- * Built from `.card`'s recipe — a lit gradient, a sheen along the top, a
- * shadow underneath — and turned up: two washes instead of one, the
- * accent from the top right and the violet from the bottom left, so the
- * panel reads as the page's subject rather than as another card. No
- * `backdrop-filter`, for the reason the cards have none: it scrolls.
+ * A page's headline panel: a card with more room to say its figures. It used
+ * to wear two washes, a rim of light and a recede on scroll, and every page
+ * opened on one, so the loudest tier was also the commonest.
  */
 .hero-panel {
   position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  border-radius: 1.5rem;
-  border: 1px solid color-mix(in oklab, var(--color-accent-500) 24%, var(--color-ink-800));
-  background-color: var(--color-ink-900);
-  background-image:
-    var(--grain),
-    radial-gradient(
-      120% 90% at 100% 0%,
-      color-mix(in oklab, var(--color-accent-500) 24%, transparent),
-      transparent 62%
-    ),
-    radial-gradient(
-      80% 70% at 0% 100%,
-      color-mix(in oklab, var(--color-cool-500) 14%, transparent),
-      transparent 65%
-    ),
-    linear-gradient(160deg, var(--color-ink-850), var(--color-ink-950));
-  box-shadow:
-    inset 0 1px 0 0 var(--card-sheen),
-    0 30px 60px -30px rgb(0 0 0 / 90%);
+  border-radius: 1.25rem;
+  border: 1px solid var(--border-subtle);
+  background-color: var(--surface-raised);
 }
 
-/* The hero's rim: a line of light along its top edge, brightest where
-   the accent wash enters at the right and fading to nothing at the left.
-   It is what makes the top tier read as lit from above rather than as a
-   larger card. Above the content's stacking context, ignoring the
-   pointer. */
-.hero-panel::after {
-  content: '';
-  position: absolute;
-  inset: 0 0 auto;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent 8%,
-    color-mix(in oklab, var(--color-accent-400) 55%, transparent) 70%,
-    transparent 98%
-  );
-  pointer-events: none;
-}
-
-/* The plate turns in once and settles — one-directional, never looping. */
-@keyframes plate-in {
-  from {
-    opacity: 0;
-    transform: rotate(-40deg) scale(0.92);
-  }
-}
-
-.hero-plate {
-  animation: plate-in 1600ms var(--ease-out-expo) both;
-}
-
-/* The lead lift's medallion traces its figure in once, then the head and
-   weights land — drawn, not faded. Reduced motion shows it finished. */
 @keyframes medallion-trace {
   from {
     stroke-dashoffset: 1;
@@ -1109,18 +678,6 @@ html {
   transform-box: fill-box;
   transform-origin: center;
   animation: medallion-dot 420ms var(--ease-spring) 900ms both;
-}
-
-.medallion-trace {
-  stroke-dasharray: 1;
-  stroke-dashoffset: 0;
-  animation: medallion-trace 1100ms var(--ease-in-out) 250ms both;
-}
-
-.medallion-dot {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: medallion-dot 400ms var(--ease-spring) 1200ms both;
 }
 
 /*
@@ -1330,13 +887,14 @@ html {
 }
 
 /*
- * Gym mode: the session player read at arm's length, under bad light.
- * Tailwind's utilities read these theme variables, so redefining them
- * inside the player scales every size and lifts every grey there — the
- * same layout, larger, with the dim inks a step brighter — and touches
- * nothing outside it. No `zoom`, which would widen the page past a phone.
+ * The player is read at arm's length, under bad light. Tailwind's utilities
+ * read these theme variables, so redefining them inside the player scales
+ * every size and lifts every grey there, and touches nothing outside it. This
+ * was the Gym mode setting; a setting that exists because the default is too
+ * small to read in a gym was an argument for changing the default. No
+ * `zoom`, which would widen the page past a phone.
  */
-:root[data-gym] .session-player {
+.session-player {
   --text-xs: 0.875rem;
   --text-sm: 1rem;
   --text-base: 1.25rem;
@@ -1344,8 +902,8 @@ html {
   --text-xl: 1.5rem;
   --text-2xl: 1.875rem;
   --text-3xl: 2.25rem;
-  --color-ink-500: oklch(0.72 0.012 265);
-  --color-ink-300: oklch(0.86 0.01 265);
+  --color-ink-500: oklch(0.78 0.01 220);
+  --color-ink-300: oklch(0.88 0.008 220);
 }
 
 /* A pair of dumbbells is set down once: a short drop and a settle. */
@@ -1482,24 +1040,12 @@ html {
   }
 }
 
-/*
- * Pure black for OLED screens: the page is off pixels, and the washes and
- * the drifting backdrop go with it — a glow on black lights the very
- * pixels the setting exists to switch off. Cards stay a shade above black
- * so they still read as surfaces.
- */
+/* Pure black for OLED screens: the page is off pixels, and surfaces stay a
+   shade above black so they still read as surfaces. */
 :root[data-black] {
   --surface: #000;
-  --surface-raised: oklch(0.14 0.006 265);
-  --surface-inset: oklch(0.18 0.007 265);
-}
-
-:root[data-black] body {
-  background-image: none;
-}
-
-:root[data-black] .ambient {
-  display: none;
+  --surface-raised: oklch(0.14 0.004 220);
+  --surface-inset: oklch(0.18 0.005 220);
 }
 
 /* The body map: a muscle eases to its tone and rings when chosen. */
@@ -1644,66 +1190,13 @@ html {
   animation: focus-enter 360ms var(--ease-out) both;
 }
 
-/* A sheet is the top layer: a shade lighter than a card, lit along its
-   top edge, and shadowed upward onto what it covers. */
+/* A sheet is the top layer: a shade lighter than a surface, shadowed upward
+   onto what it covers. */
 .sheet-surface {
-  background: linear-gradient(180deg, var(--color-ink-850), var(--color-ink-900) 40%);
+  background: var(--color-ink-900);
   border: 1px solid var(--color-ink-800);
   border-bottom: 0;
-  box-shadow:
-    inset 0 1px 0 oklch(1 0 0 / 0.07),
-    0 -24px 60px -12px oklch(0 0 0 / 0.6);
-}
-
-/* The hero has depth when the page moves: the plate behind it drifts up
-   and turns slower than the page scrolls, the medallion sits on a halo.
-   Scroll-driven, so no listener runs; a browser without scroll timelines
-   simply draws it still, and so does reduced motion. */
-.hero-medallion {
-  border-radius: 9999px;
-  background: radial-gradient(
-    circle at 50% 45%,
-    color-mix(in oklab, var(--color-accent-500) 22%, transparent),
-    transparent 68%
-  );
-  filter: drop-shadow(0 10px 24px color-mix(in oklab, var(--color-accent-500) 30%, transparent));
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  @supports (animation-timeline: scroll()) {
-    /* Two animations on one element: the plate still slides on once by
-       the clock, and drifts by the scroll on the separate translate and
-       rotate properties, which compose with its transform. */
-    .hero-plate {
-      animation:
-        plate-in 1600ms var(--ease-out-expo) both,
-        hero-drift linear both;
-      animation-timeline: auto, scroll(root);
-      animation-range:
-        normal,
-        0 640px;
-    }
-
-    .hero-panel {
-      animation: hero-recede linear both;
-      animation-timeline: scroll(root);
-      animation-range: 0 480px;
-    }
-  }
-}
-
-@keyframes hero-drift {
-  to {
-    translate: 0 -48px;
-    rotate: 24deg;
-  }
-}
-
-@keyframes hero-recede {
-  to {
-    scale: 0.97;
-    opacity: 0.75;
-  }
+  box-shadow: 0 -24px 60px -12px oklch(0 0 0 / 0.6);
 }
 
 /* The rest timer is an island rather than a slab across the screen: a
@@ -1834,9 +1327,7 @@ svg.lucide {
    the action the row exists for, so it is the brightest thing on it. */
 .quick-log {
   background: color-mix(in oklab, var(--color-accent-500) 14%, transparent);
-  box-shadow:
-    inset 0 0 0 1px color-mix(in oklab, var(--color-accent-500) 40%, transparent),
-    0 6px 18px -8px var(--color-accent-500);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-accent-500) 40%, transparent);
   transition:
     transform var(--dur-fast) var(--ease-spring),
     background-color var(--dur-fast) ease-out;
@@ -1865,38 +1356,11 @@ main {
   filter: brightness(0.7) saturate(0.85);
 }
 
-/* Finishing is the one moment the app celebrates. A slow wash of light
-   opens behind the report's hero, the crest lands on a halo, and the
-   records card is edged in gold with its rows fanning in one by one.
-   All once; reduced motion shows the finished state. */
-.report-hero::before {
-  content: '';
-  position: absolute;
-  inset: -40%;
-  z-index: -1;
-  background: conic-gradient(
-    from 200deg at 70% 40%,
-    transparent,
-    color-mix(in oklab, var(--color-accent-500) 18%, transparent) 25deg,
-    transparent 60deg,
-    color-mix(in oklab, var(--color-gold-500, oklch(0.8 0.14 85)) 12%, transparent) 110deg,
-    transparent 150deg
-  );
-  animation: report-wash 1800ms var(--ease-out-expo) both;
-  pointer-events: none;
-}
-
-@keyframes report-wash {
-  from {
-    opacity: 0;
-    rotate: -30deg;
-    scale: 0.8;
-  }
-}
-
+/* Finishing is the one moment the app marks: the crest lands and the records
+   card is edged in gold with its rows fanning in one by one. All once;
+   reduced motion shows the finished state. */
 .report-crest {
   border-radius: 9999px;
-  filter: drop-shadow(0 0 22px color-mix(in oklab, var(--color-accent-500) 45%, transparent));
   animation: crest-land 900ms var(--ease-spring) 250ms both;
 }
 
@@ -1909,9 +1373,7 @@ main {
 }
 
 .records-card {
-  box-shadow:
-    inset 0 0 0 1px color-mix(in oklab, oklch(0.8 0.14 85) 30%, transparent),
-    0 18px 40px -20px oklch(0.8 0.14 85 / 0.45);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-gold-400) 30%, transparent);
 }
 
 .record-in {
@@ -1927,56 +1389,10 @@ main {
   }
 }
 
-.set-segment-lit {
-  box-shadow: 0 0 6px -1px var(--color-accent-500);
-}
-
-/* A card's badge, lit from above and ringed. */
+/* A card's mark: a plain glyph in the quiet ink. It was a lit tile on every
+   card, the first thing every card said and so nothing. */
 .card-badge {
-  --badge-hue: var(--accent-hue);
-  color: oklch(0.85 0.11 var(--badge-hue));
-  background: linear-gradient(
-    180deg,
-    oklch(0.5 0.1 var(--badge-hue) / 0.32),
-    oklch(0.4 0.08 var(--badge-hue) / 0.18)
-  );
-  box-shadow:
-    inset 0 1px 0 oklch(1 0 0 / 0.1),
-    inset 0 0 0 1px oklch(0.6 0.1 var(--badge-hue) / 0.25);
-}
-
-/* Today's hero assembles rather than appearing: the header, then the
-   day's name and its words, then the actions, then the figures — each
-   rising a little after the one above. Once per mount. */
-.hero-assemble > header,
-.hero-assemble div:has(> #hero-title),
-.hero-assemble div:has(> #hero-title) ~ *,
-.hero-assemble dl {
-  animation: assemble-rise 620ms var(--ease-out-expo) both;
-}
-
-.hero-assemble > header {
-  animation-delay: 60ms;
-}
-
-.hero-assemble div:has(> #hero-title) {
-  animation-delay: 180ms;
-}
-
-.hero-assemble div:has(> #hero-title) ~ * {
-  animation-delay: 300ms;
-}
-
-.hero-assemble dl {
-  animation-delay: 440ms;
-}
-
-@keyframes assemble-rise {
-  from {
-    opacity: 0;
-    translate: 0 10px;
-    filter: blur(4px);
-  }
+  color: var(--color-ink-500);
 }
 
 /* The palette floats over the page as glass — it is fixed, so the blur is
@@ -2123,19 +1539,8 @@ main {
   animation: figure-in var(--dur-slow) var(--ease-spring) 200ms both;
 }
 
-/* What's new reads as news: an accent edge that catches the light along
-   its top, its lines arriving one after another. */
+/* What's new reads as news: an accent edge, its lines arriving one after
+   another. */
 .whats-new {
-  box-shadow:
-    inset 0 0 0 1px color-mix(in oklab, var(--color-accent-500) 35%, transparent),
-    inset 0 1px 0 color-mix(in oklab, var(--color-accent-400) 50%, transparent),
-    0 16px 40px -22px var(--color-accent-500);
-}
-
-/* Today's day on the Program strip is lit from beneath, the one chip that
-   says where in the week you stand. */
-.week-today {
-  box-shadow:
-    inset 0 1px 0 oklch(1 0 0 / 0.08),
-    0 8px 24px -10px var(--color-accent-500);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-accent-500) 35%, transparent);
 }

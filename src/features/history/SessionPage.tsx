@@ -179,7 +179,7 @@ function WarmupLine({
         }}
         className="tap-target text-ink-500 hover:text-ink-300 flex w-full items-center justify-between gap-2 text-left"
       >
-        <span className="text-[0.7rem] font-semibold tracking-[0.12em] uppercase">Warm-up</span>
+        <span className="text-xs font-semibold tracking-[0.12em] uppercase">Warm-up</span>
         <span className="numeric flex items-center gap-1 text-xs">
           {done}/{entries.length} done
           {open ? <ChevronDown size={14} aria-hidden /> : <ChevronRight size={14} aria-hidden />}
@@ -284,7 +284,7 @@ function ExerciseCard({
               <Star
                 size={12}
                 fill="currentColor"
-                className="w-3 text-[oklch(0.86_0.13_85)]"
+                className="w-3 text-gold-400"
                 aria-label="Record set"
               />
             ) : (

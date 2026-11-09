@@ -408,7 +408,7 @@ function SessionRow({
             className="border-ink-800 bg-ink-900/70 flex w-12 shrink-0 flex-col items-center rounded-lg border py-1.5"
             aria-hidden
           >
-            <span className="text-ink-500 text-[0.65rem] font-semibold tracking-wider uppercase">
+            <span className="text-ink-500 text-xs font-semibold tracking-wider uppercase">
               {formatDate(when, { month: 'short' })}
             </span>
             <span className="numeric text-ink-50 text-lg leading-none font-semibold">
@@ -433,7 +433,7 @@ function SessionRow({
               {workout.status === 'abandoned' && <Badge tone="warn">Abandoned</Badge>}
               {records > 0 && (
                 <span
-                  className="numeric inline-flex shrink-0 items-center gap-0.5 text-xs font-semibold text-[oklch(0.86_0.13_85)]"
+                  className="numeric inline-flex shrink-0 items-center gap-0.5 text-xs font-semibold text-gold-400"
                   aria-label={`${String(records)} personal record${records === 1 ? '' : 's'}`}
                 >
                   <Star size={12} fill="currentColor" aria-hidden />

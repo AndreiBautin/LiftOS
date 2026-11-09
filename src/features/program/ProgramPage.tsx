@@ -216,7 +216,7 @@ export function ProgramPage() {
                     'tap-target flex flex-col items-center rounded-xl border px-1 py-2 text-center transition-colors',
                     'relative',
                     isToday
-                      ? 'week-today border-accent-500/60 bg-accent-500/15 text-ink-50'
+                      ? 'border-accent-500/60 bg-accent-500/15 text-ink-50'
                       : isDone
                         ? 'border-good-500/30 bg-good-500/10 text-ink-100'
                         : 'border-ink-800 bg-ink-900/60 text-ink-300 hover:border-ink-700',
@@ -239,7 +239,7 @@ export function ProgramPage() {
                   {isDone && <span className="sr-only">Done this week: </span>}
                   <span
                     className={cn(
-                      'text-[0.65rem] font-semibold tracking-[0.12em] uppercase',
+                      'text-xs font-semibold tracking-[0.12em] uppercase',
                       isToday ? 'text-accent-400' : isDone ? 'text-good-500' : 'text-ink-500',
                     )}
                   >
@@ -319,7 +319,7 @@ function DayCard({
       <header className="mb-3 flex items-start gap-3">
         <span
           className={cn(
-            'flex size-11 shrink-0 items-center justify-center rounded-xl border text-[0.65rem] font-semibold tracking-wider uppercase',
+            'flex size-11 shrink-0 items-center justify-center rounded-xl border text-xs font-semibold tracking-wider uppercase',
             isToday
               ? 'border-accent-500/50 bg-accent-500/15 text-accent-400'
               : 'border-ink-800 bg-ink-900 text-ink-500',
@@ -369,7 +369,7 @@ function DayCard({
                   </span>
                 </button>
               ) : (
-                <h3 className="text-ink-700 text-[0.7rem] font-semibold tracking-[0.12em] uppercase">
+                <h3 className="text-ink-700 text-xs font-semibold tracking-[0.12em] uppercase">
                   {section.title}
                 </h3>
               )}

@@ -63,7 +63,7 @@ export function Runway({
       >
         <span aria-hidden />
         {WEEKDAYS.map((letter, at) => (
-          <span key={at} className="text-ink-500 text-center text-[0.65rem]" aria-hidden>
+          <span key={at} className="text-ink-500 text-center text-xs" aria-hidden>
             {letter}
           </span>
         ))}
@@ -95,7 +95,7 @@ function Row({
         </span>
         <span
           className={cn(
-            'block text-[0.65rem]',
+            'block text-xs',
             week.isDeload ? 'text-cool-500 font-semibold' : 'text-ink-500',
           )}
         >
@@ -113,7 +113,7 @@ function Row({
             key={day.on}
             title={name === undefined ? 'Rest' : `${shortDay(day.on)} · ${name}`}
             className={cn(
-              'numeric relative flex h-9 items-center justify-center rounded-lg border text-[0.7rem] font-semibold',
+              'numeric relative flex h-9 items-center justify-center rounded-lg border text-xs font-semibold',
               session === undefined
                 ? 'border-transparent'
                 : finished

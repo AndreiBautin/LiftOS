@@ -109,7 +109,7 @@ function Story({
       aria-label="Your training, as a story"
       className="bg-ink-950 fixed inset-0 z-40 overflow-hidden select-none"
       style={{
-        backgroundImage: `var(--grain), radial-gradient(120% 70% at 20% 0%, oklch(0.42 0.12 ${String(card.hue)} / 0.55), transparent 65%), radial-gradient(90% 60% at 100% 100%, oklch(0.38 0.1 ${String(card.hue + 60)} / 0.45), transparent 60%)`,
+        backgroundImage: `radial-gradient(120% 70% at 20% 0%, oklch(0.42 0.12 ${String(card.hue)} / 0.55), transparent 65%), radial-gradient(90% 60% at 100% 100%, oklch(0.38 0.1 ${String(card.hue + 60)} / 0.45), transparent 60%)`,
         transition: 'background-image 600ms var(--ease-out)',
       }}
       onPointerDown={() => {
@@ -356,7 +356,7 @@ function Big({
       <p
         className={cn(
           'numeric mt-3 leading-none font-semibold tracking-tight',
-          gold ? 'text-[oklch(0.86_0.13_85)]' : 'text-ink-50',
+          gold ? 'text-gold-400' : 'text-ink-50',
         )}
       >
         <span className="text-[5.5rem]" aria-hidden>

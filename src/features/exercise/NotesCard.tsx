@@ -41,7 +41,7 @@ export function NotesCard({ exerciseId }: { readonly exerciseId: ExerciseId }) {
               className="bg-accent-500 ring-ink-900 absolute top-1.5 -left-[1.3rem] size-2 rounded-full ring-4"
               aria-hidden
             />
-            <p className="text-ink-500 flex flex-wrap items-baseline gap-x-2 text-[0.7rem]">
+            <p className="text-ink-500 flex flex-wrap items-baseline gap-x-2 text-xs">
               <Link
                 viewTransition
                 to={`/session/${note.workoutId}`}

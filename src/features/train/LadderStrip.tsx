@@ -58,7 +58,7 @@ export function LadderStrip({
           style={{ bottom: `${String((range.high / ceiling) * 100)}%` }}
         />
         <span
-          className="text-ink-500 numeric absolute right-0 text-[0.65rem]"
+          className="text-ink-500 numeric absolute right-0 text-xs"
           style={{ bottom: `calc(${String((range.high / ceiling) * 100)}% + 2px)` }}
         >
           {range.high}
@@ -75,7 +75,7 @@ export function LadderStrip({
                 className={cn(
                   'w-full rounded-t-md transition-[height] duration-500',
                   !done && 'border-ink-700 border border-dashed bg-transparent',
-                  done && topped && 'bg-accent-400 shadow-[0_0_12px_-2px_var(--color-accent-400)]',
+                  done && topped && 'bg-accent-400',
                   onPlan && 'bg-accent-500/45',
                   done && !topped && !onPlan && 'bg-ink-500',
                 )}

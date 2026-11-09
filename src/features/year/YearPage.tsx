@@ -98,7 +98,7 @@ export function YearPage() {
               >
                 {monthName(month.month)}
               </Link>
-              <span className="numeric text-ink-500 text-[0.65rem]">
+              <span className="numeric text-ink-500 text-xs">
                 {month.sessions > 0 ? `${String(month.sessions)} · ${String(month.sets)} sets` : ''}
               </span>
             </div>
@@ -168,7 +168,7 @@ function Figure({
 }) {
   return (
     <div>
-      <dt className="text-ink-500 text-[0.65rem] tracking-wide uppercase">{label}</dt>
+      <dt className="text-ink-500 text-xs tracking-wide uppercase">{label}</dt>
       <dd className="numeric text-ink-50 mt-1 text-3xl font-semibold">
         {value}
         {unit !== undefined && <span className="text-ink-500 ml-1 text-sm">{unit}</span>}

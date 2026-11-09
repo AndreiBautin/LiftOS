@@ -55,16 +55,7 @@ export function Section({ id, title, description, action, children }: SectionPro
     // The scroll margin clears a sticky bar a jump lands under.
     <section id={id} className="mb-8 scroll-mt-20">
       <div className="mb-3 flex items-end justify-between gap-3">
-        {/*
-          A lit rule beside the heading, so a section reads as a panel
-          rather than as a paragraph that happens to be bold. It is
-          `aria-hidden` and carries no meaning — the heading is still the
-          heading, and a screen reader gets exactly what it did before.
-        */}
-        <div
-          className="min-w-0 border-l-2 pl-2.5"
-          style={{ borderColor: 'var(--color-accent-500)' }}
-        >
+        <div className="min-w-0">
           <h2 className="text-ink-50 text-lg font-semibold tracking-tight">{title}</h2>
           {description !== undefined && (
             <p className="text-ink-500 mt-0.5 text-sm">{description}</p>
@@ -99,15 +90,6 @@ export function Section({ id, title, description, action, children }: SectionPro
  * The heading is deliberately `text-sm` and dim: it is a label on a
  * panel rather than the page's own title, and the largest thing on a
  * screen should be the thing you came to read.
- *
- * **The icon sits in a tinted badge, not bare.** A plain 16px glyph in
- * the same dim ink as the label read as an afterthought — every card on
- * the app opens with one, so a bare icon was really the first thing
- * every screen showed, and it looked like clip art. A small
- * accent-tinted square gives it the weight of a mark rather than a
- * decoration, the same "tint over the surface" recipe `.control-surface`
- * already uses for a button, at a scale that reads as a badge instead of
- * a control.
  */
 export function CardHeading({
   icon,
@@ -125,9 +107,7 @@ export function CardHeading({
     <div className="mb-3 flex items-center justify-between gap-2">
       <h2 className="text-ink-300 flex items-center gap-2 text-sm font-medium">
         {icon !== undefined && (
-          <span className="card-badge flex size-7 shrink-0 items-center justify-center rounded-lg">
-            {icon}
-          </span>
+          <span className="card-badge flex shrink-0 items-center justify-center">{icon}</span>
         )}
         {title}
         {figure !== undefined && (
@@ -202,14 +182,7 @@ export function Empty({
   readonly children?: ReactNode
 }) {
   return (
-    <div
-      className="flex flex-col items-center rounded-[0.875rem] border border-dashed px-4 py-6 text-center"
-      style={{
-        borderColor: 'color-mix(in oklab, var(--color-accent-500) 22%, var(--border-subtle))',
-        backgroundImage:
-          'radial-gradient(80% 60% at 50% 0%, color-mix(in oklab, var(--color-accent-500) 6%, transparent), transparent 70%)',
-      }}
-    >
+    <div className="border-ink-800 flex flex-col items-center rounded-[0.875rem] border border-dashed px-4 py-6 text-center">
       {art === undefined ? (
         <span
           aria-hidden

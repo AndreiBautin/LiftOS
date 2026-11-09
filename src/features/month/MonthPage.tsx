@@ -218,7 +218,7 @@ export function MonthPage() {
                       {shortDay(record.date)} · {RECORD_LABELS[record.kind]}
                     </span>
                   </span>
-                  <span className="numeric shrink-0 font-semibold text-[oklch(0.86_0.13_85)]">
+                  <span className="numeric shrink-0 font-semibold text-gold-400">
                     {record.set.load === undefined
                       ? 'BW'
                       : formatLoad(record.set.load, settings.units)}{' '}
@@ -247,7 +247,7 @@ function Total({
 }) {
   return (
     <div className="min-w-0">
-      <dt className="text-ink-500 text-[0.7rem] font-medium tracking-wide uppercase">{label}</dt>
+      <dt className="text-ink-500 text-xs font-medium tracking-wide uppercase">{label}</dt>
       <dd className="numeric text-ink-50 mt-1 truncate text-lg font-semibold">
         {now.toLocaleString()}
         {suffix !== undefined && (
@@ -291,7 +291,7 @@ function MonthCalendar({ recap, today }: { readonly recap: MonthRecap; readonly 
 
   return (
     <div className="mt-5 lg:mt-0">
-      <div className="text-ink-500 mb-1.5 grid grid-cols-7 gap-1.5 text-center text-[0.65rem]">
+      <div className="text-ink-500 mb-1.5 grid grid-cols-7 gap-1.5 text-center text-xs">
         {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((letter, index) => (
           <span key={index} aria-hidden>
             {letter}

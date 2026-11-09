@@ -201,9 +201,7 @@ export function SetRow(props: Props) {
             <span
               className={cn(
                 'numeric flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold transition-colors',
-                done
-                  ? 'bg-good-500 text-black shadow-[0_0_16px_-4px_var(--color-good-500)]'
-                  : 'bg-ink-800 text-ink-300 ring-ink-700 ring-1',
+                done ? 'bg-good-500 text-black' : 'bg-ink-800 text-ink-300 ring-ink-700 ring-1',
               )}
               aria-hidden
             >
@@ -421,7 +419,7 @@ function SetEditorPanel({
                 className={cn(
                   'tap-target rounded-full border px-3 text-xs font-medium',
                   niggle === region
-                    ? 'border-[oklch(0.78_0.15_85)] bg-[oklch(0.78_0.15_85_/_0.15)] text-[oklch(0.85_0.12_85)]'
+                    ? 'border-[oklch(0.78_0.15_85)] bg-[oklch(0.78_0.15_85_/_0.15)] text-gold-400'
                     : 'border-ink-800 text-ink-300',
                 )}
               >

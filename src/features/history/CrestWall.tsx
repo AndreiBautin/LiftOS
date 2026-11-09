@@ -58,7 +58,7 @@ export function CrestWall({
                       className={workout.status === 'abandoned' ? 'w-full opacity-40' : 'w-full'}
                       still
                     />
-                    <span className="text-ink-500 numeric text-[0.65rem]" aria-hidden>
+                    <span className="text-ink-500 numeric text-xs" aria-hidden>
                       {dayLabel(workout.date)}
                     </span>
                   </Link>

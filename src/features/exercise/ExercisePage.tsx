@@ -182,7 +182,7 @@ export function ExercisePage() {
 function Figure({ label, value }: { readonly label: string; readonly value: string }) {
   return (
     <div className="min-w-0">
-      <dt className="text-ink-500 text-[0.7rem] font-medium tracking-wide uppercase">{label}</dt>
+      <dt className="text-ink-500 text-xs font-medium tracking-wide uppercase">{label}</dt>
       <dd className="numeric text-ink-50 mt-1 truncate text-base font-semibold sm:text-lg">
         {value}
       </dd>

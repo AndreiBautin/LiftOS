@@ -15,32 +15,13 @@ export const buttonStyles = cva(
     variants: {
       variant: {
         /*
-         * **Made of what the cards are made of** — see `.control-surface`
-         * in `index.css` for why that is a gradient and a hairline rather
-         * than `backdrop-filter`.
-         *
-         * Still the loudest thing on its screen, which is the constraint
-         * the old solid fill was meeting and this had to keep meeting:
-         * the tint is stronger, the text is the accent rather than the
-         * ink, and it is the only variant that glows. What it stops being
-         * is a block of flat cyan on a page with no other flat colour on
-         * it.
-         */
-        /*
-         * `accent-400`, and the first attempt at this said `accent-300`,
-         * which **does not exist**. An undefined Tailwind colour compiles
-         * to no declaration at all, so the label inherited
-         * `--text-primary` and came out near-white — legible, plausible,
-         * and not the colour anybody chose.
-         *
-         * That is the `--color-ink-600` bug this repository already
-         * records, reproduced within a day of reading the note about it.
-         * It was caught the only way it can be: by reading the *computed*
-         * colour off the element rather than trusting the class name. The
-         * scale is 400 / 500 / 600 — there is no 300.
+         * The one panel on a screen with a colour; see `.control-surface`
+         * in `index.css`. The accent's scale is 200, 400, 500, 600: an
+         * undefined Tailwind colour compiles to nothing and the words
+         * inherit near-white, so read a shade back off the element.
          */
         primary:
-          'control-surface control-surface-lit [--control-tint:var(--color-accent-500)] text-accent-400',
+          'control-surface control-surface-lit [--control-tint:var(--color-accent-500)] text-accent-200',
         secondary: 'control-surface [--control-tint:var(--color-ink-500)] text-ink-50',
         /*
          * Flat on purpose, and the only variant that is. A ghost is meant
@@ -50,12 +31,6 @@ export const buttonStyles = cva(
         ghost: 'text-ink-300 hover:bg-ink-850 hover:text-ink-50',
         danger:
           'control-surface control-surface-lit [--control-tint:var(--color-bad-500)] text-bad-500',
-        /*
-         * A stronger fill than the rest, for the one control a screen is
-         * for. The surface class takes a weight so "made of the same
-         * stuff as the cards" does not collapse into "as quiet as the
-         * cards" — see `--control-fill` in `index.css`.
-         */
         outline: 'control-surface [--control-tint:var(--color-ink-500)] text-ink-100',
       },
       size: {

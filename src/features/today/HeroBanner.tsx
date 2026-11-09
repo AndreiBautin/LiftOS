@@ -350,7 +350,7 @@ function Stat({
 }): ReactNode {
   return (
     <div className="bg-ink-950/60 px-3 py-3">
-      <dt className="text-ink-500 text-[0.7rem] font-medium tracking-wide uppercase">{label}</dt>
+      <dt className="text-ink-500 text-xs font-medium tracking-wide uppercase">{label}</dt>
       <dd className="numeric text-ink-50 mt-1 flex items-center gap-1.5 text-xl font-semibold">
         {lead}
         <span>

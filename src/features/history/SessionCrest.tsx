@@ -4,7 +4,7 @@ import { glyphFor } from '@/features/glyphs/glyph-for'
 import { GLYPH_DOTS, GLYPH_PATHS } from '@/features/glyphs/glyph-paths'
 import { TIMELINE_COLOURS } from '@/features/train/timeline-colours'
 
-const GOLD = 'oklch(0.86 0.13 85)'
+const GOLD = 'var(--color-gold-400)'
 const GAP = 3
 
 /**

@@ -91,10 +91,7 @@ export function LastWeekCard() {
                 )}
               </div>
               <span
-                className={cn(
-                  'text-[0.65rem] font-semibold',
-                  value > 0 ? 'text-ink-300' : 'text-ink-700',
-                )}
+                className={cn('text-xs font-semibold', value > 0 ? 'text-ink-300' : 'text-ink-700')}
               >
                 {DAYS[day]}
               </span>
@@ -124,7 +121,7 @@ export function LastWeekCard() {
             </span>
           )}
           {records > 0 && (
-            <span className="inline-flex items-center gap-1 text-[oklch(0.86_0.13_85)]">
+            <span className="inline-flex items-center gap-1 text-gold-400">
               <Star size={12} fill="currentColor" aria-hidden />
               <span className="numeric font-semibold">{records}</span>
               {records === 1 ? 'record' : 'records'}
@@ -132,7 +129,7 @@ export function LastWeekCard() {
           )}
         </p>
       )}
-      <p className="text-ink-500 mt-2 text-[0.7rem]">Dashed outlines are the week before.</p>
+      <p className="text-ink-500 mt-2 text-xs">Dashed outlines are the week before.</p>
     </Card>
   )
 }
@@ -165,7 +162,7 @@ function Figure({
 
   return (
     <div className="min-w-0">
-      <dt className="text-ink-500 text-[0.7rem] font-medium tracking-wide uppercase">{label}</dt>
+      <dt className="text-ink-500 text-xs font-medium tracking-wide uppercase">{label}</dt>
       <dd className="numeric text-ink-50 mt-0.5 truncate text-base font-semibold">
         {now.toLocaleString()}
         {suffix !== '' && <span className="text-ink-500 text-xs font-normal">{suffix}</span>}

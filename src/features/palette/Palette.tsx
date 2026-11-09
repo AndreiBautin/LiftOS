@@ -122,9 +122,7 @@ export function Palette({ onClose }: { readonly onClose: () => void }) {
             }}
             className="text-ink-50 placeholder:text-ink-500 h-14 w-full bg-transparent text-base outline-none"
           />
-          <kbd className="border-ink-700 text-ink-500 rounded border px-1.5 text-[0.65rem]">
-            Esc
-          </kbd>
+          <kbd className="border-ink-700 text-ink-500 rounded border px-1.5 text-xs">Esc</kbd>
         </label>
         {plateLoad !== undefined && (
           <div className="border-ink-800 border-b px-4 pt-3 pb-1">
@@ -202,7 +200,7 @@ export function Palette({ onClose }: { readonly onClose: () => void }) {
               <span className="min-w-0 flex-1 truncate">{item.label}</span>
               <span className="text-ink-500 shrink-0 text-xs">{item.kind}</span>
               {index === at && (
-                <kbd className="text-ink-300 border-ink-700 hidden rounded border px-1 text-[0.65rem] sm:inline">
+                <kbd className="text-ink-300 border-ink-700 hidden rounded border px-1 text-xs sm:inline">
                   ↵
                 </kbd>
               )}

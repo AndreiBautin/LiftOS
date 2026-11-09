@@ -56,7 +56,7 @@ export function WeeklySetsCard({ sessions }: { readonly sessions: readonly Exerc
           </li>
         ))}
       </ol>
-      <div className="text-ink-500 mt-1.5 flex justify-between text-[0.65rem]">
+      <div className="text-ink-500 mt-1.5 flex justify-between text-xs">
         <span>{WEEKS} weeks ago</span>
         <span>This week</span>
       </div>

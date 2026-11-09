@@ -54,14 +54,14 @@ export function MuscleWeekGrid({
           <span
             key={day.index}
             role="columnheader"
-            className="text-ink-500 text-center text-[0.65rem] font-semibold tracking-[0.1em] uppercase"
+            className="text-ink-500 text-center text-xs font-semibold tracking-[0.1em] uppercase"
           >
             {(splitDayLabel(day.label).weekday ?? '').slice(0, 3) || String(day.index + 1)}
           </span>
         ))}
         <span
           role="columnheader"
-          className="text-ink-500 text-right text-[0.65rem] font-semibold tracking-[0.1em] uppercase"
+          className="text-ink-500 text-right text-xs font-semibold tracking-[0.1em] uppercase"
         >
           Wk
         </span>

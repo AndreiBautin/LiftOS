@@ -102,7 +102,7 @@ export function BodyMapCard() {
         </Figure>
       </svg>
 
-      <ul className="text-ink-500 mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1 text-[0.7rem]">
+      <ul className="text-ink-500 mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs">
         {LEGEND.map(({ freshness, label }) => (
           <li key={freshness} className="flex items-center gap-1.5">
             <svg viewBox="0 0 10 10" className={cn('size-2.5', TONES[freshness])} aria-hidden>
@@ -114,7 +114,7 @@ export function BodyMapCard() {
       </ul>
       {niggles.length > 0 && (
         <p className="border-ink-800 text-ink-300 mt-3 border-t pt-3 text-xs">
-          <span className="font-medium text-[oklch(0.85_0.12_85)]">Niggles lately</span>{' '}
+          <span className="font-medium text-gold-400">Niggles lately</span>{' '}
           {niggles
             .map(
               (one) =>

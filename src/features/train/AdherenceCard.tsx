@@ -123,7 +123,7 @@ export function AdherenceCard() {
       )}
       {result.missed.length > 0 && (
         <p className="text-ink-500 mt-3 text-xs">
-          <span className="text-[oklch(0.78_0.15_85)]">Missed</span>{' '}
+          <span className="text-warn-500">Missed</span>{' '}
           {result.missed
             .slice(-NAMED)
             .map((day) => `${day.title} · ${shortDate(day.on)}`)
@@ -142,10 +142,10 @@ function Hole({ day }: { readonly day: AdherenceDay }) {
     <span
       title={`${day.title} · ${shortDate(day.on)} · ${day.state}`}
       className={cn(
-        'relative flex size-7 items-center justify-center rounded-full text-[0.65rem] font-semibold',
-        day.state === 'done' && 'bg-accent-500 text-ink-950 shadow-[0_0_10px_var(--glow-accent)]',
+        'relative flex size-7 items-center justify-center rounded-full text-xs font-semibold',
+        day.state === 'done' && 'bg-accent-500 text-ink-950',
         day.state === 'missed' &&
-          'border border-dashed border-[oklch(0.78_0.15_85_/_0.7)] text-[oklch(0.78_0.15_85)]',
+          'border border-dashed border-[oklch(0.78_0.15_85_/_0.7)] text-warn-500',
         day.state === 'today' && 'border-accent-400 text-accent-400 border-2',
         day.state === 'ahead' && 'border-ink-700 text-ink-600 border',
       )}

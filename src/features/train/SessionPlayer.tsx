@@ -428,7 +428,7 @@ export function SessionPlayer({
               key={at}
               className={cn(
                 'h-full flex-1 rounded-full transition-colors duration-300',
-                at < settled ? 'bg-accent-400 set-segment-lit' : 'bg-ink-800',
+                at < settled ? 'bg-accent-400' : 'bg-ink-800',
               )}
             />
           ))}

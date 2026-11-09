@@ -38,7 +38,7 @@ export function RestedFor({
   if (muscles.length === 0) return null
   return (
     <div className="mt-4" aria-label={`How rested ${when}’s muscles are`} role="group">
-      <p className="text-ink-500 mb-2 text-[0.7rem] font-medium tracking-wide uppercase">
+      <p className="text-ink-500 mb-2 text-xs font-medium tracking-wide uppercase">
         Rested for {when}
       </p>
       <ul className="flex flex-wrap gap-1.5">

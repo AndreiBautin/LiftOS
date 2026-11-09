@@ -118,7 +118,7 @@ export function LoadDial({
               style={{ left: `calc(50% + ${String(offset)}px)`, transform: 'translateX(-50%)' }}
             >
               {major && tick >= 0 && (
-                <span className="numeric text-ink-500 mb-0.5 text-[0.6rem]">
+                <span className="numeric text-ink-500 mb-0.5 text-xs">
                   {Number((tick * step).toFixed(2))}
                 </span>
               )}

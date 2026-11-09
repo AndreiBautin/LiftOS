@@ -74,7 +74,7 @@ export function CompareCard({
         </select>
       </label>
 
-      <div className="text-ink-500 mb-2 grid grid-cols-2 text-[0.7rem]">
+      <div className="text-ink-500 mb-2 grid grid-cols-2 text-xs">
         <span>{shortDate(other.date)}</span>
         <span className="text-right">This session</span>
       </div>
