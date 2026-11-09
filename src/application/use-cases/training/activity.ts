@@ -27,14 +27,14 @@ export interface ActivityDay {
   readonly workoutId?: WorkoutId
 }
 
-interface Activity {
+export interface ActivitySummary {
   /** Monday-first weeks, oldest first; each is seven days. */
   readonly weeks: readonly (readonly ActivityDay[])[]
   readonly sessions: number
   readonly sets: number
 }
 
-export async function activityFor(deps: ActivityDeps, weekCount = 18): Promise<Activity> {
+export async function activityFor(deps: ActivityDeps, weekCount = 18): Promise<ActivitySummary> {
   const today = toDayKey(deps.clock.now())
   // Monday of this week: getDay() is Sunday-first, so Sunday is six back.
   const weekday = parseDay(today).getUTCDay()

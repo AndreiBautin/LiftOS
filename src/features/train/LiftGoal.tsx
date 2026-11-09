@@ -1,21 +1,21 @@
-import { Flag, X } from 'lucide-react'
+import { X } from 'lucide-react'
 import { useId, useState } from 'react'
 
 import { useServices, useSettings } from '@/app/context'
 import { STRENGTH_LIFT_SLUGS } from '@/domain/exercises/catalogue'
 import { asExerciseId } from '@/domain/ids/ids'
-import { goalStanding, type GoalStanding, type LiftGoal } from '@/domain/strength/goal'
+import { goalStanding, type GoalStanding, type LiftGoal as Goal } from '@/domain/strength/goal'
 import { strengthTrend, type TrendLift, type TrendPoint } from '@/domain/strength/trend'
 import { parseDay, shiftDay, toDayKey } from '@/domain/time/day'
-import { Button, Card, CardHeading } from '@/components/shared/primitives'
+import { Button } from '@/components/shared/primitives'
 import { cn } from '@/lib/cn'
 
 import { useRecentWorkouts } from './hooks'
 import { formatDate } from '@/lib/format-date'
 
 /**
- * A goal per competition lift, with a date, and whether the lift is on
- * course for it.
+ * A goal for one competition lift, with a date, and whether the lift is on
+ * course for it. Lives under the lift's chart in the Strength module.
  *
  * **Its picture is a glide path**: the straight line the goal asks for,
  * from where the lift stood the day it was set to the target on the
@@ -23,76 +23,58 @@ import { formatDate } from '@/lib/format-date'
  * forward to the date. Above the dashed line is ahead of the goal — one
  * look, no arithmetic. The words under it give the arithmetic anyway
  * (`goalStanding`), because "behind" without how far is a feeling.
- *
- * Colours are the Strength card's, so a lift is one colour everywhere.
  */
-const LIFTS: readonly {
+export function LiftGoal({
+  lift,
+  name,
+  colour,
+}: {
   readonly lift: TrendLift
   readonly name: string
   readonly colour: string
-}[] = [
-  { lift: 'squat', name: 'Squat', colour: 'var(--color-accent-400)' },
-  { lift: 'bench', name: 'Bench press', colour: 'var(--color-cool-500)' },
-  { lift: 'deadlift', name: 'Deadlift', colour: 'var(--color-warn-500)' },
-]
-
-export function GoalsCard() {
+}) {
   const { settings, update } = useSettings()
   const today = toDayKey(useServices().clock.now())
   const workouts = useRecentWorkouts(200)
   const trend = workouts.data === undefined ? undefined : strengthTrend(workouts.data)
   const goals = settings.liftGoals ?? {}
 
-  const setGoal = (lift: TrendLift, goal: LiftGoal | undefined) => {
+  const setGoal = (goal: Goal | undefined) => {
     const others = Object.fromEntries(Object.entries(goals).filter(([one]) => one !== lift))
     update({ liftGoals: goal === undefined ? others : { ...others, [lift]: goal } })
   }
 
+  const points = trend?.[lift] ?? []
+  const now =
+    points.at(-1)?.value ?? settings.estimatedMaxes[asExerciseId(STRENGTH_LIFT_SLUGS[lift])]
+  const goal = goals[lift]
   return (
-    <Card>
-      <CardHeading
-        icon={<Flag size={16} aria-hidden />}
-        title="Goals"
-        figure={
-          Object.keys(goals).length === 0 ? undefined : `${String(Object.keys(goals).length)} set`
-        }
-      />
-      <ul className="space-y-5">
-        {LIFTS.map(({ lift, name, colour }) => {
-          const points = trend?.[lift] ?? []
-          const now =
-            points.at(-1)?.value ?? settings.estimatedMaxes[asExerciseId(STRENGTH_LIFT_SLUGS[lift])]
-          const goal = goals[lift]
-          return (
-            <li key={lift}>
-              {goal === undefined ? (
-                <GoalForm
-                  name={name}
-                  colour={colour}
-                  now={now}
-                  today={today}
-                  onSave={(load, by) => {
-                    setGoal(lift, { load, by, setOn: today, from: now ?? 0 })
-                  }}
-                />
-              ) : (
-                <GoalRow
-                  name={name}
-                  colour={colour}
-                  goal={goal}
-                  points={points}
-                  today={today}
-                  standing={goalStanding(points, goal, today)}
-                  onClear={() => {
-                    setGoal(lift, undefined)
-                  }}
-                />
-              )}
-            </li>
-          )
-        })}
-      </ul>
-    </Card>
+    <div className="mt-1">
+      {goal === undefined ? (
+        <GoalForm
+          key={lift}
+          name={name}
+          colour={colour}
+          now={now}
+          today={today}
+          onSave={(load, by) => {
+            setGoal({ load, by, setOn: today, from: now ?? 0 })
+          }}
+        />
+      ) : (
+        <GoalRow
+          name={name}
+          colour={colour}
+          goal={goal}
+          points={points}
+          today={today}
+          standing={goalStanding(points, goal, today)}
+          onClear={() => {
+            setGoal(undefined)
+          }}
+        />
+      )}
+    </div>
   )
 }
 
@@ -111,7 +93,7 @@ function GoalRow({
 }: {
   readonly name: string
   readonly colour: string
-  readonly goal: LiftGoal
+  readonly goal: Goal
   readonly points: readonly TrendPoint[]
   readonly today: string
   readonly standing: GoalStanding
@@ -148,7 +130,7 @@ function GlidePath({
   standing,
   colour,
 }: {
-  readonly goal: LiftGoal
+  readonly goal: Goal
   readonly points: readonly TrendPoint[]
   readonly today: string
   readonly standing: GoalStanding
@@ -367,7 +349,7 @@ function toneOf(standing: GoalStanding): string {
   }
 }
 
-function sentence(standing: GoalStanding, goal: LiftGoal, today: string): string {
+function sentence(standing: GoalStanding, goal: Goal, today: string): string {
   const signed = (n: number) => `${n >= 0 ? '+' : '−'}${Math.abs(n).toFixed(1)}`
   switch (standing.kind) {
     case 'met':

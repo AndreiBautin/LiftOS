@@ -19,6 +19,64 @@ build line, sync commit message and the export filename
 (`liftos-backup-…`). The origin did not change, so data survives the
 URL moving; an installed copy has to be re-added from the new URL.
 
+**Today and the player were rebuilt, and the older notes describe what they
+replaced where they disagree.** Asked for as a _"significant, visual overhaul and
+streamlining"_ on 2026-11-08, from mock-ups the lifter approved. The notes on the
+surfaces it removed were moved verbatim to [docs/HISTORY.md](docs/HISTORY.md).
+
+- **One ground, one surface, one line** (`index.css`). A surface is a flat fill
+  with a hairline. Gradients, grain, the pointer spotlight, shadows, the ambient
+  layer (washes, sky, falling leaves) and every glow are gone, because every card
+  carried them equally and so nothing outranked anything. **Hierarchy comes from
+  the size of the type and from the accent, and the accent is spent on the next
+  action and on live state.** Gold is a record and nothing else (`--color-gold-400`).
+- **The primary button is a dark fill of the accent with an edge of it and words
+  nearly white** (`.control-surface-lit`, `text-accent-200`). A solid saturated
+  fill with black text was turned down once already; do not go back to it.
+- **Nothing in HTML is under 12 px**; chart labels drawn in an SVG's own units are
+  the exception. The player's larger type is unconditional (`.session-player`):
+  it was the Gym mode setting, and a setting that exists because the default is
+  too small to read in a gym argued for changing the default.
+- **A first screen holds its subject and nothing else** (`.first-screen`), the
+  dock sticky on its floor. Today's is the session (`HeroBanner`): the name, the
+  week, today's bar on every lift (`previewWorkout`), Start. The player's is the
+  set (`SetStage`): it sat at 656 of 812 px, under a ramp, a bar, a ladder and a
+  tempo picker. **Before adding anything to a first screen, ask what it pushes
+  off.** The dock is sticky to its section only, so Start does not follow you into
+  the charts.
+- **In the player, everything that edits opens a sheet** (`BottomSheet`): the set
+  editor, swap, add, reorder, the bar (`BarStrip`), the clock, abandon. The page
+  under the dock is off screen, so a panel opened in place opens out of sight.
+  **A sheet refocuses when its `onClose` changes, so close handlers are
+  `useCallback`**; an inline arrow function steals focus from a field on every
+  render. The ramp's ticks live in `BarStrip`, not the sheet, so closing it to do
+  the step loses nothing.
+- **Rest is the whole screen** (`RestTimer`): the ring, the next load, what to do
+  to the bar (`barForNext`, tested) and how the last set went (`LoggedLine`, with
+  Undo while it is on offer). Ready now turns to the next exercise if that rest
+  ended one. Same absolute-time rule as before.
+- **Today below the session is four modules on the ground, not cards** (`Module`):
+  Strength, Showing up, Body, Recent. **They were thirteen cards asking three
+  questions.** `StrengthModule` is one lift at a time, line into cone, with the
+  standard, the first month's top set and the goal (`LiftGoal`) under it.
+  `ShowingUpModule` is the grid and sentences. `BodyModule` is the map and the
+  balance. `RecentModule` opens the whole `TrainingHistory` on a press. **Keep the
+  shapes different**: a line, a calendar, a body. Sixteen of one recipe is what
+  this replaced.
+- **What went on purpose, and may be asked about:** the week radar, last week's
+  bars, the punch card, the when-you-train dot matrix, then-and-now for anything
+  but the three competition lifts, Ripe as a card, the home-card arranger
+  (`settings.homeCards` falls out of a stored blob on read), the player's pills,
+  role badges and `slotRoleLabel`, Focus view, and the swipe's one-time peek
+  (`settings.swipeLearned`). The domain rules behind what survives as a sentence
+  stayed. The `'Top set'` address is still written into every log.
+- **Checked on an emptied demo**: every module says one sentence with nothing to
+  count, and the week strip draws no missed days before the first session is ever
+  filed (`adherence` alone would have marked them).
+- **Not done in this pass**: History's list, the exercise and muscle pages, the
+  look-back pages and Settings only picked up the flat look; they were not
+  restructured, and about fifty colour literals remain in components.
+
 **There is no gamification, and the history of it lives in
 [docs/HISTORY.md](docs/HISTORY.md).** Two cuts, asked for in turn:
 _"fully lean into this simply being a gamified workout tracker"_ removed
@@ -263,14 +321,6 @@ template.ts`, tested; `startFromTemplate` beside `repeatSession`,
   only a load nothing can make keeps its leftover. Checked in the preview:
   217 offered 215 and 220 and a tap set 215; the palette's 227 offered
   225 and 230.
-- **Each lift is read then and now** ("Then and now", `ThenNowCard`;
-  `thenAndNow` in `domain/logging/then-now.ts`, tested): the lift's **own**
-  first four weeks against the last four — top set (`topSet`'s rule),
-  sessions a week and volume a week — as a ghost bar behind a solid one,
-  each scaled to the lift itself so a curl and a deadlift both fill their
-  row. Four weeks each side so "a week" means the same in both; a lift
-  whose first month runs into its last is left out rather than compared
-  with itself. Competition lifts lead, then the most trained, five rows.
 - **The records wall and the year share as pictures** (Share on
   `/records` and `/year/:year`; `drawWallCard` in `features/share/
 wall-card.ts`, `drawYearCard` in `year-card.ts`): the wall's tiles,
@@ -312,32 +362,6 @@ wall-card.ts`, `drawYearCard` in `year-card.ts`): the wall's tiles,
   session to the report; its hero figures read mid-count there, which is
   `useCountUp` in the hidden pane, not the stored session (16 sets, read
   back from IndexedDB).
-- **The competition lifts forecast twelve weeks out** ("Twelve weeks
-  out", `ForecastCard`; `forecastLift` and `forecastTotal` in
-  `domain/strength/forecast.ts`, tested): each lift's last twelve weeks as
-  a line up to today, then a cone — the line carried forward inside a
-  band that widens with distance — and the total read against the
-  published total standards. **The fit is `fitTrend`'s**, the line the
-  Strength card's "at this rate" date reads, so the two cannot disagree.
-  The band is about two standard errors of prediction **with a floor that
-  grows a quarter of a percent a week**: the demo's sessions sit exactly
-  on a line and the residuals alone drew the forecast as a thread. A
-  falling lift forecasts falling rather than going quiet; thin evidence
-  (fewer than four sessions over four weeks) silences it. The total's
-  band combines the three as independent errors, and is absent unless all
-  three lifts have a forecast.
-- **A card says how the block has followed the plan** ("Showing up",
-  `AdherenceCard`; `adherence` in `domain/programs/adherence.ts`, tested):
-  a punch card, a row a week and a hole a scheduled day — punched where
-  done, torn amber where its day went by, ringed for today, faint ahead,
-  the deload row violet — with full weeks in a row above and missed days
-  by name below. Weeks past the next fold into one line. **It asks
-  `sessionOn`**, so a missed day is one the app offered, and **matches by
-  title within the week** (`doneTitles`' rule): Monday's session done on
-  Friday is Monday done. A session with no scheduled title is `extra`,
-  never a make-up. The running week does not break the run until a day
-  in it is missed. **The missed state was checked by tests, not on
-  screen** — the demo has no missed day this block.
 - **The next session can be edited before it starts** (Edit on the
   session plan card, `SessionDraftEditor`; `applyDraft` and friends in
   `domain/programs/session-draft.ts`, tested; `settings.sessionDraft`, in
@@ -353,15 +377,6 @@ wall-card.ts`, `drawYearCard` in `year-card.ts`): the wall's tiles,
   shows its name rather than a menu of one. A swap plans from its own
   history, as at Start. The parse takes a draft whole or not at all — a
   half-read one could drop the wrong exercise.
-- **Gym mode** (`settings.gymMode`, in the parse with a test; Settings →
-  During a session): the session player and the rest timer (both
-  `.session-player`) read at arm's length — `--text-*` and the two dim
-  inks redefined inside that scope, since Tailwind's utilities read the
-  theme variables, so every size grows and every grey brightens with the
-  layout untouched (a set row's headline 16 → 20 px, no overflow at 375).
-  **Not `zoom`**, which widens the page past a phone. At the larger size
-  the session bar's title truncates and the tempo chips stack; both still
-  work.
 - **Sync says how it is doing** (`SyncBadge` under the hero's header,
   `agoLabel` in `domain/time/ago.ts`, both tested — the badge through a
   pure `SyncBadgeView`): a green cloud and "4m" since the last round, an
@@ -387,15 +402,6 @@ wall-card.ts`, `drawYearCard` in `year-card.ts`): the wall's tiles,
   handles and small heads and read as two barbells. **The belt picture
   was not seen**: nothing in the demo plans an added load on a bodyweight
   movement.
-- **A card names what the next session is ripe for** (`RipeCard`, home
-  card `ripe`; `ripeLifts` in `domain/logging/ripe.ts`, tested): each lift
-  whose planned bar is heavier than its last top set, drawn as the old bar
-  climbing to the new, and a gold **Heaviest** where that bar beats every
-  bar the lift has carried. Read off the session preview, so it names only
-  what Start will ask for; silent when nothing moves. **No rep records**:
-  double progression plans one rep past last time, so at the top bar
-  nearly every lift is a planned rep record every session — the first
-  version tagged four of four and said nothing.
 - **A rest day's hero says how rested the next session's muscles are**
   (`RestedFor`, from `dayMuscles` in `domain/programs/day-muscles.ts`,
   tested): each muscle the next session trains directly, in session
@@ -463,14 +469,6 @@ crest.ts`, tested; `SessionCrest` in `features/history`): a ring cut into
   decided in the state initializer to be fresh (three seconds), the
   `RecordBurst` rule, so a revisited exercise does not sweep again — that
   last part follows from the rule and was not re-measured.
-- **The hero draws the day** (`HeroBanner`): beside the session's name
-  a **medallion of its lead lift** — the competition lift, else the first
-  real exercise — its movement glyph tracing itself in once
-  (`pathLength=1` and a dash offset, then the head lands), keyed by the
-  exercise so a new day draws again; and **This week** leads with a ring
-  of segments, one per planned day, lit for each finished. The medallion
-  is `role="img"` named "Leads with …", the ring `aria-hidden` beside
-  the number it pictures. Reduced motion shows both finished.
 - **An exercise wears a glyph of its movement** (`features/glyphs`:
   `glyphFor`, tested; `GLYPH_PATHS`; `MoveGlyph`): eighteen figures
   hand-drawn on a 24 grid — squat, hinge, bench, press, row, pull-up,
@@ -483,27 +481,6 @@ crest.ts`, tested; `SessionCrest` in `features/history`): a ring cut into
   hinge apart from a row**, which is why they are drawn here; they were
   checked at 96 px and 22 px, and the curl and the row were redrawn after
   the first look. Decorative (`aria-hidden`) — the name is always beside.
-- **The backdrop follows the time of day** (`skyAt` and `skyPhase` in
-  `domain/time/sky.ts`, tested; `.ambient-sky` in `AmbientBackdrop`): a
-  glow low on the left at dawn, high and pale by day, low and amber on
-  the right at dusk, violet at night — **interpolated between stops**,
-  hue turned the short way round, so it drifts rather than switching.
-  Read every five minutes and on returning to the app, and eased over a
-  minute through four registered properties (`--sky-*`). It sits under
-  the season's washes, which still tint it, and goes with them under
-  pure black. Only seen in the gutters between cards, on purpose.
-- **Three depths, so a screen reads as layered** (`index.css`): the
-  hero (`.hero-panel`, loudest, now with a rim of light along its top
-  edge), the card (raised), and the **well** (`.well`, sunken — darker
-  than its card, shadowed along its top inner edge, a lighter bottom
-  lip). Wells replaced seven hand-written `border-ink-800 rounded-xl
-border` boxes that each drew a fourth, flat level; **an inset box
-  inside a card is a `.well`**. The two raised tiers carry `--grain`, an
-  SVG fractal-noise tile rendered once and repeated. **Only the bright
-  half of the noise shows** — the first version laid an even white fog
-  that greyed the hero's wash. `.card` now has five background layers
-  and five `background-clip` entries; they must stay in step, or the
-  spotlit border paints the wrong layer.
 - **Two faces, bundled** (`@fontsource-variable/inter` and
   `space-grotesk`, declared by hand at the top of `index.css`): Inter for
   reading, with its single-storey a and open digits (`cv11`, `ss01`), and
@@ -594,33 +571,6 @@ screens.ts`), read by the palette and by the **Everything sheet** — a
   tallest slide, and a short note sat over a blank the height of the
   release notes. In the agent's hidden pane the height transition stays
   on its first frame; the inline height is the value to read.
-- **The page opens on a hero, and the week is a radar.** Asked for as
-  _"the 'this week' graph is plain, clunky, and takes up most of the
-  screen"_ and _"I don't like the plain LiftOS header in lieu of a
-  proper hero banner"_. `HeroBanner` names the next session and owns
-  Start, Skip and Open session, so the plan card is detail only;
-  `WeekCard` draws this week's sets per muscle as one shape. Both read
-  `useNextSession`, so they cannot name different days. **The week is
-  a calendar week from Monday** (`weekSummary`), not the last seven
-  days — the old bars were a rolling window read off `Date.now()` in a
-  component. The streak counts weeks with a finished session and does
-  not break on a week that has not had its session yet.
-- **The session player got the same pass.** A sticky session bar
-  (sets settled, elapsed time from `workout.startedAt` through the
-  clock port, and a strip of exercises by name that follows the current
-  one) replaced "Exercise 6 of 8" and a row of unlabelled dashes. **A
-  set row leads with the planned load**, last time underneath, and a
-  check button **logs it as planned in one tap** — offered only when
-  the plan holds a number to log, or there is nothing to type (a
-  warm-up, a block of time), so an open slot cannot be filed with no
-  weight. The row's own press still opens the editor. Finish stays
-  quiet ("Finish early · N sets left") until nothing is pending, and
-  the rest timer is a ring with +30s rather than a second whole rest
-  period. The report opens on a `.hero-panel`. **A run of warm-up rows
-  is one step** (`WarmupBlock`): one card of tick rows, one "Warm-up"
-  pill, and Next goes past the whole run — it was five one-tap pages
-  before the first bar. Each row still logs its own sets, one write
-  after another, because a log is a read-modify-write of the workout.
 - **A barbell or EZ-bar step draws the bar loaded** (`PlateLoader`,
   from `platesFor` in `domain/units/plates.ts`): the next pending set's
   planned load, plates per side in competition colours, sliding on in
@@ -669,18 +619,6 @@ SessionPage.tsx`, from `sessionDetail`). History rows could be deleted
   **The wall says where you stand; this says how you got there** — a run
   of records in one month and a quiet one after is the shape of a block.
   Read through the same `sessionRecords` as the session page and report.
-- **A card says when you train** (`TrainingTimesCard`, "When you train";
-  `trainingTimes` in `domain/logging/training-times.ts`, tested): a dot
-  for each weekday and part of the day, as large as the sessions started
-  there, and a gold bar per part for the records set in it. **Counts
-  beside counts, never a rate**: that most records come in the evening
-  says most sessions do, and the closing line only adds "where most
-  sessions are, too" when that is true. **The demo had no shape in time**
-  — every session stamped at the seeding moment, so the card read "105 of
-  105 records in the afternoon"; `startOf` in the seed now starts sessions
-  early on Tuesdays and Thursdays, after work on the other weekdays, and
-  late morning at the weekend, today's keeping the seeding moment so
-  nothing starts in the future.
 - **Two exercises can be compared** (`/compare?a=&b=`, `relativeSeries`
   in `domain/strength/relative.ts`, tested; Compare on an exercise page
   and in the palette): each line read against its own first session, so
@@ -887,25 +825,6 @@ wrapped.ts`, tested; Play and The year on the month page). Full screen,
   sounds carry through. Checked: the context is created on the log tap
   and the timer hides and returns with focus; **the sounds themselves
   were not heard** — the agent's pane plays no audio.
-- **Focus puts one set on the whole screen** (`FocusView`, the Focus
-  button on the exercise card): which set of how many, the planned bar in
-  type readable from the floor, and Log as planned / Skip / Edit. While
-  resting the bar gives way to a ring countdown with the next set under
-  it. **It calls the player's own `logAt`, `skipAt`, `setOpenSet` and
-  `go`**, so a set cannot be filed differently from focus; Edit leaves
-  focus and opens the row's editor. The countdown reads the rest timer's
-  `startedAt` and length but not its +30s or pause, which stay on that
-  card — the card is hidden behind focus and returns when it closes.
-  Escape closes it. The screen was already kept awake (`useKeepAwake`).
-- **A body map says what was trained lately** (`BodyMapCard`, "Lately",
-  from `muscleRecency` in `domain/volume/recency.ts`, tested): front and
-  back figures of rounded blocks, each muscle lit for today or yesterday,
-  half-lit for two or three days, unlit beyond; pressing one names its
-  days since and its sets in the last seven days. **Days since, not this
-  week's count** — the radar already draws the calendar week, and this
-  carries over Monday, which is when it is most wanted. The bands claim
-  nothing about readiness; the app measures none. Counted by the week
-  card's own `loggedVolume`.
 - **The page can be pure black** (`settings.trueBlack`, in the parse
   with a test; Settings → Look → Background, two drawn previews rather
   than a switch). `AppShell` sets `data-black` on the root and moves the
@@ -940,14 +859,6 @@ LibraryPage.tsx`, from `libraryShelves` in `domain/logging/library.ts`,
   a bar per week as tall as its working sets, accent where the routine
   names it — so a shelf says what has been done lately without opening
   anything. A retired exercise shows only if it was ever done.
-- **The home cards can be reordered and hidden** (`arrangeCards` in
-  `domain/settings/home-cards.ts`, tested; `ArrangeCards` folded to a
-  button at the foot of Today; `settings.homeCards` in the parse with a
-  test). **Stored as choices, read against the app's list**: a card
-  shipped after an order was saved slots in after its default neighbour
-  rather than vanishing, and a retired key is ignored. Up/down buttons,
-  not drag — a masonry reflows under a dragging finger. `HOME_CARDS` in
-  `HomePage` is the one list of cards and their names.
 - **Swiping the exercise card sideways turns the page** (`SwipePager`,
   `usePageSwipe`): 70 px, at least twice as sideways as down, read when
   the gesture ends so the card never moves under a scrolling thumb. It
@@ -1083,16 +994,6 @@ superset.ts`, tested; `pairSuperset` / `unpairSuperset`, two names for
   rest it started. Offered only when the set was pending before — undoing
   a re-log would clear the earlier result rather than restore it. Its
   lifetime is a timer, not the animation, so reduced motion keeps it.
-- **A balance card reads four weeks as a tug of war**
-  (`domain/volume/balance.ts`, `muscleBalance`, `BalanceCard`): push
-  against pull, quads against the hinge, upper against lower, in sets by
-  the week card's own `loggedVolume`, over four calendar weeks — one week
-  is noise, a missed pull day is not an imbalance. A knob pulled towards
-  the heavier side, a faint dot per week behind it (oldest faintest) so
-  the drift shows, and a band either side of centre that reads Even
-  (`EVEN`, a tenth). **A lean, not a verdict**: a squat-heavy week is
-  often the plan, so outside the band it says "Upper-heavy · 2.2×" in
-  amber and nothing more.
 - **The player takes a keyboard** (`keyboard.ts`, `KeyboardFlow`):
   Enter or L logs the next set as planned, S skips, E opens it, ← → or
   J K move between exercises, Esc closes the key sheet, then the editor,
@@ -1156,18 +1057,6 @@ files })` says yes; Save downloads the PNG everywhere. The palette is
   path running downhill. **The form fills its default when opened, not
   when mounted** — the trend loads after the card, and a mount-time
   default offered 145 for a bench sessions put at 245.
-- **Finishing grows the session bar into the report's hero.** Both
-  carry `view-transition-name: session-hero`, and the swap — one route,
-  so React Router's `viewTransition` cannot see it — runs through
-  `withViewTransition` in `app/view-transitions.ts`, which wraps the
-  state change in `flushSync` so the browser snapshots the new screen
-  rather than the old one twice. **The report opens scrolled to the
-  top**: it inherited the player's scroll and opened a screen down, with
-  the hero the morph lands on out of view. **A view transition in the
-  agent's pane freezes**: no frames are painted, so the animation clock
-  stops at its first tick and the transition's overlay swallows every
-  click until `skipTransition()`. That is the harness (the same reason
-  `CountUp` reads 0 there), not the app.
 - **Counters roll like an odometer** (`RollingNumber`): the session
   bar's sets settled and the rest timer's clock turn a wheel per digit
   rather than swapping text. **Digits are keyed from the right**, so
@@ -1287,14 +1176,6 @@ stall.ts`). Three sessions in a row that did not beat **the best top set
   set (`stampTimes`: about half a minute a set, two to three of rest,
   four between exercises) and ends the session a few minutes after the
   last set.
-- **A "Last week" card** (`weekRecap` in `domain/logging/recap.ts`,
-  `LastWeekCard`) sits under This week: seven day columns, last week
-  filled and the week before as dashed ghosts, then sessions, sets and
-  volume with their change, and how many exercises moved up and records
-  were set — by the same `versusLast` / `sessionRecords` rules as every
-  other screen. Changes are quiet ink either way: a lighter week is often
-  the plan. `mondayOf` lives in `domain/time/day.ts` now; `week.ts`
-  re-exports it.
 - **The Strength card says when the next standard arrives at this rate**
   (`projectReach` in `domain/strength/projection.ts`): least squares
   through the trend's last twelve weeks, read forward from the fitted
@@ -1358,34 +1239,11 @@ exercise-history.ts`), linked from its name in the session plan and
   session started early on Friday ticks Monday. Sessions logged under the
   old PPL titles tick nothing, which is correct: those days no longer
   exist.
-- **The Strength card names the gap to what sessions measure.** The card
-  is the estimated max kept in Settings (what every first-session load
-  is planned from); the chart under it is what sessions measure, and
-  "Squat 353" above a line ending at 356 read as a bug. Where the two
-  part by `DRIFT` (5) or more, the row says "Your sessions measure 245
-  lb" with **Use it** — offered, never applied, like the report's own.
-- **The strength chart scrubs.** Hover or drag across it and a crosshair
-  snaps to the nearest session, ringing each lift's line, while the three
-  figures above read that day instead of today. Pointer events with
-  `touch-pan-y`, so a vertical swipe still scrolls the page; leaving the
-  chart puts the figures back.
-- **The home page's plan shows today's bar**, "215 lb · 4 × 3", rather
-  than the rule "4 × 3–5". `previewWorkout` in `start-workout.ts` is
-  Start's own build run early and saved nowhere, so the preview and the
-  session cannot plan different numbers — `training-flow.test.ts` holds
-  them equal. Keyed under `workouts`, so filing a session refreshes it.
 - **Last time is a time it was done.** `workingLoads` skips entries with
   no performed set: an abandoned session keeps every exercise it never
   reached as pending, and reading that as last time reset the planned
   load on all of them. Found by previewing the plan; a test now fails
   without the filter.
-- **The rest timer says what the rest is for**: an "Up next" line with
-  the next pending set's planned load and reps (`nextUp` in
-  `SessionPlayer`), so the bar is loaded while the clock runs. When the
-  rest ends the card glows twice in the good colour and, where the
-  platform allows (Android, not iOS), buzzes — once, on the change. It
-  is the one card with `backdrop-filter`, which is allowed because it is
-  fixed; text behind it was reading through the old 95% fill.
 - **The Program page is a week strip and a card per day.** It was six
   sections of flat rows, a third of them warm-ups, each row carrying a
   role badge and a sub-category badge that truncated the exercise name.
@@ -1436,8 +1294,6 @@ exercise-history.ts`), linked from its name in the session plan and
   lifter in week six; `startWorkout` then writes the Monday down. The
   cursor was also the one record with no correct merge — it is what
   read Push A on a phone and Pull B on a desktop.
-- **The seasons survive only as the backdrop's tint**
-  (`domain/time/season.ts`). Nothing is scored against one.
 - **The demo is four months of sessions and nothing else**; its guard is
   `seed.test.ts`, which holds that warm-up and conditioning rows are
   completed and that the seed refuses non-empty storage.
@@ -1498,10 +1354,6 @@ input required.
   as "blinking". Motion is one-time (ring draw-in, figure entrance, a
   single badge shine) or one-directional and slow (ambient washes,
   falling particles, light flowing along tech-tree edges).
-- **`.card` paints its border with background layers** (spotlight over
-  hairline, `border: transparent`). A utility adding `bg-*` image layers
-  to a card will break the border; `--spot` is a registered property
-  and must stay one or it snaps instead of easing.
 - **`CountUp` runs on `requestAnimationFrame`**, which does not fire in
   a hidden tab — a count reading 0 in a background preview is the
   harness, not a bug. Reduced motion shows the value directly.
@@ -2297,12 +2149,6 @@ The lesson is narrow and worth keeping: **a Tailwind colour class is not
 evidence that a colour was applied.** If a shade matters, read it back
 off the element.
 
-**The buttons are made of what the cards are made of.** Reported against
-the old primary: _"I don't like the style of this button. Let's make all
-of these similar to the glassmorphism cards."_ It was a solid saturated
-fill with black text — a paint swatch on a page made of panels, and the
-one element that looked like it came from a different app.
-
 **`.control-surface` is `.card`'s recipe with the tint left to the
 caller**: a vertical gradient, an inset hairline along the top, a shadow
 underneath, and a border at the same hue. One class serves every variant
@@ -2337,16 +2183,6 @@ gave `oklch(0.79 0.11 200)`, the right answer. After enough HMR passes
 the stylesheet in the tab had drifted from the one on disk; a surprising
 computed value is worth re-checking on a clean load before it is worth
 explaining.
-
-**A card reads as a panel through three cheap things**: a vertical
-gradient so the surface is not uniform, an inset hairline along the top
-so it catches light, and a shadow so it sits above the page. None of them
-is `backdrop-filter`, which must stay off the surface that scrolls.
-
-**The sheen and shadow are tokens because they invert.** A highlight is
-white on dark and _nothing_ on white, so a hardcoded
-`rgba(255,255,255,…)` would draw a bright smear along the top of every
-card in the light theme. `--card-sheen` is transparent there.
 
 **`Meter` takes `value` and `of`, and there is no `percent` prop.**
 `components/shared/Meter.tsx`. A percentage is where a denominator goes

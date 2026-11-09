@@ -1,6 +1,13 @@
 /** Release notes, newest first; `WhatsNew` shows the first once. */
 export const RELEASES: readonly { readonly id: string; readonly items: readonly string[] }[] = [
   {
+    id: '2026-11-08',
+    items: [
+      'A new look. Today opens on the session with today’s bars and Start under your thumb, and below it the sixteen cards are now Strength, Showing up, Body and Recent.',
+      'In a session the next set fills the screen, the bar and warm-up fold into one strip, and rest takes the whole screen with what goes on the bar next.',
+    ],
+  },
+  {
     id: '2026-11-03',
     items: [
       'A missed session is carried forward to today, and the rest of the week moves back a day to make room.',

@@ -1,9 +1,16 @@
 # Performance
 
 Measured with `pnpm build && node scripts/chunk-sizes.mjs` (raw / gzip).
-`pnpm size` (part of `pnpm verify` and CI) fails when the entry chunk
-passes 120 kB gzip; raise the budget in `scripts/check-size.mjs` in the
-same commit as the reason.
+`pnpm size` (part of `pnpm verify` and CI) fails when a cold start, the entry
+chunk and every chunk `index.html` preloads, passes 200 kB gzip; raise the budget
+in `scripts/check-size.mjs` in the same commit as the reason.
+
+**It measured the entry chunk alone until the overhaul of 2026-11-08**, and the
+table below is in those terms. That reading was 115.8 kB while a phone fetched
+193.6 kB across nine files. After the overhaul the entry reads 176 kB and a
+cold start fetches 181.7 kB across three: 12 kB less, with the shared chunks folded
+into the entry. A gate on the entry would have failed on the change that shrank
+the download, so it now reads what is downloaded.
 Each change records its before and after; a change that moved nothing is
 reverted rather than listed.
 
@@ -16,8 +23,9 @@ reverted rather than listed.
 
 What is left in the entry chunk is mostly framework: React DOM, React
 Router, TanStack Query and the IndexedDB layer the first screen reads
-through. The hero, the plan and the week stay eager because they are the
-first screen on a phone. The session report stays eager on purpose: it is
+through, and the programme's derivation, which the hero's bars need. The hero
+stays eager because it is the first screen on a phone; the modules below it load
+on demand. The session report stays eager on purpose: it is
 entered through a view transition run inside `flushSync`, and a lazy
 component would suspend in the middle of it.
 

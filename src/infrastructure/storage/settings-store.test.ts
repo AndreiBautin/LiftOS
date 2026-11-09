@@ -293,21 +293,6 @@ describe('the first-run setup', () => {
     )
     expect(readSettings(storage).settings.seenNotes).toBe('2026-10-03')
   })
-
-  it('keeps the home card arrangement, strings only', () => {
-    const storage = memoryStorage()
-    storage.setItem(
-      STORAGE_KEYS.settings,
-      JSON.stringify({
-        ...DEFAULT_SETTINGS,
-        homeCards: { order: ['week', 3], hidden: ['history'] },
-      }),
-    )
-    expect(readSettings(storage).settings.homeCards).toEqual({
-      order: ['week'],
-      hidden: ['history'],
-    })
-  })
 })
 
 /*

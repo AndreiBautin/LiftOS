@@ -5753,3 +5753,229 @@ and _Postworkout Protien_, so the filter does not match them and both
 chips are still offered — two records of one intention. Renaming the
 stored ones is the way across; nothing migrates, the rule
 `SETTINGS_SCHEMA_VERSION` exists for.
+
+## The dashboard before the overhaul
+
+Moved verbatim from `CLAUDE.md` on 2026-11-08, when Today and the player were
+rebuilt. Each describes a surface that no longer exists in this form; the
+domain rule it names usually does, as `CLAUDE.md` says.
+
+- **Each lift is read then and now** ("Then and now", `ThenNowCard`;
+  `thenAndNow` in `domain/logging/then-now.ts`, tested): the lift's **own**
+  first four weeks against the last four — top set (`topSet`'s rule),
+  sessions a week and volume a week — as a ghost bar behind a solid one,
+  each scaled to the lift itself so a curl and a deadlift both fill their
+  row. Four weeks each side so "a week" means the same in both; a lift
+  whose first month runs into its last is left out rather than compared
+  with itself. Competition lifts lead, then the most trained, five rows.
+- **The competition lifts forecast twelve weeks out** ("Twelve weeks
+  out", `ForecastCard`; `forecastLift` and `forecastTotal` in
+  `domain/strength/forecast.ts`, tested): each lift's last twelve weeks as
+  a line up to today, then a cone — the line carried forward inside a
+  band that widens with distance — and the total read against the
+  published total standards. **The fit is `fitTrend`'s**, the line the
+  Strength card's "at this rate" date reads, so the two cannot disagree.
+  The band is about two standard errors of prediction **with a floor that
+  grows a quarter of a percent a week**: the demo's sessions sit exactly
+  on a line and the residuals alone drew the forecast as a thread. A
+  falling lift forecasts falling rather than going quiet; thin evidence
+  (fewer than four sessions over four weeks) silences it. The total's
+  band combines the three as independent errors, and is absent unless all
+  three lifts have a forecast.
+- **A card says how the block has followed the plan** ("Showing up",
+  `AdherenceCard`; `adherence` in `domain/programs/adherence.ts`, tested):
+  a punch card, a row a week and a hole a scheduled day — punched where
+  done, torn amber where its day went by, ringed for today, faint ahead,
+  the deload row violet — with full weeks in a row above and missed days
+  by name below. Weeks past the next fold into one line. **It asks
+  `sessionOn`**, so a missed day is one the app offered, and **matches by
+  title within the week** (`doneTitles`' rule): Monday's session done on
+  Friday is Monday done. A session with no scheduled title is `extra`,
+  never a make-up. The running week does not break the run until a day
+  in it is missed. **The missed state was checked by tests, not on
+  screen** — the demo has no missed day this block.
+- **Gym mode** (`settings.gymMode`, in the parse with a test; Settings →
+  During a session): the session player and the rest timer (both
+  `.session-player`) read at arm's length — `--text-*` and the two dim
+  inks redefined inside that scope, since Tailwind's utilities read the
+  theme variables, so every size grows and every grey brightens with the
+  layout untouched (a set row's headline 16 → 20 px, no overflow at 375).
+  **Not `zoom`**, which widens the page past a phone. At the larger size
+  the session bar's title truncates and the tempo chips stack; both still
+  work.
+- **A card names what the next session is ripe for** (`RipeCard`, home
+  card `ripe`; `ripeLifts` in `domain/logging/ripe.ts`, tested): each lift
+  whose planned bar is heavier than its last top set, drawn as the old bar
+  climbing to the new, and a gold **Heaviest** where that bar beats every
+  bar the lift has carried. Read off the session preview, so it names only
+  what Start will ask for; silent when nothing moves. **No rep records**:
+  double progression plans one rep past last time, so at the top bar
+  nearly every lift is a planned rep record every session — the first
+  version tagged four of four and said nothing.
+- **The hero draws the day** (`HeroBanner`): beside the session's name
+  a **medallion of its lead lift** — the competition lift, else the first
+  real exercise — its movement glyph tracing itself in once
+  (`pathLength=1` and a dash offset, then the head lands), keyed by the
+  exercise so a new day draws again; and **This week** leads with a ring
+  of segments, one per planned day, lit for each finished. The medallion
+  is `role="img"` named "Leads with …", the ring `aria-hidden` beside
+  the number it pictures. Reduced motion shows both finished.
+- **The backdrop follows the time of day** (`skyAt` and `skyPhase` in
+  `domain/time/sky.ts`, tested; `.ambient-sky` in `AmbientBackdrop`): a
+  glow low on the left at dawn, high and pale by day, low and amber on
+  the right at dusk, violet at night — **interpolated between stops**,
+  hue turned the short way round, so it drifts rather than switching.
+  Read every five minutes and on returning to the app, and eased over a
+  minute through four registered properties (`--sky-*`). It sits under
+  the season's washes, which still tint it, and goes with them under
+  pure black. Only seen in the gutters between cards, on purpose.
+- **Three depths, so a screen reads as layered** (`index.css`): the
+  hero (`.hero-panel`, loudest, now with a rim of light along its top
+  edge), the card (raised), and the **well** (`.well`, sunken — darker
+  than its card, shadowed along its top inner edge, a lighter bottom
+  lip). Wells replaced seven hand-written `border-ink-800 rounded-xl
+border` boxes that each drew a fourth, flat level; **an inset box
+  inside a card is a `.well`**. The two raised tiers carry `--grain`, an
+  SVG fractal-noise tile rendered once and repeated. **Only the bright
+  half of the noise shows** — the first version laid an even white fog
+  that greyed the hero's wash. `.card` now has five background layers
+  and five `background-clip` entries; they must stay in step, or the
+  spotlit border paints the wrong layer.
+- **The page opens on a hero, and the week is a radar.** Asked for as
+  _"the 'this week' graph is plain, clunky, and takes up most of the
+  screen"_ and _"I don't like the plain LiftOS header in lieu of a
+  proper hero banner"_. `HeroBanner` names the next session and owns
+  Start, Skip and Open session, so the plan card is detail only;
+  `WeekCard` draws this week's sets per muscle as one shape. Both read
+  `useNextSession`, so they cannot name different days. **The week is
+  a calendar week from Monday** (`weekSummary`), not the last seven
+  days — the old bars were a rolling window read off `Date.now()` in a
+  component. The streak counts weeks with a finished session and does
+  not break on a week that has not had its session yet.
+- **The session player got the same pass.** A sticky session bar
+  (sets settled, elapsed time from `workout.startedAt` through the
+  clock port, and a strip of exercises by name that follows the current
+  one) replaced "Exercise 6 of 8" and a row of unlabelled dashes. **A
+  set row leads with the planned load**, last time underneath, and a
+  check button **logs it as planned in one tap** — offered only when
+  the plan holds a number to log, or there is nothing to type (a
+  warm-up, a block of time), so an open slot cannot be filed with no
+  weight. The row's own press still opens the editor. Finish stays
+  quiet ("Finish early · N sets left") until nothing is pending, and
+  the rest timer is a ring with +30s rather than a second whole rest
+  period. The report opens on a `.hero-panel`. **A run of warm-up rows
+  is one step** (`WarmupBlock`): one card of tick rows, one "Warm-up"
+  pill, and Next goes past the whole run — it was five one-tap pages
+  before the first bar. Each row still logs its own sets, one write
+  after another, because a log is a read-modify-write of the workout.
+- **A card says when you train** (`TrainingTimesCard`, "When you train";
+  `trainingTimes` in `domain/logging/training-times.ts`, tested): a dot
+  for each weekday and part of the day, as large as the sessions started
+  there, and a gold bar per part for the records set in it. **Counts
+  beside counts, never a rate**: that most records come in the evening
+  says most sessions do, and the closing line only adds "where most
+  sessions are, too" when that is true. **The demo had no shape in time**
+  — every session stamped at the seeding moment, so the card read "105 of
+  105 records in the afternoon"; `startOf` in the seed now starts sessions
+  early on Tuesdays and Thursdays, after work on the other weekdays, and
+  late morning at the weekend, today's keeping the seeding moment so
+  nothing starts in the future.
+- **Focus puts one set on the whole screen** (`FocusView`, the Focus
+  button on the exercise card): which set of how many, the planned bar in
+  type readable from the floor, and Log as planned / Skip / Edit. While
+  resting the bar gives way to a ring countdown with the next set under
+  it. **It calls the player's own `logAt`, `skipAt`, `setOpenSet` and
+  `go`**, so a set cannot be filed differently from focus; Edit leaves
+  focus and opens the row's editor. The countdown reads the rest timer's
+  `startedAt` and length but not its +30s or pause, which stay on that
+  card — the card is hidden behind focus and returns when it closes.
+  Escape closes it. The screen was already kept awake (`useKeepAwake`).
+- **A body map says what was trained lately** (`BodyMapCard`, "Lately",
+  from `muscleRecency` in `domain/volume/recency.ts`, tested): front and
+  back figures of rounded blocks, each muscle lit for today or yesterday,
+  half-lit for two or three days, unlit beyond; pressing one names its
+  days since and its sets in the last seven days. **Days since, not this
+  week's count** — the radar already draws the calendar week, and this
+  carries over Monday, which is when it is most wanted. The bands claim
+  nothing about readiness; the app measures none. Counted by the week
+  card's own `loggedVolume`.
+- **The home cards can be reordered and hidden** (`arrangeCards` in
+  `domain/settings/home-cards.ts`, tested; `ArrangeCards` folded to a
+  button at the foot of Today; `settings.homeCards` in the parse with a
+  test). **Stored as choices, read against the app's list**: a card
+  shipped after an order was saved slots in after its default neighbour
+  rather than vanishing, and a retired key is ignored. Up/down buttons,
+  not drag — a masonry reflows under a dragging finger. `HOME_CARDS` in
+  `HomePage` is the one list of cards and their names.
+- **A balance card reads four weeks as a tug of war**
+  (`domain/volume/balance.ts`, `muscleBalance`, `BalanceCard`): push
+  against pull, quads against the hinge, upper against lower, in sets by
+  the week card's own `loggedVolume`, over four calendar weeks — one week
+  is noise, a missed pull day is not an imbalance. A knob pulled towards
+  the heavier side, a faint dot per week behind it (oldest faintest) so
+  the drift shows, and a band either side of centre that reads Even
+  (`EVEN`, a tenth). **A lean, not a verdict**: a squat-heavy week is
+  often the plan, so outside the band it says "Upper-heavy · 2.2×" in
+  amber and nothing more.
+- **The strength chart scrubs.** Hover or drag across it and a crosshair
+  snaps to the nearest session, ringing each lift's line, while the three
+  figures above read that day instead of today. Pointer events with
+  `touch-pan-y`, so a vertical swipe still scrolls the page; leaving the
+  chart puts the figures back.
+- **A "Last week" card** (`weekRecap` in `domain/logging/recap.ts`,
+  `LastWeekCard`) sits under This week: seven day columns, last week
+  filled and the week before as dashed ghosts, then sessions, sets and
+  volume with their change, and how many exercises moved up and records
+  were set — by the same `versusLast` / `sessionRecords` rules as every
+  other screen. Changes are quiet ink either way: a lighter week is often
+  the plan. `mondayOf` lives in `domain/time/day.ts` now; `week.ts`
+  re-exports it.
+- **The Strength card names the gap to what sessions measure.** The card
+  is the estimated max kept in Settings (what every first-session load
+  is planned from); the chart under it is what sessions measure, and
+  "Squat 353" above a line ending at 356 read as a bug. Where the two
+  part by `DRIFT` (5) or more, the row says "Your sessions measure 245
+  lb" with **Use it** — offered, never applied, like the report's own.
+- **The home page's plan shows today's bar**, "215 lb · 4 × 3", rather
+  than the rule "4 × 3–5". `previewWorkout` in `start-workout.ts` is
+  Start's own build run early and saved nowhere, so the preview and the
+  session cannot plan different numbers — `training-flow.test.ts` holds
+  them equal. Keyed under `workouts`, so filing a session refreshes it.
+- **The rest timer says what the rest is for**: an "Up next" line with
+  the next pending set's planned load and reps (`nextUp` in
+  `SessionPlayer`), so the bar is loaded while the clock runs. When the
+  rest ends the card glows twice in the good colour and, where the
+  platform allows (Android, not iOS), buzzes — once, on the change. It
+  is the one card with `backdrop-filter`, which is allowed because it is
+  fixed; text behind it was reading through the old 95% fill.
+- **The seasons survive only as the backdrop's tint**
+  (`domain/time/season.ts`). Nothing is scored against one.
+- **`.card` paints its border with background layers** (spotlight over
+  hairline, `border: transparent`). A utility adding `bg-*` image layers
+  to a card will break the border; `--spot` is a registered property
+  and must stay one or it snaps instead of easing.
+- **Finishing grows the session bar into the report's hero.** Both
+  carry `view-transition-name: session-hero`, and the swap — one route,
+  so React Router's `viewTransition` cannot see it — runs through
+  `withViewTransition` in `app/view-transitions.ts`, which wraps the
+  state change in `flushSync` so the browser snapshots the new screen
+  rather than the old one twice. **The report opens scrolled to the
+  top**: it inherited the player's scroll and opened a screen down, with
+  the hero the morph lands on out of view. **A view transition in the
+  agent's pane freezes**: no frames are painted, so the animation clock
+  stops at its first tick and the transition's overlay swallows every
+  click until `skipTransition()`. That is the harness (the same reason
+  `CountUp` reads 0 there), not the app.
+  **The buttons are made of what the cards are made of.** Reported against
+  the old primary: _"I don't like the style of this button. Let's make all
+  of these similar to the glassmorphism cards."_ It was a solid saturated
+  fill with black text — a paint swatch on a page made of panels, and the
+  one element that looked like it came from a different app.
+  **A card reads as a panel through three cheap things**: a vertical
+  gradient so the surface is not uniform, an inset hairline along the top
+  so it catches light, and a shadow so it sits above the page. None of them
+  is `backdrop-filter`, which must stay off the surface that scrolls.
+  **The sheen and shadow are tokens because they invert.** A highlight is
+  white on dark and _nothing_ on white, so a hardcoded
+  `rgba(255,255,255,…)` would draw a bright smear along the top of every
+  card in the light theme. `--card-sheen` is transparent there.

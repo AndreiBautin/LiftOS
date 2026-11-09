@@ -850,15 +850,16 @@ html {
   --color-ink-300: oklch(0.88 0.008 220);
 }
 
-/* The player's first screen is the set and nothing else, the dock on the
-   floor of it; what is below is there to scroll to. The bar's height is an
-   estimate and only has to be close: a little short scrolls a little. */
-.set-screen {
+/* A first screen holds its subject and nothing else, the dock on the floor of
+   it; what is below is there to scroll to. Today's session, and the player's
+   set. The height taken off is an estimate and only has to be close: a little
+   short scrolls a little. */
+.first-screen {
   min-height: calc(100dvh - 3.5rem - var(--safe-top) - var(--safe-bottom));
 }
 
 @media (min-width: 1024px) {
-  .set-screen {
+  .first-screen {
     min-height: 0;
   }
 }

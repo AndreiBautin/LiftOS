@@ -18,7 +18,7 @@ import { workingSets, type WorkoutLog } from './workout-log'
  * Finished sessions only, working sets only. The top set is `topSet`'s —
  * heaviest bar, then most reps at it — the rule every other screen uses.
  */
-export interface Window {
+interface Window {
   readonly from: string
   readonly to: string
   readonly top: Performance

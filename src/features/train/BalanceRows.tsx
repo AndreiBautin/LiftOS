@@ -1,7 +1,4 @@
-import { Scale } from 'lucide-react'
-
 import { EVEN, describeLean, type PairBalance } from '@/domain/volume/balance'
-import { Card, CardHeading } from '@/components/shared/primitives'
 import { cn } from '@/lib/cn'
 
 import { useMuscleBalance } from './hooks'
@@ -17,27 +14,18 @@ import { useMuscleBalance } from './hooks'
  * trail. The band either side of centre is "even" (`EVEN`); the knob is
  * the accent inside it and amber outside.
  */
-export function BalanceCard() {
+export function BalanceRows() {
   const balance = useMuscleBalance()
   if (balance.data === undefined) return null
+  /* Three empty tugs of war read as three failures, so it says nothing at all. */
+  if (balance.data.every((pair) => pair.total.left + pair.total.right === 0)) return null
 
   return (
-    <Card>
-      <CardHeading icon={<Scale size={16} aria-hidden />} title="Balance · 4 weeks" />
-      {/* Three empty tugs of war read as three failures; one line says it once. */}
-      {balance.data.every((pair) => pair.total.left + pair.total.right === 0) ? (
-        <p className="text-ink-500 text-sm">
-          Nothing logged in four weeks. Push against pull, quads against the hinge and upper against
-          lower lean here once it is.
-        </p>
-      ) : (
-        <ul className="space-y-5">
-          {balance.data.map((pair) => (
-            <TugRow key={pair.pair.key} balance={pair} />
-          ))}
-        </ul>
-      )}
-    </Card>
+    <ul className="mt-4 space-y-3">
+      {balance.data.map((pair) => (
+        <TugRow key={pair.pair.key} balance={pair} />
+      ))}
+    </ul>
   )
 }
 
@@ -48,13 +36,11 @@ function TugRow({ balance }: { readonly balance: PairBalance }) {
 
   return (
     <li>
-      <div className="mb-2 flex items-baseline justify-between text-xs">
+      <div className="mb-1 flex items-baseline justify-between text-[0.8125rem]">
         <span className="text-ink-300">
           {pair.left.label} <span className="numeric text-ink-50 font-semibold">{total.left}</span>
         </span>
-        <span className={cn('text-xs', even ? 'text-ink-500' : 'text-warn-500')}>
-          {describeLean(balance)}
-        </span>
+        <span className={even ? 'text-ink-500' : 'text-warn-500'}>{describeLean(balance)}</span>
         <span className="text-ink-300">
           <span className="numeric text-ink-50 font-semibold">{total.right}</span>{' '}
           {pair.right.label}

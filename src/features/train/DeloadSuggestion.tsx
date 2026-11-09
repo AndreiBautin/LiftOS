@@ -1,10 +1,12 @@
-import { BatteryLow } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
+import { useCallback, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { useServices } from '@/app/context'
+import { BottomSheet } from '@/components/shared/BottomSheet'
+import { Button } from '@/components/shared/primitives'
 import { FATIGUE_STALLS, stalledExercises } from '@/domain/programs/stall'
 import { toDayKey } from '@/domain/time/day'
-import { Button, Card } from '@/components/shared/primitives'
 
 import { useExercises, useJumpToWeek, useRecentWorkouts } from './hooks'
 import { useNextSession } from './useNextSession'
@@ -15,6 +17,10 @@ import { useNextSession } from './useNextSession'
  * lately have each gone three sessions without beating their best
  * (`stalledExercises`), this offers to take the deload now rather than
  * when the calendar reaches it.
+ *
+ * One line under the plan, with the reasoning and the offer behind it: it
+ * was a card above the session, so on those weeks the thing you came to do
+ * sat under a paragraph about something else.
  *
  * Offered, never applied — the lifter may know better (a bad week, a
  * cut) — and silent when fewer than three are stuck, when this week is
@@ -27,6 +33,10 @@ export function DeloadSuggestion() {
   const exercises = useExercises()
   const { program, thisWeek } = useNextSession()
   const jump = useJumpToWeek()
+  const [open, setOpen] = useState(false)
+  const close = useCallback(() => {
+    setOpen(false)
+  }, [])
 
   if (workouts.data === undefined || program === undefined || thisWeek?.isDeload !== false) {
     return null
@@ -40,39 +50,56 @@ export function DeloadSuggestion() {
   const nameOf = (id: string) => exercises.data?.find((one) => one.id === id)?.name ?? id
 
   return (
-    <Card className="border-warn-500/35">
-      <p className="text-warn-500 flex items-center gap-1.5 text-xs font-semibold tracking-[0.12em] uppercase">
-        <BatteryLow size={14} aria-hidden />
-        {stalled.length} lifts have stalled
-      </p>
-      <p className="text-ink-100 mt-2 text-sm">
-        {stalled.slice(0, 4).map((id, index) => (
-          <span key={id}>
-            {index > 0 && ', '}
-            <Link
-              viewTransition
-              to={`/exercise/${id}`}
-              className="hover:text-accent-400 underline-offset-2 hover:underline"
-            >
-              {nameOf(id)}
-            </Link>
-          </span>
-        ))}
-        {stalled.length > 4 ? ` and ${String(stalled.length - 4)} more` : ''} — none has beaten its
-        best in three sessions. When several stop at once it is usually fatigue rather than any one
-        lift.
-      </p>
-      <Button
-        variant="outline"
-        full
-        className="mt-3"
-        disabled={jump.isPending}
+    <>
+      <button
+        type="button"
+        aria-haspopup="dialog"
         onClick={() => {
-          jump.mutate({ program, weekIndex: deload })
+          setOpen(true)
         }}
+        className="text-warn-500 flex min-h-11 w-full items-center justify-between gap-3 text-left text-sm"
       >
-        Take the deload this week
-      </Button>
-    </Card>
+        {stalled.length} lifts stalled. Take the deload?
+        <ChevronRight size={16} className="shrink-0" aria-hidden />
+      </button>
+      {open && (
+        <BottomSheet
+          label="Lifts that have stalled"
+          title={`${String(stalled.length)} lifts have stalled`}
+          onClose={close}
+        >
+          <ul className="border-ink-800 mt-3 border-t">
+            {stalled.map((id) => (
+              <li key={id} className="border-ink-800 border-b">
+                <Link
+                  viewTransition
+                  to={`/exercise/${id}`}
+                  className="flex min-h-11 items-center justify-between gap-3"
+                >
+                  {nameOf(id)}
+                  <ChevronRight size={16} className="text-ink-500 shrink-0" aria-hidden />
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <p className="text-ink-300 mt-3 text-sm">
+            None has beaten its best in three sessions. When several stop at once it is usually
+            fatigue rather than any one lift.
+          </p>
+          <Button
+            variant="primary"
+            full
+            className="font-display mt-4 h-16 rounded-2xl text-lg"
+            disabled={jump.isPending}
+            onClick={() => {
+              jump.mutate({ program, weekIndex: deload })
+              setOpen(false)
+            }}
+          >
+            Take the deload this week
+          </Button>
+        </BottomSheet>
+      )}
+    </>
   )
 }

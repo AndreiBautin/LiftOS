@@ -18,7 +18,7 @@ import { sessionOn, slotOn, type DayMoves } from './schedule'
  * missed day — that would be the app deciding a curl session was a squat
  * day.
  */
-export interface AdherenceDay {
+interface AdherenceDay {
   readonly on: string
   readonly title: string
   readonly state: 'done' | 'missed' | 'today' | 'ahead'

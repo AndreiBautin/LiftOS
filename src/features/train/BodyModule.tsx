@@ -1,15 +1,15 @@
 import { Figure } from './body-figures'
 import { BACK_REGIONS, FRONT_REGIONS } from './body-regions'
-import { PersonStanding } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useState, type ReactElement } from 'react'
 
-import { Card, CardHeading } from '@/components/shared/primitives'
+import { Module } from '@/components/shared/Module'
 import { MUSCLE_GROUP_LABELS, type MuscleGroup } from '@/domain/exercises/taxonomy'
 import { RECENCY_DAYS, type Freshness, type MuscleRecency } from '@/domain/volume/recency'
 import { NIGGLE_LABELS, type NiggleRegion, type NiggleSummary } from '@/domain/logging/niggles'
 import { cn } from '@/lib/cn'
 
+import { BalanceRows } from './BalanceRows'
 import { useMuscleRecency, useNiggles } from './hooks'
 
 /**
@@ -18,16 +18,16 @@ import { useMuscleRecency, useNiggles } from './hooks'
  * three days ago, unlit beyond. Pressing a muscle names it with its days
  * since and its sets in the last week.
  *
- * **Not the week card a second time.** That counts this calendar week's
- * sets per muscle as one shape; this asks _how long ago_, which carries
- * over Monday — and it is a body, because the question somebody asks of
- * it is "what did I hit lately", and the answer is a place.
+ * **This was three cards**: this, a radar of the week's sets and the balance.
+ * A body asks _how long ago_, which carries over Monday, and it is a body
+ * because the question is "what did I hit lately" and the answer is a place.
+ * The sets are a press on the muscle away, and the balance reads underneath.
  *
  * The figures are drawn here from rounded blocks rather than an anatomy
  * plate: the lighting is the information, and a detailed drawing would
  * claim a precision the per-muscle counts do not have.
  */
-export function BodyMapCard() {
+export function BodyModule() {
   const recency = useMuscleRecency()
   const niggles = useNiggles() ?? []
   const [chosen, setChosen] = useState<MuscleGroup | undefined>(undefined)
@@ -65,9 +65,8 @@ export function BodyMapCard() {
   )
 
   return (
-    <Card>
-      <CardHeading icon={<PersonStanding size={16} aria-hidden />} title="Lately" />
-      <p className="text-ink-300 text-sm">
+    <Module title="Body">
+      <p className="text-ink-300 text-[0.9375rem]">
         {chosen === undefined && Object.values(data).every((one) => one.lastDay === undefined) ? (
           <>A muscle lights here when it is trained, and fades as it recovers.</>
         ) : chosen === undefined ? (
@@ -90,7 +89,7 @@ export function BodyMapCard() {
         )}
       </p>
 
-      <svg viewBox="0 0 220 186" className="mx-auto mt-3 w-full max-w-sm" role="group">
+      <svg viewBox="0 0 220 186" className="mx-auto mt-2 w-full max-w-sm" role="group">
         <title>Muscles by how lately they were trained</title>
         <Figure x={0} label="Front">
           {FRONT_REGIONS.map(([muscle, shapes], at) => region(muscle, shapes, `f${String(at)}`))}
@@ -123,7 +122,8 @@ export function BodyMapCard() {
             .join(' · ')}
         </p>
       )}
-    </Card>
+      <BalanceRows />
+    </Module>
   )
 }
 

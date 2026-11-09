@@ -1,48 +1,58 @@
-import { CheckCircle2, Dumbbell, LayoutGrid, Play, Plus, Settings } from 'lucide-react'
+import { LayoutGrid, Play, Plus, SlidersHorizontal } from 'lucide-react'
 import { MoveSession } from './MoveSession'
 import { Suspense, useCallback, useState } from 'react'
-import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 
 import { useServices, useSettings } from '@/app/context'
-import { useCountUp } from '@/features/train/useCountUp'
+import { BottomSheet } from '@/components/shared/BottomSheet'
 import { lazyNamed } from '@/lib/lazy-named'
 import { SyncBadge } from '@/features/sync/SyncBadge'
 import { RestedFor } from './RestedFor'
 import { Button } from '@/components/shared/primitives'
 import { buttonStyles } from '@/components/shared/styles'
+import { bestsByExercise } from '@/domain/logging/bests'
+import { blockWindow } from '@/domain/logging/block'
+import { ripeLifts } from '@/domain/logging/ripe'
+import type { WorkoutLog } from '@/domain/logging/workout-log'
+import { adherence } from '@/domain/programs/adherence'
+import { describeReps } from '@/domain/programs/prescription'
+import type { ProgramDay } from '@/domain/programs/program'
 import { liveMoves, weekIndexToStartOn } from '@/domain/programs/schedule'
-import { parseDay } from '@/domain/time/day'
-import { strengthStandings } from '@/domain/strength/standards'
-import { measuredMaxes } from '@/domain/strength/trend'
-import { glyphFor, type Glyph } from '@/features/glyphs/glyph-for'
-import { GLYPH_DOTS, GLYPH_PATHS } from '@/features/glyphs/glyph-paths'
+import { applyDraft, isEmptyDraft } from '@/domain/programs/session-draft'
+import { mondayOf, parseDay, shiftDay, WEEKDAY_LABELS } from '@/domain/time/day'
+import { formatLoad, type WeightUnit } from '@/domain/units/weight'
+import { DeloadSuggestion } from '@/features/train/DeloadSuggestion'
 import {
-  isDeloadSession,
   useExercises,
   useJumpToWeek,
   useMuscleRecency,
+  useProgram,
   useRecentWorkouts,
+  useSchedule,
+  useSessionPreview,
   useStartWorkout,
   useWeekSummary,
 } from '@/features/train/hooks'
 import { splitDayLabel, useNextSession } from '@/features/train/useNextSession'
+import { cn } from '@/lib/cn'
 import { formatDate } from '@/lib/format-date'
 
 /**
- * The top of the page: what the app is, what is next, and the button that
- * starts it.
+ * The top of the page is the session.
  *
- * **It replaced a bare wordmark.** _"I don't like the plain LiftOS header
- * in lieu of a proper hero banner"_ — the page opened on a word and a
- * gear, and the session you came to start sat a card's height below. The
- * hero leads with that session by name and puts Start beside it, so on a
- * phone the primary action is on the first screen without scrolling.
+ * **Everything you came to find out is on the first screen and Start is under
+ * your thumb**: which session, today's bar on each lift, and where the week
+ * stands. It was a hero that named the session, a plan card a screen below
+ * that said what was in it, and a card beside that for what had moved, so
+ * starting informed took a scroll and a scroll back.
  *
- * **Three numbers and no more**, each a different question: am I on track
- * this week, how consistent have I been, and how strong am I. The weekly
- * sets live in the card that breaks them down by muscle rather than here,
- * so no figure is drawn twice.
+ * The bars are `previewWorkout`, Start's own build run early and saved nowhere,
+ * so this cannot promise what the session will not open. Which day it is comes
+ * from `useNextSession`, the calendar's one answer.
+ *
+ * **The dock is sticky to this section and no further.** Past the session you
+ * are reading about something else, and a Start following you into the charts
+ * would be a button with nothing to do with the screen.
  */
 export function HeroBanner() {
   const { clock } = useServices()
@@ -64,35 +74,41 @@ export function HeroBanner() {
   const exercises = useExercises()
   const jumpToWeek = useJumpToWeek()
   const recency = useMuscleRecency()
+  const preview = useSessionPreview()
   const [everything, setEverything] = useState(false)
   const [moving, setMoving] = useState(false)
+  const [editing, setEditing] = useState(false)
   const closeEverything = useCallback(() => {
     setEverything(false)
   }, [])
+  const closeEditor = useCallback(() => {
+    setEditing(false)
+  }, [])
 
-  const workouts = useRecentWorkouts(200)
-  const measured =
-    workouts.data === undefined
-      ? {}
-      : measuredMaxes(workouts.data, (log) => isDeloadSession(log, program))
-  const { total } = strengthStandings({
-    estimatedMaxes: { ...settings.estimatedMaxes, ...measured },
-    ...(settings.bodyweight !== undefined ? { bodyweight: settings.bodyweight } : {}),
-  })
-
-  const planned = program?.blocks[0]?.weeks[0]?.days.length
-  /* The day's lead lift: its competition lift, else its first real exercise. */
-  const leadSlot =
-    day?.slots.find((slot) => slot.role === 'strength') ??
-    day?.slots.find((slot) => slot.role !== 'warmup' && slot.exercise.kind === 'specific')
-  const leadId = leadSlot?.exercise.kind === 'specific' ? leadSlot.exercise.exerciseId : undefined
-  const lead = exercises.data?.find((one) => one.id === leadId)
   const label = day === undefined ? undefined : splitDayLabel(day.label)
-  const today = formatDate(clock.now(), {
-    weekday: 'long',
-    month: 'long',
+  const dateLine = formatDate(clock.now(), {
+    weekday: 'short',
+    month: 'short',
     day: 'numeric',
   })
+  const whenWord =
+    when === 'today' ? 'Today' : when === 'tomorrow' ? 'Tomorrow' : (label?.weekday ?? 'Up next')
+  const lead =
+    carriedFrom !== undefined
+      ? `Carried from ${formatDate(parseDay(carriedFrom), { weekday: 'long', timeZone: 'UTC' })}`
+      : doneToday
+        ? `Today’s done · ${whenWord}`
+        : restDay
+          ? `Rest day · ${whenWord}`
+          : whenWord
+
+  /* The plan as the draft leaves it, so what is shown is what Start opens. */
+  const shown =
+    day === undefined || on === undefined ? day : applyDraft(day, settings.sessionDraft, on)
+  const drafted =
+    settings.sessionDraft?.on === on &&
+    settings.sessionDraft !== undefined &&
+    !isEmptyDraft(settings.sessionDraft)
 
   const start = (freestyle?: boolean) => {
     startWorkout.mutate(freestyle === true ? { freestyleTitle: 'Open session' } : undefined, {
@@ -103,25 +119,14 @@ export function HeroBanner() {
   }
 
   return (
-    <section className="hero-panel hero-assemble p-5 sm:p-6 lg:p-8" aria-labelledby="hero-title">
-      <Plate />
-
-      <header className="mb-6 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <span
-            className="from-accent-400 to-accent-600 flex size-10 items-center justify-center rounded-xl bg-gradient-to-br text-[#06141a] shadow-[0_8px_24px_-8px_var(--color-accent-500)]"
-            aria-hidden
-          >
-            <Dumbbell size={20} strokeWidth={2.25} />
-          </span>
-          <div>
-            <h1 className="text-ink-50 text-lg leading-tight font-semibold tracking-tight">
-              LiftOS
-            </h1>
-            <p className="text-ink-500 text-xs">{today}</p>
-          </div>
-        </div>
-        <div className="flex items-center">
+    <section className="first-screen flex flex-col" aria-labelledby="hero-title">
+      <header className="-mt-1 flex items-center justify-between gap-3">
+        <p className="text-ink-500 min-w-0 truncate text-sm">
+          {dateLine}
+          {week?.label === undefined ? '' : ` · ${week.label}`}
+        </p>
+        <div className="-mr-2.5 flex shrink-0 items-center">
+          <SyncBadge />
           <button
             type="button"
             aria-label="Everything"
@@ -129,75 +134,82 @@ export function HeroBanner() {
             onClick={() => {
               setEverything(true)
             }}
-            className={buttonStyles({ variant: 'ghost', size: 'sm' })}
+            className={buttonStyles({ variant: 'ghost', className: 'px-2.5' })}
           >
-            <LayoutGrid size={18} aria-hidden />
+            <LayoutGrid size={20} aria-hidden />
           </button>
           <Link
             viewTransition
             to="/settings"
             aria-label="Settings"
-            className={buttonStyles({ variant: 'ghost', size: 'sm' })}
+            className={buttonStyles({ variant: 'ghost', className: 'px-2.5' })}
           >
-            <Settings size={18} aria-hidden />
+            <SlidersHorizontal size={20} aria-hidden />
           </Link>
         </div>
       </header>
-      {/*
-        Sync's status on a row of its own: the header has about 130 px free
-        beside the wordmark at 375, and "Sync failed" with an icon is more
-        than that. Drawn only when a repository is connected.
-      */}
-      <div className="-mt-4 mb-2 flex justify-end empty:hidden">
-        <SyncBadge />
-      </div>
       {everything && (
         <Suspense fallback={null}>
           <EverythingSheet onClose={closeEverything} />
         </Suspense>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
+      <div className="flex flex-1 flex-col lg:grid lg:grid-cols-2 lg:items-start lg:gap-12">
         <div className="min-w-0">
-          <p className="text-accent-400 flex flex-wrap items-center gap-x-2 text-xs font-semibold tracking-[0.14em] uppercase">
+          <h1 id="hero-title" className="mt-2 text-[3.5rem] leading-none font-bold">
+            {label?.name ?? 'Your next session'}
+          </h1>
+          <div className="text-ink-500 mt-1 flex flex-wrap items-center gap-x-3 text-sm">
+            <span>{lead}</span>
+            {week?.isDeload === true && <span className="text-cool-500">Deload</span>}
+            {program !== undefined &&
+              on !== undefined &&
+              todayKey !== undefined &&
+              day !== undefined && (
+                <MetaButton
+                  expanded={moving}
+                  onClick={() => {
+                    setMoving(!moving)
+                  }}
+                >
+                  {moving ? 'Keep it' : 'Move'}
+                </MetaButton>
+              )}
             {/*
-              **The day is the date's.** "Today" while today's session is
-              there to do; once it is filed, or on a rest day, the hero
-              says so and names when the next one falls, because the
-              calendar — not a queue — is what decides it.
+              **A missed session is carried, not lost** (`carryForward`). Skip
+              stores a move of nothing onto the missed day, which the carry
+              then reads as nothing owed.
             */}
-            {doneToday && (
-              <span className="text-good-500 flex items-center gap-1 tracking-normal normal-case">
-                <CheckCircle2 size={14} aria-hidden />
-                Today’s done ·
-              </span>
+            {carriedFrom !== undefined && todayKey !== undefined && (
+              <MetaButton
+                onClick={() => {
+                  update({
+                    dayMoves: { ...liveMoves(settings.dayMoves, todayKey), [carriedFrom]: null },
+                  })
+                }}
+              >
+                Skip
+              </MetaButton>
             )}
-            {restDay && !doneToday && (
-              <span className="text-ink-300 tracking-normal normal-case">Rest day ·</span>
-            )}
-            <span>
-              {when === 'today'
-                ? 'Today'
-                : when === 'tomorrow'
-                  ? 'Tomorrow'
-                  : (label?.weekday ?? 'Up next')}
-            </span>
-            {week?.label !== undefined && (
-              <span className="text-ink-500 tracking-normal normal-case">· {week.label}</span>
+            {day !== undefined && on !== undefined && (
+              <MetaButton
+                onClick={() => {
+                  setEditing(true)
+                }}
+              >
+                Edit
+              </MetaButton>
             )}
             {/*
               **The deload can be skipped from here**, the same write the
               Program page's week picker makes: the block starts again this
-              week at week one. Asked for as "I'm not feeling the need for a
-              deload — can you skip this one". Offered beside the week name that
-              says it is one, because that is where the question is asked.
+              week at week one.
             */}
             {week?.isDeload === true &&
               program !== undefined &&
               on !== undefined &&
               todayKey !== undefined && (
-                <button
-                  type="button"
+                <MetaButton
                   disabled={jumpToWeek.isPending}
                   onClick={() => {
                     // The week the session in view falls in becomes week one.
@@ -207,27 +219,11 @@ export function HeroBanner() {
                       weekIndex: weekIndexToStartOn(on, todayKey, weeksInBlock),
                     })
                   }}
-                  className="text-ink-300 hover:text-accent-400 tap-target -my-3 px-1 text-xs font-medium tracking-normal normal-case underline-offset-2 hover:underline disabled:opacity-50"
                 >
                   Skip the deload
-                </button>
+                </MetaButton>
               )}
-            {program !== undefined &&
-              on !== undefined &&
-              todayKey !== undefined &&
-              day !== undefined && (
-                <button
-                  type="button"
-                  aria-expanded={moving}
-                  onClick={() => {
-                    setMoving(!moving)
-                  }}
-                  className="text-ink-300 hover:text-accent-400 tap-target -my-3 px-1 text-xs font-medium tracking-normal normal-case underline-offset-2 hover:underline"
-                >
-                  {moving ? 'Keep it' : 'Move'}
-                </button>
-              )}
-          </p>
+          </div>
           {moving && program !== undefined && on !== undefined && todayKey !== undefined && (
             <MoveSession
               program={program}
@@ -238,45 +234,7 @@ export function HeroBanner() {
               }}
             />
           )}
-          {/*
-            **A missed session is carried, not lost** (`carryForward`): the
-            hero says which day it was missed and offers the one way out.
-            Skip stores a move of nothing onto the missed day, which the
-            carry then reads as nothing owed.
-          */}
-          {carriedFrom !== undefined && todayKey !== undefined && (
-            <p className="text-ink-300 mt-2 flex flex-wrap items-center gap-x-2 text-xs">
-              <span>
-                Missed {formatDate(parseDay(carriedFrom), { weekday: 'long', timeZone: 'UTC' })} ·
-                carried over, the rest of the week moved back
-              </span>
-              <button
-                type="button"
-                onClick={() => {
-                  update({
-                    dayMoves: { ...liveMoves(settings.dayMoves, todayKey), [carriedFrom]: null },
-                  })
-                }}
-                className="text-ink-300 hover:text-accent-400 tap-target -my-3 px-1 font-medium underline-offset-2 hover:underline"
-              >
-                Skip it
-              </button>
-            </p>
-          )}
-          <div className="mt-2 flex items-center justify-between gap-4">
-            <h2
-              id="hero-title"
-              className="text-ink-50 min-w-0 text-4xl font-semibold tracking-tight sm:text-5xl"
-            >
-              {label?.name ?? 'Your next session'}
-            </h2>
-            {lead !== undefined && (
-              <LeadMedallion key={lead.id} glyph={glyphFor(lead)} name={lead.name} />
-            )}
-          </div>
-          {day?.focus !== undefined && (
-            <p className="text-ink-300 mt-2 max-w-prose text-sm">{day.focus}</p>
-          )}
+          <WeekStrip streak={summary.data?.streakWeeks} today={todayKey} />
           {restDay && !doneToday && day !== undefined && recency.data !== undefined && (
             <RestedFor
               day={day}
@@ -285,204 +243,306 @@ export function HeroBanner() {
               when={when === 'tomorrow' ? 'tomorrow' : (label?.weekday ?? 'the next session')}
             />
           )}
-
-          <div className="mt-5 flex flex-wrap items-center gap-2">
-            <Button
-              variant="primary"
-              size="lg"
-              className="basis-full sm:basis-auto"
-              disabled={day === undefined || startWorkout.isPending}
-              onClick={() => {
-                start()
-              }}
-            >
-              <Play size={20} aria-hidden />
-              {when === 'today' || when === undefined ? 'Start session' : 'Start it early'}
-            </Button>
-            <Button
-              variant="ghost"
-              className="flex-1 sm:flex-none"
-              disabled={startWorkout.isPending}
-              onClick={() => {
-                start(true)
-              }}
-            >
-              <Plus size={16} aria-hidden />
-              Open session
-            </Button>
-          </div>
         </div>
 
-        <dl className="border-ink-800/80 grid grid-cols-3 gap-px overflow-hidden rounded-2xl border bg-[color-mix(in_oklab,var(--color-ink-800)_70%,transparent)] lg:w-80">
-          <Stat
-            label="This week"
-            value={summary.data?.sessions}
-            suffix={planned === undefined ? undefined : `/${String(planned)}`}
-            lead={
-              planned === undefined || summary.data === undefined ? undefined : (
-                <WeekRing done={summary.data.sessions} of={planned} />
-              )
-            }
-          />
-          <Stat label="Week streak" value={summary.data?.streakWeeks} />
-          <Stat
-            label="SBD total"
-            value={total.max === undefined ? undefined : Math.round(total.max)}
-            suffix=" lb"
-          />
-        </dl>
+        <div className="min-w-0 lg:pt-3">
+          {shown !== undefined && (
+            <SessionLifts
+              day={shown}
+              planned={preview.data ?? undefined}
+              units={settings.units}
+              drafted={drafted}
+            />
+          )}
+          <DeloadSuggestion />
+        </div>
       </div>
+
+      <div
+        className="bg-ink-950 sticky bottom-0 z-10 -mx-4 mt-auto flex gap-2.5 px-4 pt-2 sm:mx-0 sm:px-0 lg:mt-6 lg:max-w-md"
+        style={{ paddingBottom: 'calc(0.75rem + var(--safe-bottom))' }}
+      >
+        <Button
+          variant="primary"
+          className="font-display h-[4.5rem] min-w-0 flex-1 rounded-[1.25rem] text-[1.375rem]"
+          disabled={day === undefined || startWorkout.isPending}
+          onClick={() => {
+            start()
+          }}
+        >
+          <Play size={20} fill="currentColor" aria-hidden />
+          {when === 'today' || when === undefined ? 'Start session' : 'Start it early'}
+        </Button>
+        <Button
+          variant="outline"
+          className="size-[4.5rem] shrink-0 rounded-[1.25rem] px-0"
+          aria-label="Open session"
+          disabled={startWorkout.isPending}
+          onClick={() => {
+            start(true)
+          }}
+        >
+          <Plus size={22} aria-hidden />
+        </Button>
+      </div>
+
+      {editing && day !== undefined && on !== undefined && (
+        <BottomSheet label="Edit this session" title="Edit this session" onClose={closeEditor}>
+          <Suspense fallback={null}>
+            <SessionDraftEditor day={day} on={on} library={exercises.data ?? []} />
+          </Suspense>
+        </BottomSheet>
+      )}
     </section>
   )
 }
 
-function Stat({
-  label,
-  value,
-  suffix,
-  lead,
+function MetaButton({
+  children,
+  onClick,
+  expanded,
+  disabled,
 }: {
-  readonly label: string
-  readonly value: number | undefined
-  readonly suffix?: string | undefined
-  /** A small picture before the figure. */
-  readonly lead?: ReactNode
-}): ReactNode {
+  readonly children: string
+  readonly onClick: () => void
+  readonly expanded?: boolean
+  readonly disabled?: boolean
+}) {
   return (
-    <div className="bg-ink-950/60 px-3 py-3">
-      <dt className="text-ink-500 text-xs font-medium tracking-wide uppercase">{label}</dt>
-      <dd className="numeric text-ink-50 mt-1 flex items-center gap-1.5 text-xl font-semibold">
-        {lead}
-        <span>
-          {value === undefined ? '—' : <Counted value={value} />}
-          {value !== undefined && suffix !== undefined && (
-            <span className="text-ink-500 text-sm font-normal">{suffix}</span>
-          )}
-        </span>
-      </dd>
+    <button
+      type="button"
+      aria-expanded={expanded}
+      disabled={disabled}
+      onClick={onClick}
+      className="text-ink-50 min-h-8 font-medium disabled:opacity-50"
+    >
+      {children}
+    </button>
+  )
+}
+
+/**
+ * The week as seven days, the week's own answer to "how am I doing": done
+ * filled, missed in amber, today ringed, the rest quiet. **By `adherence`**,
+ * which asks `sessionOn` and matches by title within the week, so Monday's
+ * session done on Friday is Monday done. It links to the Program page, the
+ * week in full.
+ */
+function WeekStrip({
+  streak,
+  today,
+}: {
+  readonly streak: number | undefined
+  readonly today: string | undefined
+}) {
+  const program = useProgram()
+  const schedule = useSchedule()
+  const workouts = useRecentWorkouts(200)
+  if (today === undefined) return null
+  const monday = mondayOf(today)
+  const filed = (workouts.data ?? [])
+    .filter((log) => log.status === 'completed')
+    .map((log) => ({ date: log.date, title: log.title }))
+  /* Nothing is owed before the first session ever filed, or a new install opens on misses. */
+  const week =
+    program.data === undefined || schedule.data === undefined || filed.length === 0
+      ? undefined
+      : adherence(
+          program.data,
+          schedule.data.blockStartedOn,
+          filed,
+          today,
+          blockWindow(
+            schedule.data.blockStartedOn,
+            program.data.blocks.flatMap((block) => block.weeks).length,
+            today,
+          ),
+          schedule.data.moves,
+        ).weeks.find((one) => one.monday === monday)
+
+  return (
+    <div className="mt-2.5 flex items-center justify-between gap-3">
+      <Link
+        viewTransition
+        to="/program"
+        aria-label="The week, on the Program page"
+        className="flex gap-1.5"
+      >
+        {Array.from({ length: 7 }, (_, at) => {
+          const on = shiftDay(monday, at)
+          const state = week?.days.find((one) => one.on === on)?.state
+          return (
+            <span
+              key={on}
+              aria-hidden
+              className={cn(
+                'flex size-8 items-center justify-center rounded-[0.625rem] text-xs font-semibold',
+                state === 'done'
+                  ? 'bg-accent-500/25 text-accent-200'
+                  : state === 'missed'
+                    ? 'text-warn-500 bg-ink-900'
+                    : state === undefined
+                      ? 'bg-ink-900 text-ink-600'
+                      : 'bg-ink-850 text-ink-500',
+                on === today && 'ring-accent-400 text-ink-50 ring-1 ring-inset',
+              )}
+            >
+              {WEEKDAY_LABELS[parseDay(on).getUTCDay()]}
+            </span>
+          )
+        })}
+      </Link>
+      {streak !== undefined && streak > 0 && (
+        <p className="text-ink-500 shrink-0 text-right text-[0.8125rem] leading-tight">
+          <span className="font-display text-ink-50 text-lg font-semibold">{streak}</span> week
+          <br />
+          streak
+        </p>
+      )}
     </div>
   )
 }
 
 /**
- * A bumper plate, cropped by the panel's edge: the one illustration on
- * the page, and it says what the app is about without a word. Drawn, not
- * fetched, and `aria-hidden` — it carries no information.
+ * Today's bar on each lift, heaviest news first in size: the session's lead
+ * lift is drawn larger. Warm-ups are not listed, because they are the same
+ * every session and the player opens on them anyway.
+ *
+ * A row says what moved (`ripeLifts`): up a step, and in gold where that bar
+ * is the heaviest the lift has carried. Gold means ahead of every time, the
+ * accent means ahead of last time, the rule the records use.
  */
-function Plate() {
-  const slots = Array.from({ length: 6 }, (_, index) => index * 60)
+function SessionLifts({
+  day,
+  planned,
+  units,
+  drafted,
+}: {
+  readonly day: ProgramDay
+  readonly planned: WorkoutLog | undefined
+  readonly units: WeightUnit
+  readonly drafted: boolean
+}) {
+  const exercises = useExercises()
+  const history = useRecentWorkouts(500)
+  const ripe =
+    planned === undefined || history.data === undefined
+      ? []
+      : ripeLifts(planned, history.data, bestsByExercise(history.data))
+  const slots = day.slots.filter((slot) => slot.role !== 'warmup')
+  const nameOf = ({ exercise }: ProgramDay['slots'][number]) =>
+    exercise.kind === 'specific'
+      ? (exercises.data?.find((one) => one.id === exercise.exerciseId)?.name ?? 'Exercise')
+      : exercise.label
+
   return (
-    <svg
-      viewBox="0 0 200 200"
-      className="hero-plate pointer-events-none absolute -top-16 -right-20 -z-10 size-72 opacity-[0.16] sm:size-96 lg:-top-24 lg:-right-16"
-      aria-hidden
-    >
-      <g fill="none" stroke="var(--color-accent-400)">
-        <circle cx="100" cy="100" r="96" strokeWidth="3" />
-        <circle cx="100" cy="100" r="84" strokeWidth="1" />
-        <circle cx="100" cy="100" r="44" strokeWidth="2" />
-        <circle cx="100" cy="100" r="16" strokeWidth="6" />
-        {slots.map((angle) => (
-          <path
-            key={angle}
-            d="M100 26 a74 74 0 0 1 28 5.5"
-            strokeWidth="9"
-            strokeLinecap="round"
-            transform={`rotate(${String(angle)} 100 100)`}
-          />
-        ))}
-      </g>
-    </svg>
+    <ul className="border-ink-800 mt-2.5 border-t lg:mt-0">
+      {drafted && (
+        <li className="border-ink-800 text-accent-400 border-b py-1 text-[0.8125rem]">
+          Edited for this session
+        </li>
+      )}
+      {slots.map((slot, at) => {
+        const entry = planned?.entries.find((one) => one.slotId === slot.id)
+        const moved =
+          entry === undefined
+            ? undefined
+            : ripe.find(
+                (one) => one.exerciseId === entry.exerciseId && one.variant === entry.variant,
+              )
+        const row = (
+          <>
+            <span className="flex min-w-0 flex-col">
+              <span
+                className={cn('truncate', at === 0 ? 'text-lg font-semibold' : 'text-[0.9375rem]')}
+              >
+                {nameOf(slot)}
+              </span>
+              {moved?.from !== undefined && (
+                <span
+                  className={cn(
+                    'numeric text-[0.8125rem]',
+                    moved.heaviest === true ? 'text-gold-400' : 'text-accent-400',
+                  )}
+                >
+                  {moved.heaviest === true ? 'Heaviest yet, up ' : 'Up '}
+                  {formatLoad(moved.load - moved.from, units)}
+                </span>
+              )}
+            </span>
+            <PlannedFigure slot={slot} entry={entry} lead={at === 0} units={units} />
+          </>
+        )
+        const rowClass = cn(
+          'flex items-center justify-between gap-3',
+          at === 0 ? 'min-h-[3.75rem]' : 'min-h-[2.625rem]',
+        )
+        return (
+          <li key={slot.id} className="border-ink-800 border-b">
+            {slot.exercise.kind === 'specific' ? (
+              <Link
+                viewTransition
+                to={`/exercise/${slot.exercise.exerciseId}`}
+                className={rowClass}
+              >
+                {row}
+              </Link>
+            ) : (
+              <div className={rowClass}>{row}</div>
+            )}
+          </li>
+        )
+      })}
+    </ul>
   )
 }
 
-/**
- * The day's lead lift as a medallion: its movement glyph, ringed, tracing
- * itself in once when the hero mounts (keyed by the exercise, so a new day
- * draws again). The name is in the plan below, so this is a picture of it
- * rather than a second label — `role="img"` with the name for a reader.
- */
-function LeadMedallion({ glyph, name }: { readonly glyph: Glyph; readonly name: string }) {
-  return (
-    <svg
-      viewBox="0 0 48 48"
-      className="hero-medallion text-accent-400 size-20 shrink-0 sm:size-24"
-      role="img"
-      aria-label={`Leads with ${name}`}
-    >
-      <circle
-        cx="24"
-        cy="24"
-        r="22.5"
-        fill="color-mix(in oklab, var(--color-accent-500) 12%, transparent)"
-        stroke="color-mix(in oklab, var(--color-accent-400) 45%, transparent)"
-        strokeWidth="1"
-      />
-      <g
-        transform="translate(10 10) scale(1.1667)"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path className="medallion-trace" d={GLYPH_PATHS[glyph]} pathLength={1} />
-        {GLYPH_DOTS[glyph].map(([x, y, r]) => (
-          <circle
-            key={`${String(x)}-${String(y)}`}
-            className="medallion-dot"
-            cx={x}
-            cy={y}
-            r={r}
-            fill="currentColor"
-            stroke="none"
-          />
-        ))}
-      </g>
-    </svg>
-  )
-}
+/** "210 × 3" where the plan holds a bar, and the rule where it does not. */
+function PlannedFigure({
+  slot,
+  entry,
+  lead,
+  units,
+}: {
+  readonly slot: ProgramDay['slots'][number]
+  readonly entry: WorkoutLog['entries'][number] | undefined
+  readonly lead: boolean
+  readonly units: WeightUnit
+}) {
+  const exercises = useExercises()
+  const set = entry?.sets.find((one) => !one.isWarmup)
+  const rule = slot.sets.find((one) => one.isWarmup !== true) ?? slot.sets[0]
+  const bodyweight =
+    exercises.data?.find((one) => one.id === entry?.exerciseId)?.loadBasis === 'bodyweight'
 
-/**
- * The week's sessions as a ring of segments, one per planned day, lit for
- * each finished — the "5/5" beside it is the number, this is the shape of
- * it. A week over its plan lights every segment and no more.
- */
-function WeekRing({ done, of }: { readonly done: number; readonly of: number }) {
-  if (of <= 0) return null
-  const gap = 0.08
-  const step = (Math.PI * 2) / of
-  const arc = (at: number) => {
-    const from = -Math.PI / 2 + at * step + gap
-    const to = from + step - gap * 2
-    const point = (angle: number) =>
-      `${(10 + 8 * Math.cos(angle)).toFixed(2)} ${(10 + 8 * Math.sin(angle)).toFixed(2)}`
-    return `M${point(from)} A8 8 0 0 1 ${point(to)}`
+  if (set?.plannedLoad === undefined) {
+    if (rule === undefined) return null
+    return <span className="text-ink-500 numeric shrink-0 text-sm">{describeReps(rule.reps)}</span>
   }
+  const amount = bodyweight
+    ? set.plannedLoad > 0
+      ? `+${String(set.plannedLoad)}`
+      : 'BW'
+    : units === 'lb'
+      ? String(set.plannedLoad)
+      : formatLoad(set.plannedLoad, units)
+  const reps = set.prescription.reps
   return (
-    <svg viewBox="0 0 20 20" className="size-5 shrink-0" aria-hidden>
-      {Array.from({ length: of }, (_, at) => (
-        <path
-          key={at}
-          d={arc(at)}
-          fill="none"
-          strokeWidth="2.6"
-          strokeLinecap="round"
-          stroke={at < done ? 'var(--color-accent-400)' : 'var(--color-ink-700)'}
-        />
-      ))}
-    </svg>
-  )
-}
-
-/** A figure that counts up once as the hero arrives; the real value is what a screen reader gets. */
-function Counted({ value }: { readonly value: number }) {
-  const shown = useCountUp(value, 1100)
-  return (
-    <>
-      <span aria-hidden>{Math.round(shown)}</span>
-      <span className="sr-only">{value}</span>
-    </>
+    <span className="flex shrink-0 items-baseline">
+      <span
+        className={cn(
+          'font-display font-semibold',
+          lead ? 'text-[2.125rem] font-bold tracking-[-0.02em]' : 'text-lg',
+        )}
+      >
+        {amount}
+      </span>
+      <span className="text-ink-500 ml-1 text-sm">
+        {reps.kind === 'emom' || reps.kind === 'time'
+          ? describeReps(reps)
+          : `× ${String(set.plannedReps ?? '—')}`}
+      </span>
+    </span>
   )
 }
 
@@ -490,4 +550,9 @@ function Counted({ value }: { readonly value: number }) {
 const EverythingSheet = lazyNamed(
   () => import('@/features/navigation/EverythingSheet'),
   'EverythingSheet',
+)
+// Opened by Edit only, so it loads on that press.
+const SessionDraftEditor = lazyNamed(
+  () => import('@/features/train/SessionDraftEditor'),
+  'SessionDraftEditor',
 )

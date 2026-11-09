@@ -1,14 +1,8 @@
-import { CalendarDays } from 'lucide-react'
-
 import { Link } from 'react-router-dom'
-import { Card, CardHeading } from '@/components/shared/primitives'
-import { Skeleton } from '@/components/shared/Skeleton'
-import type { ActivityDay } from '@/application/use-cases/training/activity'
+import type { ActivityDay, ActivitySummary } from '@/application/use-cases/training/activity'
 import { parseDay } from '@/domain/time/day'
 import { cn } from '@/lib/cn'
 import { formatDate } from '@/lib/format-date'
-
-import { useActivity } from './hooks'
 
 /**
  * Every day of the last four months, lit by the working sets done on it.
@@ -50,35 +44,13 @@ function monthOf(day: string): string {
   return formatDate(parseDay(day), { month: 'short', timeZone: 'UTC' }, 'en-US')
 }
 
-export function ActivityHeatmap() {
-  const activity = useActivity()
-
-  if (activity.data === undefined) {
-    return (
-      <Card>
-        <Skeleton className="h-36 w-full" />
-      </Card>
-    )
-  }
-
-  const { weeks, sessions, sets } = activity.data
+export function ActivityGrid({ activity }: { readonly activity: ActivitySummary }) {
+  const { weeks, sessions, sets } = activity
   const columns = `1.75rem repeat(${String(weeks.length)}, minmax(0, 1fr))`
   const summary = `${String(sessions)} sessions and ${sets.toLocaleString()} working sets in the last ${String(weeks.length)} weeks`
 
   return (
-    <Card>
-      <CardHeading
-        icon={<CalendarDays size={14} aria-hidden />}
-        title="Training"
-        figure={`${String(sessions)} sessions`}
-      />
-
-      <p className="text-ink-300 numeric mb-3 text-sm">
-        <span className="text-ink-50 font-semibold">{sessions}</span> sessions ·{' '}
-        <span className="text-ink-50 font-semibold">{sets.toLocaleString()}</span> working sets in{' '}
-        {weeks.length} weeks
-      </p>
-
+    <>
       {/*
         **One grid for the labels and the cells.** The weekday names sat in
         a column of their own and drifted twenty pixels off their rows by
@@ -152,13 +124,13 @@ export function ActivityHeatmap() {
         ))}
       </div>
 
-      <div className="text-ink-500 mt-2 flex items-center justify-end gap-1 text-[10px]">
+      <div className="text-ink-500 mt-2 flex items-center justify-end gap-1 text-xs">
         Less
         {BAND_FILL.map((fill) => (
           <span key={fill} className="size-2.5 rounded-[3px]" style={{ backgroundColor: fill }} />
         ))}
         More
       </div>
-    </Card>
+    </>
   )
 }

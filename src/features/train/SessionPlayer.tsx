@@ -626,7 +626,7 @@ export function SessionPlayer({
 
       <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_17rem] lg:items-start lg:gap-8">
         <div className="min-w-0">
-          <div className="set-screen flex flex-col">
+          <div className="first-screen flex flex-col">
             {warmup !== undefined ? (
               <>
                 <div className="-mb-3 flex justify-end pt-1">

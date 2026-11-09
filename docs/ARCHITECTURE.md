@@ -184,7 +184,7 @@ instead.**
 
 Starting Monday's session (Upper) and logging the first set of the bench:
 
-1. **`features/train/NextSessionCard.tsx`**, on the one page, renders the next day and calls
+1. **`features/today/HeroBanner.tsx`**, on the one page, renders the next day and calls
    `useStartWorkout()`.
 2. **`features/train/hooks.ts`** resolves `AppServices` from context and
    calls the use-case.

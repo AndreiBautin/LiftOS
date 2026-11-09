@@ -50,91 +50,6 @@ export const SLOT_ROLES = [
 export type SlotRole = (typeof SLOT_ROLES)[number]
 
 /**
- * A label for a role, tolerating one this build does not know.
- *
- * A stored program can carry a role from an older version — the badge
- * rendered as a bare dash when it did, which reads as a bug rather than
- * as "unlabelled".
- */
-export function slotRoleLabel(role: string): string {
-  return (SLOT_ROLE_LABELS as Partial<Record<string, string>>)[role] ?? 'Work'
-}
-
-const SLOT_ROLE_LABELS: Record<SlotRole, string> = {
-  warmup: 'Warm-up',
-  main: 'Main lift',
-  strength: 'Strength',
-  hypertrophy: 'Hypertrophy',
-  assistance: 'Hypertrophy',
-  conditioning: 'Conditioning',
-}
-
-/**
- * The sub-category a slot reads under its role.
- *
- * Every category has one, so the badge pair is a consistent shape rather
- * than something that appears on some rows and not others: strength
- * splits into the top set and the back-offs, hypertrophy into compound
- * and isolation, warm-ups into upper and lower. In each case the two are
- * the same kind of work done differently, not different kinds of work.
- *
- * Carried on the slot rather than derived from the role, because two of
- * the three cannot be read off the role at all — a warm-up is upper or
- * lower according to the day it opens, and a strength slot is a top set
- * or a back-off according to which of the pair it is.
- */
-export function slotVariant(slot: { readonly role: string; readonly variant?: string }): string {
-  const stored = slot.variant ?? (SLOT_ROLE_VARIANTS as Partial<Record<string, string>>)[slot.role]
-  if (stored === undefined) return ''
-  return (VARIANT_LABELS as Partial<Record<string, string>>)[stored] ?? stored
-}
-
-/**
- * Where the stored sub-category and the word on screen disagree.
- *
- * One entry, and it is a rename that could not be a rename. A competition
- * lift stores `'Top set'` because it did once sit above a run of
- * back-offs, and that string is written into every log ever filed — it is
- * how `previousSetFor` tells a heavy set from a lighter one when
- * comparing against a session logged under RTS, so changing it would make
- * a new set read against the wrong old one.
- *
- * The badge is a different question. There are no back-offs any more, so
- * "Top set" on screen names a position in a pair that does not exist. The
- * value stays an address and the label says what the set is.
- */
-const VARIANT_LABELS: Record<string, string> = {
-  'Top set': 'Working',
-}
-
-/**
- * The fallback for a slot with no variant of its own.
- *
- * Only reached by a workout logged before slots carried one. Compound and
- * isolation are recoverable from the role; a warm-up's body half and a
- * strength slot's position in the pair are not, and those simply show no
- * sub-badge rather than a guessed one.
- */
-const SLOT_ROLE_VARIANTS: Partial<Record<SlotRole, string>> = {
-  hypertrophy: 'Compound',
-  assistance: 'Isolation',
-}
-
-/**
- * The badge tone each role reads in.
- *
- * Colour-coded because the role is the fastest way to tell, mid-session,
- * whether the thing on screen is the lift the day is about or something
- * to get through. Every role having the same grey badge meant reading the
- * word every time.
- */
-type BadgeTone = 'neutral' | 'accent' | 'good' | 'warn' | 'bad' | 'cool'
-
-export function slotRoleTone(role: string): BadgeTone {
-  return (SLOT_ROLE_TONES as Partial<Record<string, BadgeTone>>)[role] ?? 'neutral'
-}
-
-/**
  * The heading a slot reads under when a session is shown as sections.
  *
  * Deliberately *not* `SLOT_ROLE_LABELS`. That map answers "what kind of
@@ -205,17 +120,6 @@ export function inSections<T extends { readonly role: string }>(
   return sections
 }
 
-const SLOT_ROLE_TONES: Record<SlotRole, BadgeTone> = {
-  // Its own hue, on the same level as strength and conditioning. Grey now
-  // belongs to the sub-category badges, and a grey warm-up read as one.
-  warmup: 'cool',
-  main: 'accent',
-  strength: 'accent',
-  hypertrophy: 'good',
-  assistance: 'good',
-  conditioning: 'warn',
-}
-
 /**
  * Which exercise a slot is for.
  *
@@ -232,7 +136,7 @@ export type ExerciseRef =
 export interface Slot {
   readonly id: SlotId
   readonly role: SlotRole
-  /** The sub-category shown beside the role — see {@link slotVariant}. */
+  /** The sub-category: an address history reads, written into every log. */
   readonly variant?: string
   readonly exercise: ExerciseRef
   readonly sets: readonly SetPrescription[]
@@ -440,27 +344,4 @@ export function setSeconds(set: SetPrescription, restSeconds: number): number {
   // Warm-ups are quick and rested through, so they cost the work but not
   // the full interval.
   return set.isWarmup === true ? work : work + restSeconds
-}
-
-/**
- * The sets a week schedules for each muscle, summed from its days.
- *
- * **This is the target a history or a plan should read**, rather than
- * the per-muscle volume constants: the shipped week is a written routine,
- * so what it asks of a muscle is whatever the routine lists, and a target
- * computed from a model the routine no longer consults would describe a
- * different week. Read off `volumeTargets`, which each day already
- * carries, so there is one count and not a second.
- */
-export function scheduledVolume(week: ProgramWeek): Readonly<Partial<Record<MuscleGroup, number>>> {
-  const totals: Partial<Record<MuscleGroup, number>> = {}
-  for (const day of week.days) {
-    for (const [muscle, sets] of Object.entries(day.volumeTargets ?? {}) as [
-      MuscleGroup,
-      number,
-    ][]) {
-      totals[muscle] = (totals[muscle] ?? 0) + sets
-    }
-  }
-  return totals
 }
