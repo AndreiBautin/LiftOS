@@ -7,22 +7,12 @@ import type { WorkoutLog } from './workout-log'
  *
  * **A search reads what a person remembers**: the day ("legs b"), an
  * exercise in it ("front squat" — only one actually done, not one
- * skipped), or a word from a note ("knee"). Case and spacing do not
- * matter; every word typed must match somewhere, so "squat knee" narrows
- * rather than widens. The day chips and Records narrow further.
+ * skipped), a word from a note ("knee"), or "records" for the sessions that
+ * set one. Case and spacing do not matter; every word typed must match
+ * somewhere, so "squat knee" narrows rather than widens. One field does all of
+ * it, so there are no chips to go with it.
  */
-export interface HistoryFilter {
-  readonly query: string
-  /** A day's name — "Legs B" — or undefined for every day. */
-  readonly day?: string | undefined
-  readonly recordsOnly: boolean
-}
-
-export const NO_FILTER: HistoryFilter = { query: '', recordsOnly: false }
-
-export function isFiltering(filter: HistoryFilter): boolean {
-  return filter.query.trim() !== '' || filter.day !== undefined || filter.recordsOnly
-}
+const RECORD_WORDS: ReadonlySet<string> = new Set(['record', 'records', 'pr', 'prs'])
 
 /** "Friday — Legs B" → "Legs B"; a title with no weekday is its own name. */
 export function dayNameOf(title: string): string {
@@ -32,17 +22,18 @@ export function dayNameOf(title: string): string {
 
 export function filterHistory(
   logs: readonly WorkoutLog[],
-  filter: HistoryFilter,
+  query: string,
   nameOf: (exerciseId: string) => string,
   recordCount: (id: WorkoutId) => number,
 ): readonly WorkoutLog[] {
-  const words = filter.query
+  const typed = query
     .toLowerCase()
     .split(/\s+/)
     .filter((word) => word !== '')
+  const recordsOnly = typed.some((word) => RECORD_WORDS.has(word))
+  const words = typed.filter((word) => !RECORD_WORDS.has(word))
   return logs.filter((log) => {
-    if (filter.day !== undefined && dayNameOf(log.title) !== filter.day) return false
-    if (filter.recordsOnly && recordCount(log.id) === 0) return false
+    if (recordsOnly && recordCount(log.id) === 0) return false
     if (words.length === 0) return true
 
     const haystack = [

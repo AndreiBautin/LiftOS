@@ -5979,3 +5979,25 @@ border` boxes that each drew a fourth, flat level; **an inset box
   white on dark and _nothing_ on white, so a hardcoded
   `rgba(255,255,255,…)` would draw a bright smear along the top of every
   card in the light theme. `--card-sheen` is transparent there.
+
+- **History can be read as a wall of crests** (List / Crests on the
+  history card, `CrestWall`): every session's crest a month at a time,
+  each opening its session, abandoned ones faded. Search and the day
+  chips filter the wall as they do the list; the list's fold of eight
+  does not apply, because crests are small. **Drawn still** (`still` on
+  `SessionCrest`) — eighty crests drawing in at once was noise; one
+  crest on a session page still draws itself. The view is not
+  remembered: it is a way of looking, opened on purpose.
+- **History searches and filters** (`domain/logging/history-filter.ts`,
+  tested): a search matches the day, an exercise **actually done** (a
+  skipped slot is not something the session had), or a note, every word
+  narrowing; chips for the days the history holds and for sessions with
+  records. **The fold steps aside while any filter is on** — folding
+  matches behind "Show all" would be the list arguing with its own box —
+  and the header reads "11 of 81". The search has a row of its own.
+  Updates are functional (`onChange(current => …)`): two taps landing
+  in one tick otherwise wrote from the same stale filter, the second
+  undoing the first.
+- **The date and name of a history row are the link**, not the whole
+  row: reopen and delete are buttons, and a button inside an anchor is
+  invalid markup that swallows the tap.

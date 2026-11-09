@@ -61,7 +61,6 @@ export const router = createBrowserRouter(
           'party',
           // The app became one page and these two tabs became sections of it.
           'train',
-          'history',
         ].map((path) => ({ path, element: <Navigate to="/today" replace /> })),
         /*
          * The Plan screen is gone and `/plan` lands on the Program page.
@@ -77,6 +76,11 @@ export const router = createBrowserRouter(
           path: 'program',
           lazy: () =>
             import('@/features/program/ProgramPage').then((m) => ({ Component: m.ProgramPage })),
+        },
+        {
+          path: 'history',
+          lazy: () =>
+            import('@/features/history/HistoryPage').then((m) => ({ Component: m.HistoryPage })),
         },
         {
           path: 'session/:id',

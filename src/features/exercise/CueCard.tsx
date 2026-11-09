@@ -1,9 +1,8 @@
-import { Quote } from 'lucide-react'
 import { useId, useState } from 'react'
 
 import { useSettings } from '@/app/context'
 import { CUE_LIMIT } from '@/domain/settings/settings'
-import { Card } from '@/components/shared/primitives'
+import { Module } from '@/components/shared/Module'
 
 /**
  * The lifter's own cue for an exercise, written here and read in the
@@ -28,11 +27,9 @@ export function CueCard({ exerciseId }: { readonly exerciseId: string }) {
   }
 
   return (
-    <Card>
-      <label htmlFor={id} className="text-ink-500 mb-2 flex items-center gap-2 text-sm">
-        <Quote size={16} aria-hidden />
-        Your cue
-        <span className="text-ink-500 ml-auto text-xs">Shown in the session</span>
+    <Module title="Your cue" action={<span className="text-ink-500">Shown in the session</span>}>
+      <label htmlFor={id} className="sr-only">
+        Your cue for this exercise
       </label>
       <input
         id={id}
@@ -47,8 +44,8 @@ export function CueCard({ exerciseId }: { readonly exerciseId: string }) {
         onKeyDown={(event) => {
           if (event.key === 'Enter') event.currentTarget.blur()
         }}
-        className="bg-ink-900 border-ink-800 text-ink-100 placeholder:text-ink-500 w-full rounded-lg border px-3 py-2 text-sm"
+        className="bg-ink-900 border-ink-800 text-ink-100 placeholder:text-ink-500 mt-1 h-11 w-full rounded-[0.75rem] border px-3 text-sm"
       />
-    </Card>
+    </Module>
   )
 }

@@ -8,16 +8,17 @@ import { MUSCLE_WEEKS, muscleHistory } from '@/domain/volume/muscle-history'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { BodyHighlight } from '@/features/train/body-figures'
 import { PageSkeleton } from '@/components/shared/PageSkeleton'
-import { Card, CardHeading } from '@/components/shared/primitives'
+import { DetailHero } from '@/components/shared/DetailHero'
+import { Module } from '@/components/shared/Module'
 import { NIGGLE_LABELS, nigglesForMuscle, recentNiggles } from '@/domain/logging/niggles'
 import { useExercises, useRecentWorkouts } from '@/features/train/hooks'
 import { formatDate } from '@/lib/format-date'
 
 /**
- * One muscle, twelve weeks (`muscleHistory`): its sets as a tide — a
- * filled curve week by week, the busiest week marked — its share of all
- * the work, when it last worked, and the exercises that paid it, each
- * with a bar of its part.
+ * One muscle, twelve weeks (`muscleHistory`): the figure and the tide first, a
+ * filled curve week by week with the busiest marked, the way the exercise page
+ * opens (`DetailHero`). Then the exercises that paid it, each with a bar of its
+ * part.
  *
  * Reached from the body map's readout and the palette. **It counts what
  * every other screen counts**: a set pays the muscle its exercise is for,
@@ -45,7 +46,7 @@ export function MusclePage() {
   const niggles = nigglesForMuscle(recentNiggles(workouts.data, today), muscle)
 
   return (
-    <div className="mx-auto max-w-2xl space-y-4 pb-8">
+    <div className="mx-auto max-w-2xl pb-8">
       <PageHeader
         title={label}
         subtitle={
@@ -55,31 +56,22 @@ export function MusclePage() {
         }
       />
 
-      <section className="hero-panel p-5 sm:p-6" aria-label={`${label} over twelve weeks`}>
-        <BodyHighlight muscle={muscle} className="mx-auto mb-4 w-full max-w-[16rem]" />
-        <dl className="grid grid-cols-3 gap-3">
-          <Figure
-            label="Sets"
-            value={String(history.sets)}
-            note={`${String(MUSCLE_WEEKS)} weeks`}
-          />
-          <Figure
-            label="A week"
-            value={(history.sets / MUSCLE_WEEKS).toFixed(1)}
-            note="on average"
-          />
-          <Figure
-            label="Share"
-            value={`${String(Math.round(history.share * 100))}%`}
-            note="of all sets"
-          />
-        </dl>
+      <DetailHero
+        label={`${label} over twelve weeks`}
+        figure={String(history.sets)}
+        unit={`sets in ${String(MUSCLE_WEEKS)} weeks`}
+        facts={[
+          { term: 'A week', value: (history.sets / MUSCLE_WEEKS).toFixed(1) },
+          { term: 'Share', value: `${String(Math.round(history.share * 100))}%` },
+        ]}
+        aside={<BodyHighlight muscle={muscle} className="w-28 shrink-0" />}
+      >
         <Tide weeks={history.weeks} today={today} />
-      </section>
+      </DetailHero>
 
       {niggles.length > 0 && (
-        <Card className="border-[oklch(0.78_0.15_85_/_0.35)]">
-          <p className="text-sm text-gold-400">
+        <div className="mt-2 mb-4">
+          <p className="text-warn-500 text-sm">
             {niggles
               .map(
                 (one) =>
@@ -87,7 +79,7 @@ export function MusclePage() {
               )
               .join(' · ')}
           </p>
-          <p className="text-ink-500 mt-1 text-xs">
+          <p className="text-ink-500 mt-1 text-sm">
             The work this muscle does loads that joint. On{' '}
             {niggles
               .flatMap((one) => one.exercises)
@@ -96,17 +88,16 @@ export function MusclePage() {
               .join(', ')}
             .
           </p>
-        </Card>
+        </div>
       )}
-      <Card>
-        <CardHeading title="What trained it" />
+      <Module title="What trained it">
         {history.exercises.length === 0 ? (
-          <p className="text-ink-500 text-sm">
+          <p className="text-ink-500 mt-1 text-sm">
             Nothing has trained the {label.toLowerCase()} in the last twelve weeks. The exercises
             appear here as their sets are logged.
           </p>
         ) : (
-          <ul className="space-y-3">
+          <ul className="mt-2 space-y-3">
             {history.exercises.map((one) => (
               <li key={one.exerciseId}>
                 <div className="flex items-baseline justify-between gap-3">
@@ -123,7 +114,7 @@ export function MusclePage() {
                 </div>
                 <span className="bg-ink-800 mt-1.5 block h-1.5 overflow-hidden rounded-full">
                   <span
-                    className="from-accent-600 to-accent-400 block h-full rounded-full bg-gradient-to-r"
+                    className="bg-accent-500 block h-full rounded-full"
                     style={{ width: `${String((one.sets / most) * 100)}%` }}
                   />
                 </span>
@@ -131,7 +122,7 @@ export function MusclePage() {
             ))}
           </ul>
         )}
-      </Card>
+      </Module>
     </div>
   )
 }
@@ -163,15 +154,10 @@ function Tide({ weeks, today }: { readonly weeks: readonly number[]; readonly to
           .map((sets, at) => `Week of ${shiftDay(first, at * 7)}: ${String(sets)} sets`)
           .join('; ')}
       </title>
-      <defs>
-        <linearGradient id="tide-fill" x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0%" stopColor="var(--color-accent-500)" stopOpacity="0.45" />
-          <stop offset="100%" stopColor="var(--color-accent-500)" stopOpacity="0" />
-        </linearGradient>
-      </defs>
       <path
         d={`${line} L ${String(x(weeks.length - 1))} 86 L ${String(x(0))} 86 Z`}
-        fill="url(#tide-fill)"
+        fill="var(--color-accent-500)"
+        fillOpacity={0.16}
         className="tide-rise"
       />
       <path
@@ -188,7 +174,7 @@ function Tide({ weeks, today }: { readonly weeks: readonly number[]; readonly to
             x={x(busiest)}
             y={y(weeks[busiest] ?? 0) - 8}
             textAnchor="middle"
-            className="fill-ink-50 text-[9px] font-semibold"
+            className="fill-ink-50 text-[11px] font-semibold"
           >
             {weeks[busiest]}
           </text>
@@ -200,31 +186,13 @@ function Tide({ weeks, today }: { readonly weeks: readonly number[]; readonly to
         r="4"
         className="fill-accent-400"
       />
-      <text x={x(0)} y={102} className="fill-ink-500 text-[8px]">
+      <text x={x(0)} y={102} className="fill-ink-500 text-[11px]">
         12 weeks ago
       </text>
-      <text x={x(weeks.length - 1)} y={102} textAnchor="end" className="fill-ink-500 text-[8px]">
+      <text x={x(weeks.length - 1)} y={102} textAnchor="end" className="fill-ink-500 text-[11px]">
         This week
       </text>
     </svg>
-  )
-}
-
-function Figure({
-  label,
-  value,
-  note,
-}: {
-  readonly label: string
-  readonly value: string
-  readonly note: string
-}) {
-  return (
-    <div>
-      <dt className="text-ink-500 text-xs tracking-wide uppercase">{label}</dt>
-      <dd className="numeric text-ink-50 mt-1 text-2xl font-semibold">{value}</dd>
-      <dd className="text-ink-500 text-xs">{note}</dd>
-    </div>
   )
 }
 

@@ -1,4 +1,3 @@
-import { History } from 'lucide-react'
 import { ShareSession } from '@/features/share/ShareSession'
 import { CueCard } from './CueCard'
 import { NotesCard } from './NotesCard'
@@ -14,7 +13,10 @@ import type { Performance } from '@/domain/logging/versus-last'
 import { formatLoad, type WeightUnit } from '@/domain/units/weight'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { PageSkeleton } from '@/components/shared/PageSkeleton'
-import { Button, Card, CardHeading } from '@/components/shared/primitives'
+import { DetailHero } from '@/components/shared/DetailHero'
+import { Module } from '@/components/shared/Module'
+import { Card } from '@/components/shared/primitives'
+import { cn } from '@/lib/cn'
 import { useExerciseHistory, useExercises } from '@/features/train/hooks'
 
 import { StallCard } from './StallCard'
@@ -30,6 +32,10 @@ import { formatDate } from '@/lib/format-date'
  * Reached from its name wherever a past or planned session shows it. It
  * answers the questions the session screens cannot: how long have I been
  * at this weight, what is the best I have done, and when did it last move.
+ *
+ * **It opens on that answer** (`DetailHero`): the figure and the staircase. It
+ * used to open on a form field for your cue, with the chart a screen down.
+ * What it offers comes next, then what you scroll for, then what you type.
  */
 export function ExercisePage() {
   const { id = '' } = useParams()
@@ -72,7 +78,7 @@ export function ExercisePage() {
   const estimate = [...shown.sessions].reverse().find((one) => one.estimate !== undefined)
 
   return (
-    <div className="mx-auto max-w-2xl space-y-4 pb-8 lg:max-w-5xl">
+    <div className="mx-auto max-w-2xl pb-8 lg:max-w-5xl">
       <PageHeader
         title={title}
         morph={morphName('exercise', exerciseId)}
@@ -117,75 +123,77 @@ export function ExercisePage() {
       />
 
       {series.length > 1 && (
-        <div className="flex gap-1.5" role="group" aria-label="Version">
+        <div
+          role="group"
+          aria-label="Version"
+          className="bg-ink-900 mb-4 flex gap-1 rounded-[0.875rem] p-1"
+        >
           {series.map((one) => {
             const label = one.variant ?? 'Earlier'
             const active = one === shown
             return (
-              <Button
+              <button
                 key={label}
-                variant={active ? 'primary' : 'outline'}
-                size="sm"
+                type="button"
                 aria-pressed={active}
                 onClick={() => {
                   setChosen(one.variant)
                 }}
+                className={cn(
+                  'h-11 flex-1 rounded-[0.6875rem] text-sm',
+                  active ? 'bg-ink-800 text-ink-50 font-semibold' : 'text-ink-500',
+                )}
               >
                 {label}
-              </Button>
+              </button>
             )
           })}
         </div>
       )}
 
-      <StallCard exerciseId={exerciseId} series={shown} bodyweight={bodyweight} />
-      {exercise !== undefined && (
-        <StepCard exercise={exercise} load={shown.sessions.at(-1)?.top.load} />
-      )}
-      {/* From `lg`, two columns: the cue beside the notes, the charts beside each other. */}
-      <div className="space-y-4 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
-        <CueCard key={exerciseId} exerciseId={exerciseId} />
-        <NotesCard exerciseId={exerciseId} />
+      <DetailHero
+        label="Progress"
+        figure={
+          estimate?.estimate !== undefined
+            ? String(Math.round(estimate.estimate))
+            : bodyweight
+              ? String(shown.best.reps ?? '—')
+              : String(shown.best.load ?? '—')
+        }
+        unit={
+          estimate?.estimate !== undefined
+            ? `${settings.units} estimated max`
+            : bodyweight
+              ? 'reps, best set'
+              : `${settings.units}, best set`
+        }
+        facts={[
+          { term: 'Best', value: describe(shown.best, settings.units, bodyweight) },
+          {
+            term: 'Last',
+            value: latest === undefined ? '—' : describe(latest.top, settings.units, bodyweight),
+          },
+        ]}
+      >
+        <Staircase series={shown} bodyweight={bodyweight} units={settings.units} />
+      </DetailHero>
+
+      <div className="mt-4 mb-4 space-y-3 empty:hidden">
+        <StallCard exerciseId={exerciseId} series={shown} bodyweight={bodyweight} />
+        {exercise !== undefined && (
+          <StepCard exercise={exercise} load={shown.sessions.at(-1)?.top.load} />
+        )}
       </div>
 
-      <section className="hero-panel p-5 sm:p-6" aria-label="Progress">
-        <dl className="grid grid-cols-3 gap-3">
-          <Figure label="Best set" value={describe(shown.best, settings.units, bodyweight)} />
-          <Figure
-            label="Last time"
-            value={latest === undefined ? '—' : describe(latest.top, settings.units, bodyweight)}
-          />
-          <Figure
-            label={estimate === undefined ? 'Sessions' : 'Est. max'}
-            value={
-              estimate?.estimate === undefined
-                ? String(shown.sessions.length)
-                : formatLoad(estimate.estimate, settings.units)
-            }
-          />
-        </dl>
-        <Staircase series={shown} bodyweight={bodyweight} units={settings.units} />
-      </section>
-
-      <div className="space-y-4 lg:grid lg:grid-cols-2 lg:items-start lg:gap-4 lg:space-y-0">
+      <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-10">
+        <SessionList sessions={shown.sessions} units={settings.units} bodyweight={bodyweight} />
+        <WeeklySetsCard sessions={shown.sessions} />
         {!bodyweight && estimate?.estimate !== undefined && (
           <RepMaxCard series={shown} estimate={estimate.estimate} />
         )}
-        <WeeklySetsCard sessions={shown.sessions} />
+        <NotesCard exerciseId={exerciseId} />
+        <CueCard key={exerciseId} exerciseId={exerciseId} />
       </div>
-
-      <SessionList sessions={shown.sessions} units={settings.units} bodyweight={bodyweight} />
-    </div>
-  )
-}
-
-function Figure({ label, value }: { readonly label: string; readonly value: string }) {
-  return (
-    <div className="min-w-0">
-      <dt className="text-ink-500 text-xs font-medium tracking-wide uppercase">{label}</dt>
-      <dd className="numeric text-ink-50 mt-1 truncate text-base font-semibold sm:text-lg">
-        {value}
-      </dd>
     </div>
   )
 }
@@ -237,23 +245,18 @@ function Staircase({
     .join(' ')
 
   return (
-    <figure className="mt-5">
+    <figure className="mt-3">
       <svg
         viewBox={`0 0 ${String(W)} ${String(H)}`}
         className="h-auto w-full"
         role="img"
         aria-label={`${byReps ? 'Reps' : 'Top-set load'} over the last ${String(sessions.length)} sessions, from ${String(values[0])} to ${String(values.at(-1))}`}
       >
-        <defs>
-          <linearGradient id="staircase-under" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="var(--color-accent-500)" stopOpacity="0.24" />
-            <stop offset="1" stopColor="var(--color-accent-500)" stopOpacity="0" />
-          </linearGradient>
-        </defs>
         <path
           className="area-fade"
           d={`${path} V${String(H - pad.bottom)} H${x(0).toFixed(1)} Z`}
-          fill="url(#staircase-under)"
+          fill="var(--color-accent-500)"
+          fillOpacity={0.1}
         />
         <path
           className="line-draw"
@@ -284,13 +287,7 @@ function Staircase({
           return (
             <g key={i}>
               {stepped && (
-                <circle
-                  cx={x(i + 1)}
-                  cy={y(next)}
-                  r={4}
-                  fill="var(--color-accent-400)"
-                  style={{ filter: 'drop-shadow(0 0 4px var(--color-accent-400))' }}
-                />
+                <circle cx={x(i + 1)} cy={y(next)} r={4} fill="var(--color-accent-400)" />
               )}
               {!byReps && (
                 <text
@@ -317,7 +314,7 @@ function Staircase({
   )
 }
 
-const SHOWN = 8
+const SHOWN = 5
 
 function SessionList({
   sessions,
@@ -333,15 +330,14 @@ function SessionList({
   const visible = all ? newest : newest.slice(0, SHOWN)
 
   return (
-    <Card>
-      <CardHeading icon={<History size={16} aria-hidden />} title="Sessions" />
-      <ul className="divide-ink-800/70 divide-y">
+    <Module title="Sessions">
+      <ul className="divide-ink-800 divide-y">
         {visible.map((session) => (
           <li key={`${session.workoutId}-${session.date}`}>
             <Link
               viewTransition
               to={`/session/${session.workoutId}`}
-              className="hover:bg-ink-800/40 -mx-2 flex items-center justify-between gap-3 rounded-lg px-2 py-2.5"
+              className="flex min-h-[3.25rem] items-center justify-between gap-3 py-1.5"
             >
               <span className="min-w-0">
                 <span className="text-ink-100 block text-sm">{shortDate(session.date)}</span>
@@ -353,7 +349,7 @@ function SessionList({
                   {splitDayLabel(session.title).name}
                 </MorphText>
               </span>
-              <span className="numeric text-ink-300 shrink-0 text-right text-xs">
+              <span className="numeric text-ink-100 shrink-0 text-right text-sm">
                 {summarise(session.sets, units, bodyweight)}
               </span>
             </Link>
@@ -361,18 +357,17 @@ function SessionList({
         ))}
       </ul>
       {newest.length > SHOWN && (
-        <Button
-          variant="ghost"
-          full
-          className="mt-2"
+        <button
+          type="button"
+          className="text-accent-400 tap-target mt-1 text-sm font-medium"
           onClick={() => {
             setAll(!all)
           }}
         >
-          {all ? 'Show fewer' : `Show all ${String(newest.length)}`}
-        </Button>
+          {all ? 'Show fewer' : `All ${String(newest.length)} sessions`}
+        </button>
       )}
-    </Card>
+    </Module>
   )
 }
 

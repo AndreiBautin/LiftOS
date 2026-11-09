@@ -1,4 +1,3 @@
-import { NotebookPen } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -6,7 +5,7 @@ import { useSettings } from '@/app/context'
 import type { ExerciseId } from '@/domain/ids/ids'
 import { exerciseNotes, type ExerciseNote } from '@/domain/logging/exercise-notes'
 import { formatLoad, type WeightUnit } from '@/domain/units/weight'
-import { Card, CardHeading } from '@/components/shared/primitives'
+import { Module } from '@/components/shared/Module'
 import { useRecentWorkouts } from '@/features/train/hooks'
 import { formatDate } from '@/lib/format-date'
 
@@ -32,13 +31,12 @@ export function NotesCard({ exerciseId }: { readonly exerciseId: ExerciseId }) {
   const shown = all ? notes : notes.slice(0, SHOWN)
 
   return (
-    <Card>
-      <CardHeading icon={<NotebookPen size={16} aria-hidden />} title="Notes" />
-      <ol className="border-ink-800 relative ml-1.5 space-y-3 border-l pl-4">
+    <Module title="Notes">
+      <ol className="border-ink-800 relative mt-2 ml-1.5 space-y-3 border-l pl-4">
         {shown.map((note, at) => (
           <li key={`${note.workoutId}-${String(at)}`} className="relative">
             <span
-              className="bg-accent-500 ring-ink-900 absolute top-1.5 -left-[1.3rem] size-2 rounded-full ring-4"
+              className="bg-ink-500 ring-ink-950 absolute top-1.5 -left-[1.3rem] size-2 rounded-full ring-4"
               aria-hidden
             />
             <p className="text-ink-500 flex flex-wrap items-baseline gap-x-2 text-xs">
@@ -66,7 +64,7 @@ export function NotesCard({ exerciseId }: { readonly exerciseId: ExerciseId }) {
           {notes.length - SHOWN} older
         </button>
       )}
-    </Card>
+    </Module>
   )
 }
 

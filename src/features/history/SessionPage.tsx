@@ -6,16 +6,16 @@ import { ShareSession } from '@/features/share/ShareSession'
 import { shareCardFrom } from '@/features/share/card-from'
 import { MorphText } from '@/components/shared/MorphText'
 import { morphName } from '@/components/shared/morph'
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 
-import { useSettings } from '@/app/context'
+import { useServices, useSettings } from '@/app/context'
 import type { EntryDetail } from '@/application/use-cases/training/session-detail'
 import type { Exercise } from '@/domain/exercises/exercise'
 import { asWorkoutId, type WorkoutId } from '@/domain/ids/ids'
 import { sessionCrest } from '@/domain/logging/crest'
 import type { SessionRecord } from '@/domain/logging/records'
-import type { LoggedSet } from '@/domain/logging/workout-log'
+import type { LoggedSet, WorkoutLog } from '@/domain/logging/workout-log'
 import { describePrescription, describeReps } from '@/domain/programs/prescription'
 import { formatLoad, type WeightUnit } from '@/domain/units/weight'
 import { PageHeader } from '@/components/shared/PageHeader'
@@ -23,7 +23,9 @@ import { PageSkeleton } from '@/components/shared/PageSkeleton'
 import { Badge, Button, Card } from '@/components/shared/primitives'
 import { cn } from '@/lib/cn'
 import { useExercises, useRepeatSession } from '@/features/train/hooks'
+import { UndoToast } from '@/features/train/UndoToast'
 import { SessionCrest } from './SessionCrest'
+import { SessionFoot } from './SessionFoot'
 import { SessionStats } from '@/features/train/SessionStats'
 import { SessionTimeline } from '@/features/train/SessionTimeline'
 import { SessionReplay } from './SessionReplay'
@@ -31,7 +33,7 @@ import { splitDayLabel } from '@/features/train/useNextSession'
 import { RecordChip } from '@/features/train/RecordChip'
 import { VersusChip } from '@/features/train/VersusChip'
 
-import { useSessionDetail } from './hooks'
+import { useRestoreWorkout, useSessionDetail } from './hooks'
 import { formatDate } from '@/lib/format-date'
 
 /**
@@ -48,6 +50,39 @@ export function SessionPage() {
   const detail = useSessionDetail(asWorkoutId(id))
   const exercises = useExercises()
   const { settings } = useSettings()
+  const services = useServices()
+  const navigate = useNavigate()
+  const restore = useRestoreWorkout()
+  /*
+   * **A delete can be taken back for five seconds.** The record is put back as
+   * it was (`restoreWorkout`), newer than the deletion it undoes. The page holds
+   * its ground for those seconds, since what it was about is gone, and goes to
+   * the history when the offer ends.
+   */
+  const [deleted, setDeleted] = useState<
+    { readonly workout: WorkoutLog; readonly stamp: number } | undefined
+  >(undefined)
+  const toHistory = useCallback(() => {
+    void navigate('/history', { replace: true })
+  }, [navigate])
+
+  if (deleted !== undefined) {
+    return (
+      <>
+        <PageHeader title={splitDayLabel(deleted.workout.title).name} />
+        <p className="text-ink-300 text-sm">Deleted.</p>
+        <UndoToast
+          label="Session deleted"
+          stamp={deleted.stamp}
+          onDone={toHistory}
+          onUndo={() => {
+            restore.mutate(deleted.workout)
+            setDeleted(undefined)
+          }}
+        />
+      </>
+    )
+  }
 
   if (detail.data === undefined) {
     return <PageSkeleton title="Session" />
@@ -148,6 +183,15 @@ export function SessionPage() {
 
       {workout.status !== 'in-progress' && (
         <KeepSession key={`keep-${workout.id}`} workout={workout} />
+      )}
+
+      {workout.status !== 'in-progress' && (
+        <SessionFoot
+          workout={workout}
+          onDeleted={(gone) => {
+            setDeleted({ workout: gone, stamp: services.clock.now().getTime() })
+          }}
+        />
       )}
     </div>
   )

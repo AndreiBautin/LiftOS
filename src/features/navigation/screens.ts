@@ -7,6 +7,7 @@ import {
   GitCompareArrows,
   Gift,
   Grid3x3,
+  History,
   Home,
   Layers,
   Settings,
@@ -101,6 +102,15 @@ export const SCREENS: readonly Screen[] = [
     icon: Layers,
     keywords: 'block deload cycle',
     to: '/block',
+  },
+  {
+    id: 'history',
+    label: 'History',
+    blurb: 'Every session, on one line',
+    group: 'Look back',
+    icon: History,
+    keywords: 'sessions log search past',
+    to: '/history',
   },
   {
     id: 'month',

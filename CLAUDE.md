@@ -60,7 +60,7 @@ surfaces it removed were moved verbatim to [docs/HISTORY.md](docs/HISTORY.md).
   questions.** `StrengthModule` is one lift at a time, line into cone, with the
   standard, the first month's top set and the goal (`LiftGoal`) under it.
   `ShowingUpModule` is the grid and sentences. `BodyModule` is the map and the
-  balance. `RecentModule` opens the whole `TrainingHistory` on a press. **Keep the
+  balance. `RecentModule` links to the history. **Keep the
   shapes different**: a line, a calendar, a body. Sixteen of one recipe is what
   this replaced.
 - **What went on purpose, and may be asked about:** the week radar, last week's
@@ -73,9 +73,27 @@ surfaces it removed were moved verbatim to [docs/HISTORY.md](docs/HISTORY.md).
 - **Checked on an emptied demo**: every module says one sentence with nothing to
   count, and the week strip draws no missed days before the first session is ever
   filed (`adherence` alone would have marked them).
-- **Not done in this pass**: History's list, the exercise and muscle pages, the
-  look-back pages and Settings only picked up the flat look; they were not
-  restructured, and about fifty colour literals remain in components.
+- **History is one line through time** (`/history`, `HistoryPage`): each session its
+  crest, cut into months, with a break said where one happened
+  (`historyTimeline`, tested). It replaced a list, a wall of crests and a toggle
+  between them. **One field, no chips**: `filterHistory` takes the words, and
+  "records" means sessions that set one. The search is in the address, so Back
+  from a session lands on the same results. **A screen rather than part of
+  Today**, because a list you dip into has to survive Back; expanded in place it
+  collapsed on every return. Breaks are not claimed between search results, where
+  every skipped session would read as time off.
+- **Nothing on the history deletes.** Delete and reopen are at the foot of the
+  session's page (`SessionFoot`), confirmed in a sheet, for acts done a few times
+  a year that sat a thumb from a link on every row. The undo belongs to the page,
+  because the foot goes with the session; when the offer ends it goes to the history.
+- **A page about one thing opens on its figure and its chart** (`DetailHero`, on the
+  exercise and muscle pages), then what it offers (stall, step), then `Module`s to
+  scroll: sessions, sets by week, rep maxes, notes, and the cue last, because a form
+  field was the first thing the exercise page said. Checked by driving a delete, its
+  undo and a delete left to run, on the demo.
+- **Not done in this pass**: the look-back pages, Settings and the session report only
+  picked up the flat look; they were not restructured, and about fifty colour literals
+  remain in components.
 
 **There is no gamification, and the history of it lives in
 [docs/HISTORY.md](docs/HISTORY.md).** Two cuts, asked for in turn:
@@ -186,11 +204,10 @@ standards.ts`): the estimated max, its multiple of bodyweight, and the
   honest quantity underneath.
 - **One page, no navigation.** Asked for as _"lets just condense this
   into one page without a navbar"_. `HomePage` is the session player
-  while a workout is open and the whole app otherwise; Program and
-  Settings are links from it and `PageHeader` gives both a Back link.
-  `/train`, `/history` and every removed path redirect to `/today`,
-  because a PWA shortcut outlives the screen it named. The history list
-  shows the newest eight and folds the rest.
+  while a workout is open and the whole app otherwise; Program,
+  History and Settings are links from it and `PageHeader` gives each a Back
+  link. `/train` and every removed path redirect to `/today`, because a PWA
+  shortcut outlives the screen it named.
 - **Settings has a health check** ("Health check" under Your data,
   `DataHealth`; `dataHealth` in `domain/logging/health.ts`, tested):
   sessions, working sets, abandoned and the first and last day, then
@@ -410,14 +427,6 @@ wall-card.ts`, `drawYearCard` in `year-card.ts`): the wall's tiles,
   app measures no readiness and the bar claims none. Only on a rest day:
   on a training day the session is the news, and a rest day's hero had
   nothing to say but "Rest day". Warm-ups and conditioning are left out.
-- **History can be read as a wall of crests** (List / Crests on the
-  history card, `CrestWall`): every session's crest a month at a time,
-  each opening its session, abandoned ones faded. Search and the day
-  chips filter the wall as they do the list; the list's fold of eight
-  does not apply, because crests are small. **Drawn still** (`still` on
-  `SessionCrest`) — eighty crests drawing in at once was noise; one
-  crest on a session page still draws itself. The view is not
-  remembered: it is a way of looking, opened on purpose.
 - **A deload can be skipped from the hero** ("Skip the deload" beside
   the week's name, asked for as _"I'm not feeling the need for a deload —
   can you skip this one"_): the same `jumpToWeek` the Program page's
@@ -640,7 +649,7 @@ SessionPage.tsx`, from `sessionDetail`). History rows could be deleted
   link rather than downloading it: 15 events from a Saturday, the first on
   Monday at 18:00.
 - **A deleted session can be taken back for five seconds** (the player's
-  `UndoToast` on the history list; `restoreWorkout` beside
+  `UndoToast` on the session's own page; `restoreWorkout` beside
   `deleteWorkout`, tested). The delete returns the record it removed, and
   Undo **saves** it again — stamped now, so newer than the tombstone its
   deletion wrote, which by `shouldAccept` no longer covers it: the
@@ -1006,16 +1015,6 @@ superset.ts`, tested; `pairSuperset` / `unpairSuperset`, two names for
   Logging moved out of the row's inline callback, and its rest start now
   reads the clock port: the purity lint refuses `Date.now()` in a
   function declared in render.
-- **History searches and filters** (`domain/logging/history-filter.ts`,
-  tested): a search matches the day, an exercise **actually done** (a
-  skipped slot is not something the session had), or a note, every word
-  narrowing; chips for the days the history holds and for sessions with
-  records. **The fold steps aside while any filter is on** — folding
-  matches behind "Show all" would be the list arguing with its own box —
-  and the header reads "11 of 81". The search has a row of its own.
-  Updates are functional (`onChange(current => …)`): two taps landing
-  in one tick otherwise wrote from the same stale filter, the second
-  undoing the first.
 - **Notes, on a set and on a session.** The set editor has one line
   under the steppers; the row shows it after "Logged", and **next
   session shows it beside "Last"** on the same set (`previousSetFor`
@@ -1230,9 +1229,6 @@ exercise-history.ts`), linked from its name in the session plan and
   it raw would split one exercise across meaningless series. Heavy and
   Light (`DAY_VERSIONS`) are kept apart because they progress apart;
   everything else is one series.
-- **The date and name of a history row are the link**, not the whole
-  row: reopen and delete are buttons, and a button inside an anchor is
-  invalid markup that swallows the tap.
 - **The Program strip ticks off the week.** `weekSummary.doneTitles`
   names the sessions finished this calendar week, and a chip whose day
   label is among them gets a check. **By title, not by weekday** — Monday's

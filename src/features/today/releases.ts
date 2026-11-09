@@ -1,6 +1,13 @@
 /** Release notes, newest first; `WhatsNew` shows the first once. */
 export const RELEASES: readonly { readonly id: string; readonly items: readonly string[] }[] = [
   {
+    id: '2026-11-08b',
+    items: [
+      'History is now its own page: every session on one line, each one its crest, with one search that finds a day, a lift, a note or records.',
+      'Exercise and muscle pages open on the figure and the chart. To delete or reopen a session, open it and look at the foot of the page.',
+    ],
+  },
+  {
     id: '2026-11-08',
     items: [
       'A new look. Today opens on the session with today’s bars and Start under your thumb, and below it the sixteen cards are now Strength, Showing up, Body and Recent.',

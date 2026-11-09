@@ -1,15 +1,12 @@
 import { Star } from 'lucide-react'
-import { Suspense, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { Module } from '@/components/shared/Module'
-import { Skeleton } from '@/components/shared/Skeleton'
 import { sessionRecords } from '@/domain/logging/records'
 import { parseDay } from '@/domain/time/day'
 import { useRecentWorkouts } from '@/features/train/hooks'
 import { splitDayLabel } from '@/features/train/useNextSession'
 import { formatDate } from '@/lib/format-date'
-import { lazyNamed } from '@/lib/lazy-named'
 
 /** Enough of the past to say "All 62 sessions" and to read each one's records. */
 const WINDOW = 2000
@@ -17,12 +14,11 @@ const SHOWN = 3
 
 /**
  * The last few sessions, a line each. **The whole history is a press away**,
- * with its search, its filters and its crests, because looking something up is
- * the exception: most days the question is only what the last session was.
+ * because looking something up is the exception: most days the question is only
+ * what the last session was.
  */
 export function RecentModule() {
   const workouts = useRecentWorkouts(WINDOW)
-  const [all, setAll] = useState(false)
 
   if (workouts.data === undefined) return null
   const sessions = workouts.data.filter((log) => log.status !== 'in-progress')
@@ -30,13 +26,7 @@ export function RecentModule() {
 
   return (
     <Module title="Recent">
-      {all ? (
-        <div className="mt-2">
-          <Suspense fallback={<Skeleton className="h-48" />}>
-            <TrainingHistory />
-          </Suspense>
-        </div>
-      ) : sessions.length === 0 ? (
+      {sessions.length === 0 ? (
         <p className="text-ink-500 mt-1 text-sm">Finished sessions are kept here.</p>
       ) : (
         <>
@@ -75,19 +65,15 @@ export function RecentModule() {
               )
             })}
           </ul>
-          <button
-            type="button"
-            onClick={() => {
-              setAll(true)
-            }}
-            className="text-accent-400 tap-target mt-1 text-sm font-medium"
+          <Link
+            viewTransition
+            to="/history"
+            className="text-accent-400 tap-target mt-1 inline-flex items-center text-sm font-medium"
           >
             All {sessions.length} sessions
-          </button>
+          </Link>
         </>
       )}
     </Module>
   )
 }
-
-const TrainingHistory = lazyNamed(() => import('./TrainingHistory'), 'TrainingHistory')

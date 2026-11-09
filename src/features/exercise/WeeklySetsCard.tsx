@@ -1,9 +1,7 @@
-import { BarChart2 } from 'lucide-react'
-
 import { useServices, useSettings } from '@/app/context'
 import { setsByWeek, type ExerciseSession } from '@/domain/logging/exercise-history'
 import { toDayKey } from '@/domain/time/day'
-import { Card, CardHeading } from '@/components/shared/primitives'
+import { Module } from '@/components/shared/Module'
 import { cn } from '@/lib/cn'
 
 const WEEKS = 12
@@ -24,9 +22,8 @@ export function WeeklySetsCard({ sessions }: { readonly sessions: readonly Exerc
   const trained = weeks.filter((week) => week.sets > 0).length
 
   return (
-    <Card>
-      <CardHeading icon={<BarChart2 size={16} aria-hidden />} title="Sets by week" />
-      <p className="text-ink-300 numeric mb-3 text-sm">
+    <Module title="Sets by week">
+      <p className="text-ink-300 numeric mt-1 mb-3 text-sm">
         <span className="text-ink-50 font-semibold">{total}</span> sets in{' '}
         <span className="text-ink-50 font-semibold">{trained}</span> of the last {WEEKS} weeks
       </p>
@@ -60,6 +57,6 @@ export function WeeklySetsCard({ sessions }: { readonly sessions: readonly Exerc
         <span>{WEEKS} weeks ago</span>
         <span>This week</span>
       </div>
-    </Card>
+    </Module>
   )
 }

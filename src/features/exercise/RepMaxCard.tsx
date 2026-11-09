@@ -1,10 +1,8 @@
-import { Gauge } from 'lucide-react'
-
 import { useSettings } from '@/app/context'
 import type { ExerciseSeries } from '@/domain/logging/exercise-history'
 import { repMaxTable } from '@/domain/strength/rep-max'
 import { formatLoad } from '@/domain/units/weight'
-import { Card, CardHeading } from '@/components/shared/primitives'
+import { Module } from '@/components/shared/Module'
 import { cn } from '@/lib/cn'
 
 /**
@@ -30,9 +28,8 @@ export function RepMaxCard({
   const scale = Math.max(estimate, ...rows.map((row) => row.actual ?? 0))
 
   return (
-    <Card>
-      <CardHeading icon={<Gauge size={16} aria-hidden />} title="Rep maxes" />
-      <ul className="space-y-2.5">
+    <Module title="Rep maxes">
+      <ul className="mt-2 space-y-2.5">
         {rows.map((row) => {
           const reached = row.actual !== undefined && row.actual >= row.predicted
           return (
@@ -73,6 +70,6 @@ export function RepMaxCard({
         Dashed: what the estimate predicts. Solid: the heaviest done for that many reps, gold where
         it reaches the prediction.
       </p>
-    </Card>
+    </Module>
   )
 }
