@@ -1,11 +1,10 @@
-import { NotebookPen } from 'lucide-react'
 import { appendDictation } from '@/features/dictation/dictation'
 import { DictateButton } from '@/features/dictation/DictateButton'
 import { useId, useState } from 'react'
 
 import type { WorkoutId } from '@/domain/ids/ids'
 import { NOTE_LIMIT } from '@/application/use-cases/training/note-workout'
-import { Card } from '@/components/shared/primitives'
+import { Module } from '@/components/shared/Module'
 
 import { useNoteWorkout } from './hooks'
 
@@ -28,18 +27,16 @@ export function SessionNote({
   const id = useId()
 
   return (
-    <Card>
-      <label
-        htmlFor={id}
-        className="text-ink-500 mb-2 flex items-center justify-between gap-2 text-sm"
-      >
-        <span className="flex items-center gap-2">
-          <NotebookPen size={16} aria-hidden />
-          Session note
-        </span>
-        <span className="text-ink-500 text-xs" aria-live="polite">
+    <Module
+      title="Session note"
+      action={
+        <span className="text-ink-500" aria-live="polite">
           {note.isPending ? 'Saving…' : text.trim() === saved.trim() && saved !== '' ? 'Saved' : ''}
         </span>
+      }
+    >
+      <label htmlFor={id} className="sr-only">
+        A note about this session
       </label>
       <div className="flex items-start gap-2">
         <textarea
@@ -81,6 +78,6 @@ export function SessionNote({
           }}
         />
       </div>
-    </Card>
+    </Module>
   )
 }

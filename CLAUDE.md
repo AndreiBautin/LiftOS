@@ -91,7 +91,13 @@ surfaces it removed were moved verbatim to [docs/HISTORY.md](docs/HISTORY.md).
   scroll: sessions, sets by week, rep maxes, notes, and the cue last, because a form
   field was the first thing the exercise page said. Checked by driving a delete, its
   undo and a delete left to run, on the demo.
-- **Not done in this pass**: the look-back pages, Settings and the session report only
+- **The report's first screen is the verdict** (`SessionReport`): the crest, what the
+  session moved, the records and `Debrief`'s three lines, with Done docked under the
+  thumb. How each lift did and the note are a scroll down; the sets by muscle and the
+  timing are folded in a `details`, for looking something up. A verdict is words in
+  quiet ink and never red, the rule the set rows hold. `SessionStats` stays on the
+  session's own page. The session bar now morphs into the title row, not a panel.
+- **Not done in this pass**: the look-back pages and Settings only
   picked up the flat look; they were not restructured, and about fifty colour literals
   remain in components.
 

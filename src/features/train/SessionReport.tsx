@@ -1,42 +1,36 @@
 import type { CSSProperties } from 'react'
-import {
-  ArrowDown,
-  ArrowUp,
-  BarChart3,
-  Feather,
-  Minus,
-  Sparkles,
-  Star,
-  TrendingUp,
-} from 'lucide-react'
+import { ArrowDown, ArrowUp, ChevronDown, Feather, Minus } from 'lucide-react'
 
 import { SessionNote } from '@/features/history/SessionNote'
 import { ShareSession } from '@/features/share/ShareSession'
 import { shareCardFrom } from '@/features/share/card-from'
 import type { WorkoutReport } from '@/application/use-cases/training/finish-workout'
 import { MUSCLE_GROUP_LABELS } from '@/domain/exercises/taxonomy'
+import { describeHeft, heftOf } from '@/domain/units/heft'
 import { formatLoad, type WeightUnit } from '@/domain/units/weight'
-import { Badge, Button, Card, CardHeading } from '@/components/shared/primitives'
+import { Module } from '@/components/shared/Module'
+import { Button } from '@/components/shared/primitives'
 import { useSettings } from '@/app/context'
 
 import { RecordChip } from './RecordChip'
-import { SessionStats } from './SessionStats'
 import { SessionTimeline } from './SessionTimeline'
 import { Debrief } from './Debrief'
 import { useExercises, useRecentWorkouts } from './hooks'
+import { useCountUp } from './useCountUp'
+import { splitDayLabel } from './useNextSession'
 import { sessionCrest } from '@/domain/logging/crest'
 import { SessionCrest } from '@/features/history/SessionCrest'
 
 /**
  * What happened, immediately after finishing.
  *
- * StrengthFlow's post-workout report was the single best thing either old
- * app said to a lifter, and it is kept — though it arrived through an
- * `alert()` containing a string of newline-joined sentences. What is
- * added is the volume this session actually contributed per muscle,
- * counted by the same rules the planner used, because that is the number
- * the check-in loop is reasoning about and a lifter should be able to see
- * it.
+ * **The first screen is the verdict, and Done is under the thumb.** The crest,
+ * what the session moved, the records, and three plain lines on what it means
+ * for next time. It was a panel and four cards, every one the same weight, so
+ * the records sat under a stat strip and the part a coach would say on the way
+ * out was mid-paragraph. Reading on is the exception: how each lift did, the
+ * note, and then the sets by muscle and the timing, folded, because they are
+ * for looking something up rather than for the moment.
  */
 
 interface Props {
@@ -84,7 +78,7 @@ function ApplyEstimates({ progress }: { readonly progress: WorkoutReport['progre
 
   return (
     <div className="border-ink-800 mt-3 border-t pt-3">
-      <p className="text-ink-500 mb-2 text-xs">
+      <p className="text-ink-500 mb-2 text-[0.8125rem]">
         {worth.length === 1 ? 'This reading differs' : 'These readings differ'} from what your
         suggested loads are based on. Nothing changes unless you say so.
       </p>
@@ -94,7 +88,7 @@ function ApplyEstimates({ progress }: { readonly progress: WorkoutReport['progre
           const stored = settings.estimatedMaxes[entry.exerciseId]
 
           return (
-            <li key={entry.exerciseId} className="flex justify-between gap-3 text-xs">
+            <li key={entry.exerciseId} className="flex justify-between gap-3 text-sm">
               <span className="text-ink-300 truncate">{entry.name}</span>
               <span className="text-ink-500 numeric shrink-0">
                 {stored === undefined ? 'not set' : formatLoad(stored, settings.units)} →{' '}
@@ -109,7 +103,6 @@ function ApplyEstimates({ progress }: { readonly progress: WorkoutReport['progre
 
       <Button
         variant="outline"
-        size="sm"
         full
         onClick={() => {
           update({
@@ -130,13 +123,6 @@ function ApplyEstimates({ progress }: { readonly progress: WorkoutReport['progre
   )
 }
 
-/*
- * **The report opens the way the home page does: on a hero.** The end of
- * a session is the one moment worth marking, and it read as a settings
- * pane — a bare heading, three loose stat boxes and two sections under lit
- * rules. The hero carries the headline and the numbers; what follows is
- * cards, the same as everywhere else in the app.
- */
 export function SessionReport({ report, units, onDismiss }: Props) {
   const exercises = useExercises()
   const history = useRecentWorkouts(500)
@@ -144,19 +130,17 @@ export function SessionReport({ report, units, onDismiss }: Props) {
     report.workout,
     new Set(report.records.map((record) => record.exerciseId)),
   )
+  /* A session on the body alone moved no load, so its figure is its sets. */
+  const loaded = report.tonnage > 0
+  const total = loaded ? Math.round(report.tonnage) : report.workingSets
+  const shown = Math.round(useCountUp(total))
+  const heft = heftOf(report.tonnage, units)
+
   return (
-    <div className="mx-auto max-w-2xl space-y-4 pb-8">
-      <section
-        className="hero-panel p-5 sm:p-6"
-        aria-labelledby="report-title"
-        // The session bar grows into this on finish; see `HomePage`.
-        style={{ viewTransitionName: 'session-hero' }}
-      >
+    <div className="mx-auto max-w-2xl pb-8">
+      <section className="first-screen flex flex-col" aria-labelledby="report-title">
         <div className="flex items-center justify-between gap-3">
-          <p className="text-accent-400 flex items-center gap-1.5 text-xs font-semibold tracking-[0.14em] uppercase">
-            <Sparkles size={14} aria-hidden />
-            Session complete
-          </p>
+          <p className="text-ink-500 text-sm">Session complete</p>
           <ShareSession
             card={shareCardFrom({
               title: report.workout.title,
@@ -170,58 +154,57 @@ export function SessionReport({ report, units, onDismiss }: Props) {
             })}
           />
         </div>
-        <div className="mt-2 flex items-center justify-between gap-4">
-          <h1
-            id="report-title"
-            className="text-ink-50 min-w-0 text-3xl font-semibold tracking-tight sm:text-4xl"
-          >
-            {report.workout.title}
+
+        <div
+          className="mt-2 flex items-center justify-between gap-4"
+          // The session bar grows into this on finish; see `HomePage`.
+          style={{ viewTransitionName: 'session-hero' }}
+        >
+          <h1 id="report-title" className="min-w-0 text-[3.5rem] leading-none font-bold">
+            {splitDayLabel(report.workout.title).name}
           </h1>
           <SessionCrest
             crest={crest}
             library={exercises.data ?? []}
-            className="report-crest size-20 shrink-0 sm:size-24"
+            className="report-crest size-20 shrink-0"
           />
         </div>
-        <p className="text-ink-300 mt-2 text-sm">{report.headline}</p>
+        <p className="text-ink-300 mt-2 text-[0.9375rem]">{report.headline}</p>
 
-        <SessionStats
-          sets={report.workingSets}
-          tonnage={report.tonnage}
-          minutes={report.durationMinutes}
-          units={units}
-        />
-        {history.data !== undefined && (
-          <Debrief
-            workout={report.workout}
-            history={history.data}
-            library={exercises.data ?? []}
-            units={units}
-          />
-        )}
-      </section>
+        <p className="font-display mt-4 flex flex-wrap items-baseline gap-x-2 leading-none">
+          <span aria-hidden className="text-[4rem] leading-[1.05] font-bold tracking-[-0.03em]">
+            {shown.toLocaleString()}
+          </span>
+          <span className="sr-only">{total.toLocaleString()}</span>
+          <span className="text-ink-500 text-lg">{loaded ? `${units} moved` : 'sets'}</span>
+        </p>
+        <p className="numeric text-ink-500 mt-1 text-sm">
+          {loaded && (
+            <>
+              <span className="text-ink-100">{report.workingSets}</span>{' '}
+              {report.workingSets === 1 ? 'set' : 'sets'}
+            </>
+          )}
+          {report.durationMinutes > 0 && (
+            <>
+              {loaded && ' · '}
+              <span className="text-ink-100">{report.durationMinutes}</span> min
+            </>
+          )}
+          {heft !== undefined && <span className="heft-line"> · about {describeHeft(heft)}</span>}
+        </p>
 
-      {/*
-        Records lead the cards: better than every time before is the
-        headline a session can have, and it is rare enough to say first.
-      */}
-      {report.records.length > 0 && (
-        <Card className="records-card">
-          <CardHeading
-            icon={<Star size={16} aria-hidden />}
-            title="New records"
-            figure={report.records.length}
-          />
-          <ul className="space-y-2.5">
+        {report.records.length > 0 && (
+          <ul className="mt-4 space-y-1.5" aria-label="New records">
             {report.records.map((record, at) => (
               <li
                 key={record.exerciseId}
                 className="record-in flex items-center justify-between gap-3"
                 style={{ '--i': at } as CSSProperties}
               >
-                <span className="min-w-0">
-                  <span className="text-ink-100 block truncate text-sm">{record.name}</span>
-                  <span className="text-ink-500 numeric text-xs">
+                <span className="flex min-w-0 items-baseline gap-2">
+                  <span className="truncate">{record.name}</span>
+                  <span className="numeric text-gold-400 shrink-0 text-sm">
                     {record.set.load === undefined || record.set.load <= 0
                       ? 'BW'
                       : formatLoad(record.set.load, units)}{' '}
@@ -232,19 +215,44 @@ export function SessionReport({ report, units, onDismiss }: Props) {
               </li>
             ))}
           </ul>
-        </Card>
-      )}
+        )}
+
+        {history.data !== undefined && (
+          <Debrief
+            workout={report.workout}
+            history={history.data}
+            library={exercises.data ?? []}
+            units={units}
+          />
+        )}
+
+        <div
+          className="bg-ink-950 sticky bottom-0 z-10 -mx-4 mt-auto px-4 pt-3 sm:mx-0 sm:px-0"
+          style={{ paddingBottom: 'calc(0.75rem + var(--safe-bottom))' }}
+        >
+          <Button
+            variant="primary"
+            full
+            className="font-display h-[4.5rem] rounded-[1.25rem] text-[1.375rem]"
+            onClick={onDismiss}
+          >
+            Done
+          </Button>
+        </div>
+      </section>
 
       {report.progress.length > 0 && (
-        <Card>
-          <CardHeading icon={<TrendingUp size={16} aria-hidden />} title="Against last time" />
-          <ul className="space-y-2.5">
+        <Module title="Against last time">
+          <ul className="divide-ink-800 mt-1 divide-y">
             {report.progress.map((entry) => (
-              <li key={entry.exerciseId} className="flex items-center justify-between gap-3">
-                <span className="text-ink-100 truncate text-sm">{entry.name}</span>
-                <span className="flex shrink-0 items-center gap-2">
+              <li
+                key={entry.exerciseId}
+                className="flex min-h-11 items-center justify-between gap-3 py-1"
+              >
+                <span className="truncate text-[0.9375rem]">{entry.name}</span>
+                <span className="flex shrink-0 items-center gap-3">
                   {entry.estimate !== undefined && (
-                    <span className="text-ink-500 numeric text-xs">
+                    <span className="text-ink-500 numeric text-[0.8125rem]">
                       e1RM {formatLoad(Math.round(entry.estimate.value), units)}
                       {!entry.estimate.isReliable && '*'}
                       {entry.estimate.reserve > 0 && '\u2020'}
@@ -255,90 +263,99 @@ export function SessionReport({ report, units, onDismiss }: Props) {
               </li>
             ))}
           </ul>
-          {report.progress.some((entry) => entry.estimate?.isReliable === false) && (
-            <p className="text-ink-500 mt-3 text-xs">
-              * Estimated from a high-rep set, where the formulas lose accuracy.
-            </p>
-          )}
-          {report.progress.some((entry) => (entry.estimate?.reserve ?? 0) > 0) && (
-            <p className="text-ink-500 mt-3 text-xs">
-              {'\u2020'} Read with reps in reserve: a set repeated across straight sets was not a
-              limit set, so each extra set counts as one more rep, up to three.
-            </p>
-          )}
-
-          {report.progress.some((entry) => entry.verdict === 'lighter') && (
-            <p className="text-ink-500 mt-3 text-xs">
-              A deload drops the bar on purpose, so lighter than last time is the plan. The week
-              after picks up from the bars before it.
-            </p>
-          )}
+          <div className="text-ink-500 mt-2 space-y-1.5 text-[0.8125rem]">
+            {report.progress.some((entry) => entry.estimate?.isReliable === false) && (
+              <p>* Estimated from a high-rep set, where the formulas lose accuracy.</p>
+            )}
+            {report.progress.some((entry) => (entry.estimate?.reserve ?? 0) > 0) && (
+              <p>
+                {'\u2020'} Read with reps in reserve: a set repeated across straight sets was not a
+                limit set, so each extra set counts as one more rep, up to three.
+              </p>
+            )}
+            {report.progress.some((entry) => entry.verdict === 'lighter') && (
+              <p>
+                A deload drops the bar on purpose, so lighter than last time is the plan. The week
+                after picks up from the bars before it.
+              </p>
+            )}
+          </div>
 
           <ApplyEstimates progress={report.progress} />
-        </Card>
+        </Module>
       )}
-
-      {report.volumeByMuscle.length > 0 && (
-        <Card>
-          <CardHeading icon={<BarChart3 size={16} aria-hidden />} title="Sets by muscle" />
-          <ul className="grid grid-cols-2 gap-x-6 gap-y-1.5">
-            {report.volumeByMuscle.map(({ muscle, sets }) => (
-              <li key={muscle} className="flex justify-between text-sm">
-                <span className="text-ink-300">{MUSCLE_GROUP_LABELS[muscle]}</span>
-                <span className="numeric text-ink-100 font-medium">{sets}</span>
-              </li>
-            ))}
-          </ul>
-          <p className="text-ink-500 mt-3 text-xs">
-            Counted whole, and only for the muscle each exercise is programmed for.
-          </p>
-        </Card>
-      )}
-
-      <TimelineCard workout={report.workout} />
 
       <SessionNote workoutId={report.workout.id} initial={report.workout.notes} />
 
-      <Button variant="primary" size="lg" full onClick={onDismiss}>
-        Done
-      </Button>
+      <details className="border-ink-800 group border-t">
+        <summary className="text-ink-500 flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium [&::-webkit-details-marker]:hidden">
+          Sets by muscle and timing
+          <ChevronDown
+            size={16}
+            className="transition-transform group-open:rotate-180"
+            aria-hidden
+          />
+        </summary>
+        <div className="space-y-4 pb-2">
+          {report.volumeByMuscle.length > 0 && (
+            <div>
+              <ul className="grid grid-cols-2 gap-x-6 gap-y-1.5">
+                {report.volumeByMuscle.map(({ muscle, sets }) => (
+                  <li key={muscle} className="flex justify-between text-sm">
+                    <span className="text-ink-300">{MUSCLE_GROUP_LABELS[muscle]}</span>
+                    <span className="numeric text-ink-100 font-medium">{sets}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="text-ink-500 mt-2 text-[0.8125rem]">
+                Counted whole, and only for the muscle each exercise is programmed for.
+              </p>
+            </div>
+          )}
+          <TimelineCard workout={report.workout} />
+        </div>
+      </details>
     </div>
   )
 }
 
+/*
+ * Words in quiet ink, and never red: a set that came in under is information,
+ * the rule every other screen holds. Only "up" spends the accent.
+ */
 function Verdict({ verdict }: { readonly verdict: WorkoutReport['progress'][number]['verdict'] }) {
+  const quiet = 'flex w-16 items-center justify-end gap-1 text-[0.8125rem]'
   switch (verdict) {
     case 'better':
       return (
-        <Badge tone="good">
-          <ArrowUp size={12} aria-hidden className="mr-0.5" />
-          up
-        </Badge>
+        <span className={`${quiet} text-accent-400 font-semibold`}>
+          <ArrowUp size={12} aria-hidden />
+          Up
+        </span>
       )
     case 'worse':
       return (
-        <Badge tone="bad">
-          <ArrowDown size={12} aria-hidden className="mr-0.5" />
-          down
-        </Badge>
+        <span className={`${quiet} text-ink-300`}>
+          <ArrowDown size={12} aria-hidden />
+          Down
+        </span>
       )
     case 'lighter':
-      // The deload's violet, never the bad colour: this is the plan.
       return (
-        <Badge className="bg-[oklch(0.62_0.13_285_/_0.12)] text-[oklch(0.78_0.11_285)] ring-1 ring-[oklch(0.62_0.13_285_/_0.3)]">
-          <Feather size={12} aria-hidden className="mr-0.5" />
-          deload
-        </Badge>
+        <span className={`${quiet} text-cool-500`}>
+          <Feather size={12} aria-hidden />
+          Deload
+        </span>
       )
     case 'matched':
       return (
-        <Badge>
-          <Minus size={12} aria-hidden className="mr-0.5" />
-          held
-        </Badge>
+        <span className={`${quiet} text-ink-500`}>
+          <Minus size={12} aria-hidden />
+          Held
+        </span>
       )
     case 'new':
-      return <Badge tone="accent">first time</Badge>
+      return <span className={`${quiet} text-ink-300`}>First</span>
   }
 }
 

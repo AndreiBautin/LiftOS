@@ -1,4 +1,3 @@
-import { ArrowRight, ArrowUpRight, Equal } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 import type { Exercise } from '@/domain/exercises/exercise'
@@ -13,9 +12,9 @@ const NAMED = 3
 /**
  * Three plain lines under a finished session (`debrief`): what moved past
  * last time, what held or came in under, and what the bar does next time.
- * **Sentences, not a chart** — the report's cards above already draw; this
- * is the part a coach would say on the way out. A line with nothing to
- * say is left out, and the whole block when all three are.
+ * **Sentences, not a chart**: this is the part a coach would say on the way
+ * out. A line with nothing to say is left out, and the whole block when all
+ * three are.
  */
 export function Debrief({
   workout,
@@ -78,23 +77,19 @@ export function Debrief({
   if (moved === '' && held === '' && next === '') return null
 
   return (
-    <ul className="border-ink-800 mt-5 space-y-2 border-t pt-4 text-sm">
+    <ul className="border-ink-800 mt-4 space-y-2 border-t pt-3 text-sm">
       {moved !== '' && (
-        <Line icon={<ArrowUpRight size={14} aria-hidden />} tone="text-accent-400" lead="Moved">
+        <Line tone="text-accent-400" lead="Moved">
           {moved}.
         </Line>
       )}
       {held !== '' && (
-        <Line icon={<Equal size={14} aria-hidden />} tone="text-ink-500" lead="Held">
-          {held} — against last time.
+        <Line tone="text-ink-500" lead="Held">
+          {held}.
         </Line>
       )}
       {next !== '' && (
-        <Line
-          icon={<ArrowRight size={14} aria-hidden />}
-          tone="text-[oklch(0.78_0.11_285)]"
-          lead="Next time"
-        >
+        <Line tone="text-ink-50" lead="Next time">
           {next}.
         </Line>
       )}
@@ -103,22 +98,17 @@ export function Debrief({
 }
 
 function Line({
-  icon,
   tone,
   lead,
   children,
 }: {
-  readonly icon: ReactNode
   readonly tone: string
   readonly lead: string
   readonly children: ReactNode
 }) {
   return (
-    <li className="flex gap-2.5">
-      <span className={`${tone} mt-0.5 shrink-0`}>{icon}</span>
-      <p className="text-ink-300 min-w-0">
-        <span className={`${tone} font-medium`}>{lead}:</span> {children}
-      </p>
+    <li className="text-ink-300">
+      <span className={`${tone} font-medium`}>{lead}:</span> {children}
     </li>
   )
 }

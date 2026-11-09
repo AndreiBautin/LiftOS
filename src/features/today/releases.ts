@@ -1,6 +1,12 @@
 /** Release notes, newest first; `WhatsNew` shows the first once. */
 export const RELEASES: readonly { readonly id: string; readonly items: readonly string[] }[] = [
   {
+    id: '2026-11-08c',
+    items: [
+      'Finishing a session now opens on the verdict: what you moved, your records and what next time holds, with Done under your thumb.',
+    ],
+  },
+  {
     id: '2026-11-08b',
     items: [
       'History is now its own page: every session on one line, each one its crest, with one search that finds a day, a lift, a note or records.',

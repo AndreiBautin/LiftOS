@@ -1099,7 +1099,7 @@ function setPosition(sets: WorkoutLog['entries'][number]['sets'], at: number): s
   const working = sets.filter((set) => !set.isWarmup)
   const set = sets[at]
   if (set === undefined) {
-    return `All ${String(working.length)} ${working.length === 1 ? 'set' : 'sets'} settled`
+    return working.length === 1 ? 'Done' : `All ${String(working.length)} sets done`
   }
   return `Set ${String(working.indexOf(set) + 1)} of ${String(working.length)}`
 }
