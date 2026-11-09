@@ -7,13 +7,9 @@ import { cn } from '@/lib/cn'
 /**
  * The whole session down the side of a wide screen.
  *
- * On a phone the exercises are a strip of pills under the session bar,
- * because there is no room for anything else. On a desktop the player
- * was that same 672-pixel column floating in the middle of the window,
- * so the space it wasted could hold the session itself: every exercise
- * in order, a pip per working set filled as it is logged, the current
- * one lit, each a press away. It replaces the strip there rather than
- * repeating it.
+ * Every exercise in order, a pip per working set filled as it is logged, the
+ * current one lit, each a press away. On a wide screen it holds the side; on a
+ * phone the set has the screen to itself and this opens from the tools.
  */
 export function SessionMap({
   workout,
@@ -21,6 +17,7 @@ export function SessionMap({
   runs,
   nameOf,
   onGo,
+  inSheet = false,
 }: {
   readonly workout: WorkoutLog
   readonly current: number
@@ -28,15 +25,19 @@ export function SessionMap({
   readonly runs: (at: number) => readonly number[] | undefined
   readonly nameOf: (id: WorkoutLog['entries'][number]['exerciseId']) => string
   readonly onGo: (index: number) => void
+  /** In the phone's sheet of exercises, rather than down a wide screen's side. */
+  readonly inSheet?: boolean
 }) {
   return (
     <nav
       aria-label="Session"
-      className="card hidden p-3 lg:sticky lg:top-28 lg:block lg:self-start"
+      className={inSheet ? 'mt-2' : 'card hidden p-3 lg:sticky lg:top-28 lg:block lg:self-start'}
     >
-      <p className="text-ink-500 px-2 pb-2 text-xs font-semibold tracking-[0.12em] uppercase">
-        This session
-      </p>
+      {!inSheet && (
+        <p className="text-ink-500 px-2 pb-2 text-xs font-semibold tracking-[0.12em] uppercase">
+          This session
+        </p>
+      )}
       <ol className="space-y-1">
         {workout.entries.map((entry, index) => {
           const run = runs(index)
@@ -93,13 +94,15 @@ export function SessionMap({
         })}
       </ol>
       {/* The map is the desktop layout, which is where a keyboard is. */}
-      <p className="text-ink-500 mt-3 px-2.5 text-xs">
-        Press{' '}
-        <kbd className="border-ink-700 bg-ink-900 text-ink-300 rounded border px-1.5 font-sans">
-          ?
-        </kbd>{' '}
-        for keys
-      </p>
+      {!inSheet && (
+        <p className="text-ink-500 mt-3 px-2.5 text-xs">
+          Press{' '}
+          <kbd className="border-ink-700 bg-ink-900 text-ink-300 rounded border px-1.5 font-sans">
+            ?
+          </kbd>{' '}
+          for keys
+        </p>
+      )}
     </nav>
   )
 }

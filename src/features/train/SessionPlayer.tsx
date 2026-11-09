@@ -3,25 +3,22 @@ import type { NiggleRegion } from '@/domain/logging/niggles'
 import {
   ArrowLeftRight,
   ArrowUpDown,
-  History,
-  Plus,
-  Link2,
-  Unlink2,
-  Flag,
   Check,
-  TrendingDown,
   CheckCircle2,
-  ChevronLeft,
   ChevronRight,
+  History,
   Lightbulb,
-  Maximize2,
+  Link2,
+  ListOrdered,
+  Plus,
   Timer,
+  TrendingDown,
+  Unlink2,
   XCircle,
 } from 'lucide-react'
+import { BottomSheet } from '@/components/shared/BottomSheet'
 import { SwipePager } from './SwipePager'
 import { SessionTools, type SessionTool } from './SessionTools'
-import { glyphFor } from '@/features/glyphs/glyph-for'
-import { MoveGlyph } from '@/features/glyphs/MoveGlyph'
 import type { Exercise } from '@/domain/exercises/exercise'
 import { useHaptics } from '@/features/feel/haptics'
 import { RollingNumber } from '@/components/shared/RollingNumber'
@@ -39,9 +36,9 @@ import { isStalled, sessionsWithoutProgress } from '@/domain/programs/stall'
 import type { RestPlan } from '@/domain/programs/rest'
 import { describePrescription } from '@/domain/programs/prescription'
 import { DAY_VERSIONS } from '@/domain/splits/rp-splits'
-import { slotRoleLabel, slotRoleTone, slotVariant } from '@/domain/programs/program'
+import { rackFor } from '@/domain/units/plates'
 import { formatLoad, type WeightUnit } from '@/domain/units/weight'
-import { Badge, Button, Card } from '@/components/shared/primitives'
+import { Button, Card } from '@/components/shared/primitives'
 import { useKeepAwake } from '@/shared/hooks/useKeepAwake'
 import { cn } from '@/lib/cn'
 
@@ -61,9 +58,10 @@ import { KeyboardFlow, KeyHelp } from './KeyboardFlow'
 import type { KeyAction } from './keyboard'
 import { canLogPlanned, plannedResult } from './planned'
 import { LadderStrip } from './LadderStrip'
-import { BarSection } from './BarSection'
+import { BarStrip } from './BarStrip'
+import { LoggedLine } from './LoggedLine'
 import { RestTimer } from './RestTimer'
-import { FocusView } from './FocusView'
+import { SetStage } from './SetStage'
 import { ExercisePeek } from './ExercisePeek'
 import { AddExercisePanel } from './AddExercisePanel'
 import { EmomTimer } from './EmomTimer'
@@ -73,8 +71,10 @@ import { primeRestSounds } from './rest-sounds'
 import { SessionMap } from './SessionMap'
 import { SetRow } from './SetRow'
 import { WarmupBlock } from './WarmupBlock'
+import { splitDayLabel } from './useNextSession'
 import { formatTime } from '@/lib/format-date'
 import {
+  barForNext,
   firstIncompleteIndex,
   loadToShow,
   nextStep,
@@ -86,14 +86,18 @@ import {
 } from './player-steps'
 
 /**
- * Working through a session, one exercise at a time.
+ * Working through a session, one set at a time.
  *
- * One exercise fills the screen rather than a scrolling list of all of
- * them. Between sets a lifter is looking for one number, and paging
- * through six exercises to find it — StrengthFlow's design — is worse on
- * a phone than a next/previous pair that keeps the current lift under the
- * thumb. LiftTracker had the paging right and then made logging each set
- * a separate page load.
+ * **The first screen is the set.** One exercise, its next set as large as a
+ * phone allows, and the button that logs it on the floor of the screen under
+ * the thumb. What a set rarely needs is one press away rather than in the way:
+ * the bar and the warm-up in a strip that opens a sheet (`BarStrip`), the
+ * occasional tools behind the ⋯, and every set of the exercise a scroll below.
+ * It replaced a stack that put the bar, the ramp, the ladder and a tempo picker
+ * above the set; on a phone the first row to log sat at 656 of 812 pixels.
+ *
+ * **Everything that edits opens a sheet**, because the page under the dock is
+ * off screen: an editor or a swap opened in place would open out of sight.
  */
 
 interface Props {
@@ -107,6 +111,9 @@ interface Props {
   readonly onAbandon: () => void
 }
 
+/** A sheet of the player's occasional tools; one at a time. */
+type Sheet = 'add' | 'reorder' | 'swap' | 'clock' | 'exercises' | 'abandon'
+
 export function SessionPlayer({
   workout,
   exercises,
@@ -117,29 +124,24 @@ export function SessionPlayer({
   onAbandon,
 }: Props) {
   const [index, setIndex] = useState(() => runStart(workout, firstIncompleteIndex(workout)))
-  /*
-   * **The first pending set slides once, until a swipe has been used.**
-   * A gesture nothing shows is a gesture nobody finds; one that shows
-   * itself every set forever is noise. It stops for good the first time
-   * a set is swiped (`settings.swipeLearned`).
-   */
-  const { settings: playerSettings, update: updateSettings } = useSettings()
+  const { settings: playerSettings } = useSettings()
   const haptic = useHaptics()
-  const swipeLearned = playerSettings.swipeLearned === true
-  const learnSwipe = () => {
-    if (!swipeLearned) updateSettings({ swipeLearned: true })
-  }
   const [openSet, setOpenSet] = useState<number | undefined>(undefined)
   const [rest, setRest] = useState<
-    { readonly startedAt: number; readonly plan: RestPlan } | undefined
+    | {
+        readonly startedAt: number
+        readonly plan: RestPlan
+        readonly logged: {
+          readonly exerciseId: ExerciseId
+          readonly setIndex: number
+          readonly variant: string | undefined
+          readonly load: number | undefined
+          readonly reps: number | undefined
+        }
+      }
+    | undefined
   >(undefined)
-  const [confirmingAbandon, setConfirmingAbandon] = useState(false)
   const [showKeys, setShowKeys] = useState(false)
-  /** The one-set, full-screen view; see `FocusView`. Not remembered across sessions. */
-  const [focus, setFocus] = useState(false)
-  const closeFocus = useCallback(() => {
-    setFocus(false)
-  }, [])
   /** The last one-tap log or skip, offered back for a few seconds. */
   const [undo, setUndo] = useState<
     | {
@@ -158,33 +160,20 @@ export function SessionPlayer({
   const { clock } = useServices()
   const swap = useSwapExercise(workout.id)
   const superset = useSuperset(workout.id)
-  /* Open per exercise: paging on closes it rather than offering the next one's. */
-  const [swappingAt, setSwappingAt] = useState<number | undefined>(undefined)
-  const swapping = swappingAt === index
   /* Open per exercise, like the swap: paging on closes it. See `ExercisePeek`. */
   const [peekAt, setPeekAt] = useState<number | undefined>(undefined)
   const closePeek = useCallback(() => {
     setPeekAt(undefined)
   }, [])
-  /* Add and reorder, opened from the tools tray and shown under Next. */
-  const [tool, setTool] = useState<'add' | 'reorder' | undefined>(undefined)
+  const [sheet, setSheet] = useState<Sheet | undefined>(undefined)
+  /* Stable: a sheet refocuses itself whenever its close handler changes. */
+  const closeSheet = useCallback(() => {
+    setSheet(undefined)
+  }, [])
+  const closeEditor = useCallback(() => {
+    setOpenSet(undefined)
+  }, [])
   const holdTimer = useRef<number | undefined>(undefined)
-  const strip = useRef<HTMLElement>(null)
-
-  /*
-   * The strip follows the session. Scrolled by hand rather than with
-   * `scrollIntoView`, which also scrolls the page — and the page is
-   * already where the lifter wants it.
-   */
-  useEffect(() => {
-    const nav = strip.current
-    const pill = nav?.querySelector<HTMLElement>(`[data-entry="${String(index)}"]`)
-    if (nav == null || pill == null) return
-    nav.scrollTo({
-      left: pill.offsetLeft - nav.clientWidth / 2 + pill.clientWidth / 2,
-      behavior: scrollMotion(),
-    })
-  }, [index])
   const clearSet = useClearSet(workout.id)
   const addOne = useAddExercise(workout.id)
   const reorder = useReorderSession(workout.id)
@@ -247,7 +236,6 @@ export function SessionPlayer({
   const stepEnd = stepAfter - 1
   const next = workout.entries[stepAfter]
   const first = entry.sets[0]
-  const firstPending = entry.sets.findIndex((set) => set.outcome === 'pending' && !set.isWarmup)
   const stepComplete =
     warmup === undefined
       ? isEntryComplete(entry)
@@ -262,9 +250,9 @@ export function SessionPlayer({
     window.scrollTo({ top: 0, behavior: scrollMotion() })
   }
 
-  const bodyweightHere =
-    exercises.find((one) => one.id === entry.exerciseId)?.loadBasis === 'bodyweight'
-  const equipmentHere = exercises.find((one) => one.id === entry.exerciseId)?.equipment
+  const exerciseHere = exercises.find((one) => one.id === entry.exerciseId)
+  const bodyweightHere = exerciseHere?.loadBasis === 'bodyweight'
+  const equipmentHere = exerciseHere?.equipment
   // The bar the loads go on, so the editor can offer loads the plates make.
   const barHere =
     equipmentHere === 'barbell' ? 'barbell' : equipmentHere === 'ez-bar' ? 'ez-bar' : undefined
@@ -275,7 +263,7 @@ export function SessionPlayer({
     setOpenSet(undefined)
   }
 
-  /** Logs a set of this exercise: the row, its swipe and the keyboard. */
+  /** Logs a set of this exercise: the dock, a row, its swipe and the keyboard. */
   const logAt = (
     setIndex: number,
     result: {
@@ -314,7 +302,21 @@ export function SessionPlayer({
       const plan = restFor(workout, index, setIndex, result.reps, exercises)
       // Inside the tap: iOS only wakes audio during a gesture.
       if (playerSettings.restSounds) primeRestSounds()
-      setRest(plan.seconds > 0 ? { startedAt: clock.now().getTime(), plan } : undefined)
+      setRest(
+        plan.seconds > 0
+          ? {
+              startedAt: clock.now().getTime(),
+              plan,
+              logged: {
+                exerciseId: entry.exerciseId,
+                setIndex,
+                variant: entry.variant,
+                load: result.load,
+                reps: result.reps,
+              },
+            }
+          : undefined,
+      )
     }
     if (partnerPending) showEntry(partner)
     // Spread conditionally rather than passing `undefined` through: an
@@ -339,6 +341,15 @@ export function SessionPlayer({
     logSet.mutate({ entryIndex: index, setIndex, result: { outcome: 'skipped' } })
   }
 
+  const finish = () => {
+    if (!anythingDone) {
+      onAbandon()
+      return
+    }
+    if (outstanding === 0) haptic('finished')
+    onFinish()
+  }
+
   /*
    * **The keyboard drives the same actions the rows do**, on the next
    * pending set of the exercise on screen. Logging a set the plan cannot
@@ -346,6 +357,7 @@ export function SessionPlayer({
    * check follows (`canLogPlanned`).
    */
   const nextOpen = entry.sets.findIndex((set) => set.outcome === 'pending')
+  const pending = warmup === undefined ? entry.sets[nextOpen] : undefined
   const onKey = (action: KeyAction) => {
     const set = entry.sets[nextOpen]
     switch (action) {
@@ -377,123 +389,217 @@ export function SessionPlayer({
     }
   }
 
+  /* A tool is listed only where it applies, so the tray never holds a dead button. */
+  const tools: SessionTool[] = [
+    {
+      id: 'exercises',
+      label: 'All exercises',
+      icon: ListOrdered,
+      run: () => {
+        setSheet('exercises')
+      },
+    },
+    ...(warmup === undefined && entry.sets.some((set) => set.outcome === 'pending')
+      ? [
+          {
+            id: 'swap',
+            label: 'Swap',
+            icon: ArrowLeftRight,
+            run: () => {
+              setSheet('swap')
+            },
+          },
+        ]
+      : []),
+    ...(warmup === undefined &&
+    partnerOf(workout, index) === undefined &&
+    canPair(entry, workout.entries[index + 1]) &&
+    !superset.isPending
+      ? [
+          {
+            id: 'pair',
+            label: `Pair with ${nameOf(workout.entries[index + 1]?.exerciseId ?? entry.exerciseId)}`,
+            icon: Link2,
+            run: () => {
+              superset.mutate({ entryIndex: index, pair: true })
+            },
+          },
+        ]
+      : []),
+    ...(warmup === undefined
+      ? [
+          {
+            id: 'past',
+            label: 'Recent sessions',
+            icon: History,
+            run: () => {
+              setPeekAt(index)
+            },
+          },
+          ...(first?.prescription.reps.kind === 'emom'
+            ? []
+            : [
+                {
+                  id: 'clock',
+                  label: 'Time the set',
+                  icon: Timer,
+                  run: () => {
+                    setSheet('clock')
+                  },
+                },
+              ]),
+        ]
+      : []),
+    {
+      id: 'add',
+      label: 'Add an exercise',
+      icon: Plus,
+      run: () => {
+        setSheet('add')
+      },
+    },
+    {
+      id: 'reorder',
+      label: 'Change the order',
+      icon: ArrowUpDown,
+      run: () => {
+        setSheet('reorder')
+      },
+    },
+    ...(anythingDone && outstanding > 0
+      ? [
+          {
+            id: 'finish',
+            label: `Finish early · ${String(outstanding)} sets left`,
+            icon: CheckCircle2,
+            run: finish,
+          },
+        ]
+      : []),
+    anythingDone
+      ? {
+          id: 'abandon',
+          label: 'Abandon session',
+          icon: XCircle,
+          run: () => {
+            setSheet('abandon')
+          },
+        }
+      : {
+          id: 'discard',
+          label: 'Discard session',
+          icon: XCircle,
+          run: onAbandon,
+        },
+  ]
+
+  /*
+   * The step's main button: the set while there is one, then the way on.
+   * Only ever one lit control on the floor of the screen.
+   */
+  const dockClass = 'font-display h-20 rounded-[1.375rem] text-[1.625rem] font-semibold'
+  const figures = (
+    <SessionFigures
+      workout={workout}
+      exercises={exercises}
+      settled={settled}
+      totalSets={totalSets}
+    />
+  )
+
+  const rowFor = (setIndex: number, isOpen: boolean) => {
+    const set = entry.sets[setIndex]
+    if (set === undefined) return null
+    return (
+      <SetRow
+        key={setIndex}
+        set={set}
+        index={setIndex}
+        entryIndex={index}
+        exerciseId={entry.exerciseId}
+        workoutId={workout.id}
+        variant={entry.variant}
+        earlier={entry.sets
+          .slice(0, setIndex)
+          .filter((one) => !one.isWarmup && one.outcome === 'completed')
+          .map((one) => ({ load: one.actualLoad, reps: one.actualReps }))}
+        units={units}
+        bodyweight={bodyweightHere}
+        bar={barHere}
+        isOpen={isOpen}
+        onOpen={() => {
+          setOpenSet(setIndex)
+        }}
+        onLog={(result) => {
+          logAt(setIndex, result)
+        }}
+        onSkip={() => {
+          skipAt(setIndex)
+        }}
+        onClear={() => {
+          clearSet.mutate(
+            { entryIndex: index, setIndex },
+            {
+              onSuccess: () => {
+                setOpenSet(undefined)
+              },
+            },
+          )
+        }}
+      />
+    )
+  }
+
+  const onward =
+    next !== undefined ? (
+      <Button
+        variant={stepComplete ? 'primary' : 'outline'}
+        full
+        className={dockClass}
+        onClick={() => {
+          go(stepAfter)
+        }}
+        aria-label={`Next exercise: ${nameOf(next.exerciseId)}`}
+      >
+        <span className="min-w-0 truncate">{nameOf(next.exerciseId)}</span>
+        <ChevronRight size={24} className="shrink-0" aria-hidden />
+      </Button>
+    ) : (
+      <Button
+        variant={outstanding === 0 ? 'primary' : 'outline'}
+        full
+        className={dockClass}
+        onClick={finish}
+      >
+        <CheckCircle2 size={24} aria-hidden />
+        {!anythingDone ? 'Discard' : outstanding === 0 ? 'Finish session' : 'Finish early'}
+      </Button>
+    )
+
   return (
-    <div className="session-player mx-auto max-w-2xl pb-28 lg:max-w-5xl">
-      {/*
-        **The session's own bar, pinned while the sets scroll.** The page
-        used to open on the exercise name with "Exercise 6 of 8" in grey
-        under it, so where the session stood — how far through, how long
-        it had run — was something to work out. The bar answers both, and
-        stays put while a long exercise scrolls.
-      */}
+    <div className="session-player mx-auto max-w-2xl lg:max-w-5xl">
       {/*
         **Pinned to the very top, with its content padded below the status
         bar.** An installed app on a phone draws under the clock, so
-        `top: 0` alone parked the bar's title row behind it — reported as
-        the bar not sticking. Pulling the bar up over the page's own
-        safe-area padding and padding its content back down means the
-        background fills the strip behind the status bar too, so the sets
-        never scroll through it. A style rather than a bracket class,
-        because `env()` inside one is fragile across builds.
+        `top: 0` alone parked the bar's title row behind it. Pulling the bar
+        up over the page's own safe-area padding and padding its content
+        back down means the background fills the strip behind the status bar
+        too, so the sets never scroll through it. A style rather than a
+        bracket class, because `env()` inside one is fragile across builds.
       */}
       <div
-        className="bg-ink-950 border-ink-800/80 sticky top-0 z-20 -mx-4 mb-4 border-b px-4 pb-3 sm:mx-0 sm:rounded-b-2xl sm:border-x"
+        className="bg-ink-950 sticky top-0 z-20 -mx-4 px-4 pb-2.5 sm:mx-0"
         style={{
           marginTop: 'calc(-1rem - var(--safe-top))',
-          paddingTop: 'calc(0.75rem + var(--safe-top))',
+          paddingTop: 'calc(0.875rem + var(--safe-top))',
           // Morphs into the report's hero on finish; see `HomePage`.
           viewTransitionName: 'session-hero',
         }}
       >
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-ink-300 min-w-0 truncate text-sm font-medium">{workout.title}</p>
-          <p className="numeric text-ink-500 flex shrink-0 items-center gap-3 text-xs">
-            <span>
-              <RollingNumber value={settled} className="text-ink-50 font-semibold" />/{totalSets}{' '}
-              sets
-            </span>
-            <Elapsed startedAt={workout.startedAt} />
-            <FinishAt workout={workout} exercises={exercises} />
-          </p>
-        </div>
-        {/*
-          A segment per set rather than one bar: a session is counted in
-          sets, so the strip says how many are left at a glance. The one
-          just settled lights last, which is the logged-set feedback
-          reaching the top of the screen.
-        */}
-        <div className="mt-2 flex h-1 gap-[2px]" aria-hidden>
-          {Array.from({ length: totalSets }, (_, at) => (
-            <span
-              key={at}
-              className={cn(
-                'h-full flex-1 rounded-full transition-colors duration-300',
-                at < settled ? 'bg-accent-400' : 'bg-ink-800',
-              )}
-            />
-          ))}
-        </div>
-
-        {/*
-          The exercises by name, done ones ticked. It replaced a row of
-          unlabelled dashes, which said where you were and nothing about
-          what any of the other positions held.
-        */}
-        <nav
-          ref={strip}
-          aria-label="Exercises"
-          className="relative -mx-1 mt-3 flex gap-1.5 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none] lg:hidden"
-        >
-          {workout.entries.map((candidate, candidateIndex) => {
-            const run = warmupRun(workout, candidateIndex)
-            // A warm-up run is one pill, drawn at its first row.
-            if (run !== undefined && run[0] !== candidateIndex) return null
-            const complete =
-              run === undefined
-                ? isEntryComplete(candidate)
-                : run.every((at) => {
-                    const one = workout.entries[at]
-                    return one === undefined || isEntryComplete(one)
-                  })
-            const current = candidateIndex === index
-            return (
-              <button
-                key={candidateIndex}
-                type="button"
-                data-entry={candidateIndex}
-                aria-current={current ? 'step' : undefined}
-                onClick={() => {
-                  go(candidateIndex)
-                }}
-                className={cn(
-                  'flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-medium whitespace-nowrap transition-colors',
-                  current
-                    ? 'border-accent-500/60 bg-accent-500/15 text-accent-400'
-                    : complete
-                      ? 'border-good-500/25 text-good-500'
-                      : 'border-ink-800 text-ink-500 hover:text-ink-300',
-                )}
-              >
-                {complete && !current ? (
-                  <Check size={12} aria-hidden />
-                ) : (
-                  <PillGlyph
-                    exercise={exercises.find((one) => one.id === candidate.exerciseId)}
-                    warmup={run !== undefined}
-                  />
-                )}
-                {run === undefined ? nameOf(candidate.exerciseId) : 'Warm-up'}
-              </button>
-            )
-          })}
-        </nav>
+        {figures}
+        <StepTrack workout={workout} current={index} />
       </div>
 
-      {/*
-        From `lg` the session sits beside the exercise rather than above
-        it: the strip of pills becomes `SessionMap`, and the card keeps the
-        width it had on a phone instead of a window's worth.
-      */}
       {/*
         A set shows as logged the moment it is tapped (see `useLogSet`), so
         a save that fails has already been seen to succeed. It is put back
@@ -503,7 +609,7 @@ export function SessionPlayer({
       {logSet.isError && (
         <div
           role="alert"
-          className="border-bad-500/40 bg-bad-500/10 mb-4 flex items-center justify-between gap-3 rounded-xl border px-3 py-2 text-sm"
+          className="border-bad-500/40 bg-bad-500/10 mt-3 flex items-center justify-between gap-3 rounded-xl border px-3 py-2 text-sm"
         >
           <span className="text-ink-100">That set did not save, so it has been put back.</span>
           <Button
@@ -518,439 +624,244 @@ export function SessionPlayer({
         </div>
       )}
 
-      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_17rem] lg:items-start lg:gap-6">
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_17rem] lg:items-start lg:gap-8">
         <div className="min-w-0">
-          {warmup !== undefined ? (
-            <WarmupBlock workout={workout} indices={warmup} nameOf={nameOf} />
-          ) : (
-            <SwipePager
-              onNext={() => {
-                go(stepAfter)
-              }}
-              onPrevious={() => {
-                go(index - 1)
-              }}
-            >
-              <div className="mb-1 flex flex-wrap items-center gap-1.5">
-                <Badge tone={slotRoleTone(entry.role)}>{slotRoleLabel(entry.role)}</Badge>
-                {slotVariant(entry) !== '' && <Badge tone="sub">{slotVariant(entry)}</Badge>}
-                <span className="text-ink-500 ml-auto text-xs">
-                  {index + 1} of {workout.entries.length}
-                </span>
-                <SessionTools
-                  tools={
-                    [
-                      {
-                        id: 'focus',
-                        label: 'Focus',
-                        icon: Maximize2,
-                        run: () => {
-                          setFocus(true)
-                        },
-                      },
-                      ...(entry.sets.some((set) => set.outcome === 'pending')
-                        ? [
-                            {
-                              id: 'swap',
-                              label: swapping ? 'Keep this one' : 'Swap',
-                              icon: ArrowLeftRight,
-                              run: () => {
-                                setSwappingAt(swapping ? undefined : index)
-                              },
-                            },
-                          ]
-                        : []),
-                      ...(partnerOf(workout, index) === undefined &&
-                      canPair(entry, workout.entries[index + 1]) &&
-                      !superset.isPending
-                        ? [
-                            {
-                              id: 'pair',
-                              label: `Pair with ${nameOf(workout.entries[index + 1]?.exerciseId ?? entry.exerciseId)}`,
-                              icon: Link2,
-                              run: () => {
-                                superset.mutate({ entryIndex: index, pair: true })
-                              },
-                            },
-                          ]
-                        : []),
-                      {
-                        id: 'past',
-                        label: 'Recent sessions',
-                        icon: History,
-                        run: () => {
-                          setPeekAt(index)
-                        },
-                      },
-                      {
-                        id: 'add',
-                        label: 'Add an exercise',
-                        icon: Plus,
-                        run: () => {
-                          setTool('add')
-                        },
-                      },
-                      {
-                        id: 'reorder',
-                        label: 'Change the order',
-                        icon: ArrowUpDown,
-                        run: () => {
-                          setTool('reorder')
-                        },
-                      },
-                    ] satisfies SessionTool[]
-                  }
-                />
-              </div>
-              <h1
-                id="exercise-name"
-                className="text-ink-50 text-2xl font-semibold tracking-tight sm:text-3xl"
-              >
-                {/*
-                  **The name opens the exercise's recent past**, on a tap
-                  or a hold — a hold is what a phone teaches for "show me
-                  more", and a tap is what a mouse can do.
-                */}
-                <button
-                  type="button"
-                  aria-haspopup="dialog"
-                  aria-label={`${nameOf(entry.exerciseId)} — show recent sessions`}
-                  className="-mx-1 rounded-lg px-1 text-left select-none [-webkit-touch-callout:none] hover:bg-white/5"
-                  onPointerDown={() => {
-                    window.clearTimeout(holdTimer.current)
-                    holdTimer.current = window.setTimeout(() => {
-                      haptic('press')
-                      setPeekAt(index)
-                    }, 450)
-                  }}
-                  onPointerUp={() => {
-                    window.clearTimeout(holdTimer.current)
-                  }}
-                  onPointerLeave={() => {
-                    window.clearTimeout(holdTimer.current)
-                  }}
-                  onContextMenu={(event) => {
-                    event.preventDefault()
-                  }}
-                  onClick={() => {
-                    setPeekAt(index)
-                  }}
-                >
-                  {nameOf(entry.exerciseId)}
-                </button>
-              </h1>
-              <SupersetLine
-                workout={workout}
-                index={index}
-                nameOf={nameOf}
-                busy={superset.isPending}
-                onUnpair={() => {
-                  superset.mutate({ entryIndex: index, pair: false })
+          <div className="set-screen flex flex-col">
+            {warmup !== undefined ? (
+              <>
+                <div className="-mb-3 flex justify-end pt-1">
+                  <SessionTools tools={tools} />
+                </div>
+                <WarmupBlock workout={workout} indices={warmup} nameOf={nameOf} />
+              </>
+            ) : (
+              <SwipePager
+                onNext={() => {
+                  go(stepAfter)
                 }}
-              />
-              {/* The lifter's own cue, from the exercise page. */}
-              {playerSettings.exerciseCues?.[entry.exerciseId] !== undefined && (
-                <p className="text-accent-400 mt-1 text-sm italic">
-                  “{playerSettings.exerciseCues[entry.exerciseId]}”
-                </p>
+                onPrevious={() => {
+                  go(index - 1)
+                }}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <h1
+                      id="exercise-name"
+                      className="text-ink-50 text-[2rem] leading-tight font-bold"
+                    >
+                      {/*
+                        **The name opens the exercise's recent past**, on a
+                        tap or a hold — a hold is what a phone teaches for
+                        "show me more", and a tap is what a mouse can do.
+                      */}
+                      <button
+                        type="button"
+                        aria-haspopup="dialog"
+                        aria-label={`${nameOf(entry.exerciseId)} — show recent sessions`}
+                        className="text-left select-none [-webkit-touch-callout:none]"
+                        onPointerDown={() => {
+                          window.clearTimeout(holdTimer.current)
+                          holdTimer.current = window.setTimeout(() => {
+                            haptic('press')
+                            setPeekAt(index)
+                          }, 450)
+                        }}
+                        onPointerUp={() => {
+                          window.clearTimeout(holdTimer.current)
+                        }}
+                        onPointerLeave={() => {
+                          window.clearTimeout(holdTimer.current)
+                        }}
+                        onContextMenu={(event) => {
+                          event.preventDefault()
+                        }}
+                        onClick={() => {
+                          setPeekAt(index)
+                        }}
+                      >
+                        {nameOf(entry.exerciseId)}
+                      </button>
+                    </h1>
+                    <p className="text-ink-500 numeric mt-1 text-[0.9375rem]">
+                      {setPosition(entry.sets, nextOpen)}
+                    </p>
+                  </div>
+                  <div className="-mr-2 shrink-0">
+                    <SessionTools tools={tools} />
+                  </div>
+                </div>
+                <SupersetLine
+                  workout={workout}
+                  index={index}
+                  nameOf={nameOf}
+                  busy={superset.isPending}
+                  onUnpair={() => {
+                    superset.mutate({ entryIndex: index, pair: false })
+                  }}
+                />
+                {/* The lifter's own cue, from the exercise page. */}
+                {playerSettings.exerciseCues?.[entry.exerciseId] !== undefined && (
+                  <p className="text-ink-300 mt-1 text-sm italic">
+                    “{playerSettings.exerciseCues[entry.exerciseId]}”
+                  </p>
+                )}
+                {entry.substitutedFor !== undefined && (
+                  <p className="text-ink-500 mt-1 text-sm">
+                    In place of {nameOf(entry.substitutedFor)}
+                  </p>
+                )}
+                {swap.isError && (
+                  <p role="alert" className="text-warn-500 mt-2 text-sm">
+                    Could not swap: {swap.error.message}
+                  </p>
+                )}
+
+                {pending === undefined ? (
+                  <div className="flex-1 space-y-2 py-4">
+                    {entry.sets.map((_, setIndex) => rowFor(setIndex, false))}
+                  </div>
+                ) : pending.prescription.reps.kind === 'emom' ? (
+                  <div className="flex-1 py-4">
+                    {/* An EMOM has its own clock, which logs the set as planned at the end. */}
+                    <EmomTimer
+                      key={`emom-${String(index)}`}
+                      set={pending}
+                      units={units}
+                      onFinish={() => {
+                        logAt(nextOpen, plannedResult(pending, bodyweightHere))
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <SetStage
+                    key={`${String(index)}-${String(nextOpen)}`}
+                    set={pending}
+                    setIndex={nextOpen}
+                    exerciseId={entry.exerciseId}
+                    workoutId={workout.id}
+                    variant={entry.variant}
+                    bodyweight={bodyweightHere}
+                    units={units}
+                  />
+                )}
+
+                {/*
+                  Keyed by the exercise: the ramp's ticks are for this bar, and
+                  two siblings must never share a key. That shipped once and
+                  left the last exercise's bar behind on every page turn.
+                */}
+                <BarStrip
+                  key={`bar-${String(index)}`}
+                  equipment={equipmentHere}
+                  load={loadToShow(entry.sets)}
+                  units={units}
+                  /*
+                   * Every barbell compound gets a ramp, not only the day's
+                   * competition lift: a Pendlay row or a front squat is a
+                   * heavy bar taken cold otherwise. Isolation work at a light
+                   * load is still its own warm-up.
+                   */
+                  ramp={entry.role === 'strength' || exerciseHere?.isCompound === true}
+                />
+                <LadderFor entry={entry} exercises={exercises} units={units} />
+              </SwipePager>
+            )}
+
+            <div
+              className="bg-ink-950 sticky bottom-0 z-10 -mx-4 mt-1 px-4 pt-2 sm:mx-0 sm:px-0"
+              style={{ paddingBottom: 'calc(0.75rem + var(--safe-bottom))' }}
+            >
+              {pending === undefined ? (
+                onward
+              ) : (
+                <>
+                  <Button
+                    variant="primary"
+                    full
+                    className={dockClass}
+                    aria-label={
+                      canLogPlanned(pending)
+                        ? `Log set ${String(nextOpen + 1)} as planned`
+                        : `Enter set ${String(nextOpen + 1)}`
+                    }
+                    onClick={() => {
+                      if (canLogPlanned(pending)) {
+                        logAt(nextOpen, plannedResult(pending, bodyweightHere))
+                      } else {
+                        setOpenSet(nextOpen)
+                      }
+                    }}
+                  >
+                    {canLogPlanned(pending) ? (
+                      <>
+                        <Check size={26} aria-hidden />
+                        <span className="truncate">
+                          Log {plannedText(pending, bodyweightHere, units)}
+                        </span>
+                      </>
+                    ) : (
+                      'Enter the set'
+                    )}
+                  </Button>
+                  <div className="mt-1 flex items-center justify-between gap-2 text-[0.9375rem]">
+                    <span className="flex gap-5">
+                      <button
+                        type="button"
+                        className="tap-target text-ink-50 font-medium"
+                        onClick={() => {
+                          setOpenSet(nextOpen)
+                        }}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        className="tap-target text-ink-500 font-medium"
+                        onClick={() => {
+                          skipAt(nextOpen)
+                        }}
+                      >
+                        Skip
+                      </button>
+                    </span>
+                    {next !== undefined && (
+                      <button
+                        type="button"
+                        className="tap-target text-ink-500 flex min-w-0 items-center gap-1"
+                        aria-label={`Next exercise: ${nameOf(next.exerciseId)}`}
+                        onClick={() => {
+                          go(stepAfter)
+                        }}
+                      >
+                        <span className="truncate">Next: {nameOf(next.exerciseId)}</span>
+                        <ChevronRight size={16} className="shrink-0" aria-hidden />
+                      </button>
+                    )}
+                  </div>
+                </>
               )}
-              {entry.substitutedFor !== undefined && (
-                <p className="text-ink-500 text-xs">In place of {nameOf(entry.substitutedFor)}</p>
-              )}
+            </div>
+          </div>
+
+          {/* Scrolled to rather than shown: every set of the exercise, to look at or fix. */}
+          {warmup === undefined && pending !== undefined && (
+            <section className="mt-6" aria-label="Every set of this exercise">
               {first !== undefined && (
-                <p className="text-ink-500 numeric mt-1 text-sm">
+                <p className="text-ink-500 numeric mb-2 text-sm">
                   {entry.sets.length} {entry.sets.length === 1 ? 'set' : 'sets'} ·{' '}
                   {describePrescription(first.prescription)}
                 </p>
               )}
-              {swapping && (
-                <SwapPanel
-                  entry={entry}
-                  current={exercises.find((one) => one.id === entry.exerciseId)}
-                  units={units}
-                  busy={swap.isPending}
-                  onPick={(exercise) => {
-                    swap.mutate(
-                      { entryIndex: index, exerciseId: exercise.id },
-                      {
-                        onSuccess: (updated) => {
-                          setSwappingAt(undefined)
-                          setOpenSet(undefined)
-                          /*
-                           * Started, the rest moved to a new entry just after;
-                           * swapped back, it rejoined the one before. Follow it.
-                           */
-                          const moved = updated.entries.length - workout.entries.length
-                          if (moved !== 0) setIndex(index + moved)
-                        },
-                      },
-                    )
-                  }}
-                />
-              )}
-              {swap.isError && (
-                <p role="alert" className="text-warn-500 mt-2 text-sm">
-                  Could not swap: {swap.error.message}
-                </p>
-              )}
-              <BarSection
-                key={index}
-                equipment={exercises.find((one) => one.id === entry.exerciseId)?.equipment}
-                load={loadToShow(entry.sets)}
-                units={units}
-                /*
-                 * Every barbell compound gets a ramp, not only the day's
-                 * competition lift: a Pendlay row or a front squat is a
-                 * heavy bar taken cold otherwise. Isolation work at a light
-                 * load is still its own warm-up. (`BarSection` only draws
-                 * a ramp for a bar it can load.)
-                 */
-                ramp={
-                  entry.role === 'strength' ||
-                  exercises.find((one) => one.id === entry.exerciseId)?.isCompound === true
-                }
-              />
-              <LadderFor entry={entry} exercises={exercises} units={units} />
-              {/*
-                Keyed apart from the bar's `index` key: two siblings sharing a
-                key left the last exercise's bar picture behind on every page
-                turn — React keeps one and orphans the other.
-              */}
-              {(() => {
-                /* An EMOM gets its own clock, which logs the set as planned at the end. */
-                const emomIndex = entry.sets.findIndex(
-                  (one) => one.prescription.reps.kind === 'emom',
-                )
-                const emom = entry.sets[emomIndex]
-                if (emom === undefined) return <SetClock key={`clock-${String(index)}`} />
-                if (emom.outcome !== 'pending') return null
-                return (
-                  <EmomTimer
-                    key={`emom-${String(index)}`}
-                    set={emom}
-                    units={units}
-                    onFinish={() => {
-                      logAt(emomIndex, plannedResult(emom, bodyweightHere))
-                    }}
-                  />
-                )
-              })()}
-
-              <div className="mt-4 space-y-2">
-                {entry.sets.map((set, setIndex) => (
-                  <SetRow
-                    key={setIndex}
-                    set={set}
-                    index={setIndex}
-                    entryIndex={index}
-                    exerciseId={entry.exerciseId}
-                    workoutId={workout.id}
-                    variant={entry.variant}
-                    peek={!swipeLearned && setIndex === firstPending}
-                    onSwiped={learnSwipe}
-                    earlier={entry.sets
-                      .slice(0, setIndex)
-                      .filter((one) => !one.isWarmup && one.outcome === 'completed')
-                      .map((one) => ({ load: one.actualLoad, reps: one.actualReps }))}
-                    units={units}
-                    bodyweight={bodyweightHere}
-                    bar={barHere}
-                    isOpen={openSet === setIndex}
-                    onOpen={() => {
-                      setOpenSet(setIndex)
-                    }}
-                    onLog={(result) => {
-                      logAt(setIndex, result)
-                    }}
-                    onSkip={() => {
-                      skipAt(setIndex)
-                    }}
-                    onClear={() => {
-                      clearSet.mutate(
-                        { entryIndex: index, setIndex },
-                        {
-                          onSuccess: () => {
-                            setOpenSet(undefined)
-                          },
-                        },
-                      )
-                    }}
-                  />
-                ))}
+              <div className="space-y-2">
+                {entry.sets.map((_, setIndex) => rowFor(setIndex, false))}
               </div>
-
               {entry.notes !== undefined && (
-                <p className="border-ink-800 text-ink-300 mt-4 flex gap-2 border-t pt-3 text-sm">
-                  <Lightbulb size={16} className="text-accent-400 mt-0.5 shrink-0" aria-hidden />
+                <p className="text-ink-300 mt-4 flex gap-2 text-sm">
+                  <Lightbulb size={16} className="text-ink-500 mt-0.5 shrink-0" aria-hidden />
                   <span>{entry.notes}</span>
                 </p>
               )}
-            </SwipePager>
-          )}
-
-          {/*
-        **Next is named, and it lights once this exercise is done.** Paging
-        was a pair of chevrons either side of the dashes; "Up next · Dips"
-        says where the button goes, which is the question a lifter
-        re-racking a bar is actually asking.
-      */}
-          <div className="mt-5 flex items-center gap-2">
-            <Button
-              variant="outline"
-              onClick={() => {
-                go(index - 1)
-              }}
-              disabled={index === 0}
-              aria-label="Previous exercise"
-            >
-              <ChevronLeft size={18} aria-hidden />
-            </Button>
-            {next !== undefined ? (
-              <Button
-                variant={stepComplete ? 'primary' : 'outline'}
-                className="min-w-0 flex-1 justify-between"
-                onClick={() => {
-                  go(stepAfter)
-                }}
-                aria-label={`Next exercise: ${nameOf(next.exerciseId)}`}
-              >
-                <span className="min-w-0 truncate">
-                  <span className="font-normal opacity-60">Up next · </span>
-                  {nameOf(next.exerciseId)}
-                </span>
-                <ChevronRight size={18} aria-hidden />
-              </Button>
-            ) : (
-              <p className="text-ink-500 flex-1 text-center text-sm">Last exercise</p>
-            )}
-          </div>
-
-          {tool === 'add' && (
-            <AddExercisePanel
-              onClose={() => {
-                setTool(undefined)
-              }}
-              library={exercises}
-              inSession={new Set(workout.entries.map((one) => one.exerciseId))}
-              busy={addOne.isPending}
-              onAdd={(exercise) => {
-                addOne.mutate(
-                  { afterIndex: stepEnd, exerciseId: exercise.id },
-                  {
-                    // Straight to it; `go` would clamp against the session before the add.
-                    onSuccess: () => {
-                      showEntry(stepAfter)
-                      window.scrollTo({ top: 0, behavior: scrollMotion() })
-                    },
-                  },
-                )
-              }}
-            />
-          )}
-
-          {tool === 'reorder' && (
-            <ReorderPanel
-              onClose={() => {
-                setTool(undefined)
-              }}
-              workout={workout}
-              current={index}
-              nameOf={nameOf}
-              busy={reorder.isPending}
-              onMove={(at, by) => {
-                reorder.mutate(
-                  { at, by },
-                  {
-                    // The exercise on screen stays on screen, wherever it moved.
-                    onSuccess: () => {
-                      if (at === index) showEntry(at + by)
-                      else if (at + by === index) showEntry(at)
-                    },
-                  },
-                )
-              }}
-            />
-          )}
-
-          {/*
-        **Finishing is quiet until there is nothing left.** It was a lit,
-        full-width "Finish (20 sets unlogged)" from the first set — the
-        loudest control on the screen was the one that ends the session
-        early. It turns primary once every set is logged or skipped.
-      */}
-          <Button
-            variant={outstanding === 0 ? 'primary' : 'ghost'}
-            size={outstanding === 0 ? 'lg' : 'md'}
-            full
-            className="mt-6"
-            onClick={() => {
-              if (!anythingDone) {
-                onAbandon()
-                return
-              }
-              if (outstanding === 0) haptic('finished')
-              onFinish()
-            }}
-          >
-            <CheckCircle2 size={outstanding === 0 ? 20 : 16} aria-hidden />
-            {!anythingDone
-              ? 'Discard — nothing logged'
-              : outstanding === 0
-                ? 'Finish session'
-                : `Finish early · ${String(outstanding)} sets left`}
-          </Button>
-
-          {/*
-        The way out of a session opened by mistake. Confirmed inline
-        rather than through a dialog, because the wording has to change
-        with what is at stake: with nothing logged this throws away
-        nothing, and with sets logged it keeps them.
-      */}
-          {confirmingAbandon ? (
-            <div className="border-bad-500/40 bg-bad-500/10 mt-3 rounded-lg border p-3">
-              <p className="text-ink-50 text-sm font-medium">
-                {loggedSets === 0
-                  ? 'Discard this session?'
-                  : `Abandon, keeping ${String(loggedSets)} logged set${loggedSets === 1 ? '' : 's'}?`}
-              </p>
-              <p className="text-ink-300 mt-1 text-sm">
-                {loggedSets === 0
-                  ? 'Nothing has been logged, so nothing is lost. The program stays on this day.'
-                  : 'The sets you logged are kept and still count toward your volume. The program stays on this day, so you can run it again or skip it.'}
-              </p>
-              <div className="mt-3 flex gap-2">
-                <Button
-                  variant="danger"
-                  className="flex-1"
-                  onClick={() => {
-                    onAbandon()
-                  }}
-                >
-                  {loggedSets === 0 ? 'Discard' : 'Abandon'}
-                </Button>
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => {
-                    setConfirmingAbandon(false)
-                  }}
-                >
-                  Keep training
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <Button
-              variant="ghost"
-              full
-              className="mt-2"
-              onClick={() => {
-                setConfirmingAbandon(true)
-              }}
-            >
-              <XCircle size={16} aria-hidden />
-              Abandon session
-            </Button>
+            </section>
           )}
         </div>
         <SessionMap
@@ -971,15 +882,13 @@ export function SessionPlayer({
         />
       )}
 
-      {undo !== undefined && (
+      {undo !== undefined && rest === undefined && (
         <UndoToast
           label={undo.label}
           stamp={undo.stamp}
-          raised={rest !== undefined}
           onDone={dismissUndo}
           onUndo={() => {
             clearSet.mutate({ entryIndex: undo.entryIndex, setIndex: undo.setIndex })
-            setRest(undefined)
             setUndo(undefined)
           }}
         />
@@ -996,47 +905,287 @@ export function SessionPlayer({
         />
       )}
 
-      {focus && warmup === undefined && (
-        <FocusView
-          name={nameOf(entry.exerciseId)}
-          sets={entry.sets}
-          bodyweight={bodyweightHere}
-          units={units}
-          rest={
-            rest === undefined
-              ? undefined
-              : { startedAt: rest.startedAt, seconds: rest.plan.seconds }
-          }
-          nextName={next === undefined ? undefined : nameOf(next.exerciseId)}
-          onLog={(setIndex) => {
-            const set = entry.sets[setIndex]
-            if (set !== undefined) logAt(setIndex, plannedResult(set, bodyweightHere))
-          }}
-          onSkip={skipAt}
-          onEdit={(setIndex) => {
-            setFocus(false)
-            setOpenSet(setIndex)
-          }}
-          onNext={() => {
-            go(stepAfter)
-          }}
-          onClose={closeFocus}
-        />
+      {openSet !== undefined && warmup === undefined && (
+        <BottomSheet
+          label={`Edit set ${String(openSet + 1)}`}
+          title={nameOf(entry.exerciseId)}
+          onClose={closeEditor}
+        >
+          <div className="mt-2">{rowFor(openSet, true)}</div>
+        </BottomSheet>
+      )}
+
+      {sheet === 'exercises' && (
+        <BottomSheet label="All exercises" title="All exercises" onClose={closeSheet}>
+          <SessionMap
+            inSheet
+            workout={workout}
+            current={index}
+            runs={(at) => warmupRun(workout, at)}
+            nameOf={nameOf}
+            onGo={(to) => {
+              setSheet(undefined)
+              go(to)
+            }}
+          />
+        </BottomSheet>
+      )}
+
+      {sheet === 'swap' && warmup === undefined && (
+        <BottomSheet
+          label="Swap this exercise"
+          title={`Swap ${nameOf(entry.exerciseId)}`}
+          onClose={closeSheet}
+        >
+          <SwapPanel
+            entry={entry}
+            current={exerciseHere}
+            units={units}
+            busy={swap.isPending}
+            onPick={(exercise) => {
+              swap.mutate(
+                { entryIndex: index, exerciseId: exercise.id },
+                {
+                  onSuccess: (updated) => {
+                    setSheet(undefined)
+                    setOpenSet(undefined)
+                    /*
+                     * Started, the rest moved to a new entry just after;
+                     * swapped back, it rejoined the one before. Follow it.
+                     */
+                    const moved = updated.entries.length - workout.entries.length
+                    if (moved !== 0) setIndex(index + moved)
+                  },
+                },
+              )
+            }}
+          />
+        </BottomSheet>
+      )}
+
+      {sheet === 'clock' && (
+        <BottomSheet label="Time the set" title="Time the set" onClose={closeSheet}>
+          <SetClock key={`clock-${String(index)}`} />
+        </BottomSheet>
+      )}
+
+      {sheet === 'add' && (
+        <BottomSheet label="Add an exercise" title="Add an exercise" onClose={closeSheet}>
+          <AddExercisePanel
+            onClose={closeSheet}
+            library={exercises}
+            inSession={new Set(workout.entries.map((one) => one.exerciseId))}
+            busy={addOne.isPending}
+            onAdd={(exercise) => {
+              addOne.mutate(
+                { afterIndex: stepEnd, exerciseId: exercise.id },
+                {
+                  // Straight to it; `go` would clamp against the session before the add.
+                  onSuccess: () => {
+                    setSheet(undefined)
+                    showEntry(stepAfter)
+                    window.scrollTo({ top: 0, behavior: scrollMotion() })
+                  },
+                },
+              )
+            }}
+          />
+        </BottomSheet>
+      )}
+
+      {sheet === 'reorder' && (
+        <BottomSheet label="Change the order" title="Change the order" onClose={closeSheet}>
+          <ReorderPanel
+            onClose={closeSheet}
+            workout={workout}
+            current={index}
+            nameOf={nameOf}
+            busy={reorder.isPending}
+            onMove={(at, by) => {
+              reorder.mutate(
+                { at, by },
+                {
+                  // The exercise on screen stays on screen, wherever it moved.
+                  onSuccess: () => {
+                    if (at === index) showEntry(at + by)
+                    else if (at + by === index) showEntry(at)
+                  },
+                },
+              )
+            }}
+          />
+        </BottomSheet>
+      )}
+
+      {/*
+        The way out of a session opened by mistake. The wording changes with
+        what is at stake: with sets logged, abandoning keeps them.
+      */}
+      {sheet === 'abandon' && (
+        <BottomSheet
+          label="Abandon this session"
+          title={`Abandon, keeping ${String(loggedSets)} logged set${loggedSets === 1 ? '' : 's'}?`}
+          onClose={closeSheet}
+        >
+          <p className="text-ink-300 mt-1 text-sm">
+            The sets you logged are kept and still count toward your volume. The program stays on
+            this day, so you can run it again or skip it.
+          </p>
+          <div className="mt-4 flex gap-2">
+            <Button variant="danger" className="flex-1" onClick={onAbandon}>
+              Abandon
+            </Button>
+            <Button variant="outline" className="flex-1" onClick={closeSheet}>
+              Keep training
+            </Button>
+          </div>
+        </BottomSheet>
       )}
 
       {rest !== undefined && (
         <RestTimer
-          hidden={focus && warmup === undefined}
           sounds={playerSettings.restSounds}
           seconds={rest.plan.seconds}
           reason={rest.plan.reason}
           startedAt={rest.startedAt}
-          next={nextUp(workout, index, nameOf, exercises, units)}
+          header={figures}
+          logged={
+            <LoggedLine
+              {...rest.logged}
+              workoutId={workout.id}
+              units={units}
+              onUndo={
+                undo === undefined
+                  ? undefined
+                  : () => {
+                      clearSet.mutate({ entryIndex: undo.entryIndex, setIndex: undo.setIndex })
+                      setRest(undefined)
+                      setUndo(undefined)
+                    }
+              }
+            />
+          }
+          next={(() => {
+            const up = nextUp(workout, index, nameOf, exercises, units)
+            return up === undefined
+              ? undefined
+              : {
+                  ...up,
+                  bar: barForNext(
+                    workout,
+                    index,
+                    exercises,
+                    units,
+                    rackFor(playerSettings.plates, units, playerSettings.platePairs),
+                    { load: rest.logged.load, exerciseId: rest.logged.exerciseId },
+                  ),
+                }
+          })()}
           onDismiss={() => {
             setRest(undefined)
+            // Undo was offered on this screen; once it is gone, so is the offer.
+            setUndo(undefined)
+            // The rest that ended an exercise leads into the next one.
+            if (stepComplete && next !== undefined) go(stepAfter)
           }}
         />
       )}
+    </div>
+  )
+}
+
+/** "Set 1 of 2", counted in working sets; "All 2 sets done" once none is left. */
+function setPosition(sets: WorkoutLog['entries'][number]['sets'], at: number): string {
+  const working = sets.filter((set) => !set.isWarmup)
+  const set = sets[at]
+  if (set === undefined) {
+    return `All ${String(working.length)} ${working.length === 1 ? 'set' : 'sets'} settled`
+  }
+  return `Set ${String(working.indexOf(set) + 1)} of ${String(working.length)}`
+}
+
+/** "210 × 3", the way the log button says it. */
+function plannedText(
+  set: WorkoutLog['entries'][number]['sets'][number],
+  bodyweight: boolean,
+  units: WeightUnit,
+): string {
+  const load =
+    set.plannedLoad === undefined
+      ? undefined
+      : bodyweight
+        ? set.plannedLoad > 0
+          ? `BW + ${String(set.plannedLoad)}`
+          : 'BW'
+        : units === 'lb'
+          ? String(set.plannedLoad)
+          : formatLoad(set.plannedLoad, units)
+  if (load === undefined) return describePrescription(set.prescription)
+  return set.plannedReps === undefined ? load : `${load} × ${String(set.plannedReps)}`
+}
+
+/**
+ * A segment per step of the session: done, current, to come. A session is run
+ * in exercises, so that is what the strip counts; the sets are in the figures.
+ */
+function StepTrack({
+  workout,
+  current,
+}: {
+  readonly workout: WorkoutLog
+  readonly current: number
+}) {
+  const steps = workout.entries.flatMap((_, at) => {
+    const run = warmupRun(workout, at)
+    if (run !== undefined && run[0] !== at) return []
+    const members = (run ?? [at]).flatMap((one) => workout.entries[one] ?? [])
+    return [
+      {
+        at,
+        active: run === undefined ? current === at : run.includes(current),
+        done: members.every((one) => isEntryComplete(one)),
+      },
+    ]
+  })
+  return (
+    <div className="mt-2 flex h-1 gap-1" aria-hidden>
+      {steps.map((step) => (
+        <span
+          key={step.at}
+          className={cn(
+            'h-full flex-1 rounded-full transition-colors duration-300',
+            step.active ? 'bg-accent-400' : step.done ? 'bg-accent-600/60' : 'bg-ink-800',
+          )}
+        />
+      ))}
+    </div>
+  )
+}
+
+/** The session's name and where it stands: the bar's top line, and the rest screen's. */
+function SessionFigures({
+  workout,
+  exercises,
+  settled,
+  totalSets,
+}: {
+  readonly workout: WorkoutLog
+  readonly exercises: readonly Exercise[]
+  readonly settled: number
+  readonly totalSets: number
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <p className="text-ink-500 min-w-0 truncate text-sm">{splitDayLabel(workout.title).name}</p>
+      <p className="numeric text-ink-500 flex shrink-0 items-center gap-1.5 text-sm">
+        <span>
+          <RollingNumber value={settled} className="text-ink-50 font-semibold" /> of {totalSets}{' '}
+          sets
+        </span>
+        <span aria-hidden>·</span>
+        <Elapsed startedAt={workout.startedAt} />
+        <FinishAt workout={workout} exercises={exercises} />
+      </p>
     </div>
   )
 }
@@ -1093,7 +1242,7 @@ function StallHint({
     <Link
       viewTransition
       to={`/exercise/${exerciseId}`}
-      className="text-warn-500 hover:text-warn-500/80 mt-2 flex items-center gap-1.5 text-xs font-medium"
+      className="text-warn-500 hover:text-warn-500/80 flex min-h-11 items-center gap-1.5 text-sm font-medium"
     >
       <TrendingDown size={14} aria-hidden />
       Stalled for {sessionsWithoutProgress(tops)} sessions — see options
@@ -1133,20 +1282,14 @@ function Elapsed({ startedAt }: { readonly startedAt: string }) {
       ? `${String(hours)}:${String(minutes).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`
       : `${String(minutes)}:${String(seconds % 60).padStart(2, '0')}`
 
-  return (
-    <span className="flex items-center gap-1" aria-label={`${text} elapsed`}>
-      <Timer size={12} aria-hidden />
-      {text}
-    </span>
-  )
+  return <span aria-label={`${text} elapsed`}>{text}</span>
 }
 
 /**
- * **When the session should end, at the plan's pace** — "→ 7:42" beside
- * the elapsed time, from the pending sets and the rests the timer will
- * give them (`remainingSeconds`). The question between sets is often
- * "will I be out by eight", and the session already knows. Moves as the
- * session does; gone once nothing is pending.
+ * **When the session should end, at the plan's pace**, from the pending sets
+ * and the rests the timer will give them (`remainingSeconds`). The question
+ * between sets is often "will I be out by eight", and the session already
+ * knows. Moves as the session does; gone once nothing is pending.
  */
 function FinishAt({
   workout,
@@ -1178,10 +1321,10 @@ function FinishAt({
   })
 
   return (
-    <span className="flex items-center gap-1" aria-label={`Projected to finish at ${at}`}>
-      <Flag size={12} aria-hidden />
-      {at}
-    </span>
+    <>
+      <span aria-hidden>·</span>
+      <span aria-label={`Projected to finish at ${at}`}>{at}</span>
+    </>
   )
 }
 
@@ -1206,7 +1349,7 @@ function SupersetLine({
   const other = partner === undefined ? undefined : workout.entries[partner]
   if (partner === undefined || other === undefined) return null
   return (
-    <p className="text-accent-400 mt-1 flex items-center gap-2 text-xs">
+    <p className="text-accent-400 mt-1 flex items-center gap-2 text-sm">
       <Link2 size={14} aria-hidden />
       <span className="min-w-0 truncate">
         Superset {partner > index ? 'A1' : 'A2'} · with {nameOf(other.exerciseId)}
@@ -1215,24 +1358,11 @@ function SupersetLine({
         type="button"
         disabled={busy}
         onClick={onUnpair}
-        className="text-ink-500 hover:text-ink-300 ml-auto flex shrink-0 items-center gap-1"
+        className="text-ink-500 hover:text-ink-300 tap-target ml-auto flex shrink-0 items-center gap-1"
       >
         <Unlink2 size={12} aria-hidden />
         Unpair
       </button>
     </p>
   )
-}
-
-/** A pill's movement glyph; a finished pill shows its tick instead. */
-function PillGlyph({
-  exercise,
-  warmup,
-}: {
-  readonly exercise: Exercise | undefined
-  readonly warmup: boolean
-}) {
-  if (exercise === undefined && !warmup) return null
-  const glyph = warmup || exercise === undefined ? 'warmup' : glyphFor(exercise)
-  return <MoveGlyph glyph={glyph} size={14} className="shrink-0 opacity-80" />
 }

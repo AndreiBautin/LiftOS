@@ -1,4 +1,5 @@
 import type { WeightUnit } from '@/domain/units/weight'
+import { PLATE_COLOURS } from './plate-colours'
 import { PLATES, platesFor, type BarKind, type Rack } from '@/domain/units/plates'
 
 /**
@@ -21,26 +22,6 @@ import { PLATES, platesFor, type BarKind, type Rack } from '@/domain/units/plate
  * premium pass set for anything that moves; the global reduced-motion
  * block flattens it like everything else.
  */
-
-const COLOURS: Readonly<Record<WeightUnit, readonly string[]>> = {
-  lb: [
-    'oklch(0.58 0.17 255)', // 45 blue
-    'oklch(0.80 0.15 90)', // 35 yellow
-    'oklch(0.62 0.15 150)', // 25 green
-    'oklch(0.90 0.01 250)', // 10 white
-    'oklch(0.60 0.18 25)', // 5 red
-    'oklch(0.84 0.03 80)', // 2.5 chrome
-  ],
-  kg: [
-    'oklch(0.60 0.19 25)', // 25 red
-    'oklch(0.58 0.17 255)', // 20 blue
-    'oklch(0.80 0.15 90)', // 15 yellow
-    'oklch(0.62 0.15 150)', // 10 green
-    'oklch(0.90 0.01 250)', // 5 white
-    'oklch(0.35 0.01 250)', // 2.5 black
-    'oklch(0.84 0.03 80)', // 1.25 chrome
-  ],
-}
 
 /** Height and thickness by rank in the plate list, heaviest first. */
 const HEIGHTS = [74, 68, 60, 46, 36, 30, 26]
@@ -83,7 +64,7 @@ export function PlateLoader({
       index,
       width: widthOf(plate),
       height: HEIGHTS[r] ?? 20,
-      colour: COLOURS[unit][r],
+      colour: PLATE_COLOURS[unit][r],
       at,
     }
   })

@@ -111,13 +111,6 @@ describe('the first-run setup', () => {
     expect(readSettings(storage).settings.setupDone).toBe(true)
   })
 
-  it('remembers that a set has been swiped', () => {
-    writeSettings({ ...DEFAULT_SETTINGS, swipeLearned: true }, storage, at('2026-08-26T09:00:00Z'))
-    expect(readSettings(storage).settings.swipeLearned).toBe(true)
-  })
-})
-
-describe('accepted resets', () => {
   it('survive a write and a read, with malformed ones dropped', () => {
     storage.setItem(
       STORAGE_KEYS.settings,

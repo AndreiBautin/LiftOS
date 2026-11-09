@@ -230,7 +230,6 @@ function mergeWithDefaults(parsed: unknown): AppSettings {
     ...(typeof stored.lastExportAt === 'string' ? { lastExportAt: stored.lastExportAt } : {}),
     ...sampleDataOf(stored.sampleData),
     ...(stored.setupDone === true ? { setupDone: true } : {}),
-    ...(stored.swipeLearned === true ? { swipeLearned: true } : {}),
     ...loadResetsOf(stored.loadResets),
     ...loadStepsOf(stored.loadSteps),
     ...dayMovesOf(stored.dayMoves),

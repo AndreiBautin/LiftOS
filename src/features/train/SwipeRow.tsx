@@ -27,14 +27,12 @@ export function SwipeRow({
   children,
   onRight,
   onLeft,
-  peek = false,
   onSwiped,
 }: {
   readonly children: ReactNode
   /** Logs the set as planned; absent where there is nothing to log. */
   readonly onRight?: (() => void) | undefined
   readonly onLeft?: (() => void) | undefined
-  readonly peek?: boolean
   /** Told once a swipe commits, so a hint can stop being shown. */
   readonly onSwiped?: () => void
 }) {
@@ -140,7 +138,7 @@ export function SwipeRow({
         </div>
       )}
       <div
-        className={cn('relative touch-pan-y', peek && dx === 0 && !settling && 'swipe-peek')}
+        className={'relative touch-pan-y'}
         style={{
           transform: dx === 0 ? undefined : `translateX(${String(dx)}px)`,
           transition: settling ? 'transform var(--dur-base) var(--ease-spring)' : undefined,

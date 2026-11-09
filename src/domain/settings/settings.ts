@@ -109,8 +109,6 @@ export interface AppSettings {
    * anything has been logged: somebody with a history is past it.
    */
   readonly setupDone?: boolean
-  /** A set has been swiped, so the rows stop showing that they can be. */
-  readonly swipeLearned?: boolean
   /**
    * Resets accepted for stalled exercises, by `resetKey`. Each holds until
    * a session of the exercise is logged after the day it was accepted.

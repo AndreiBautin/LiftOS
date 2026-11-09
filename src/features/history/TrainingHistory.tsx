@@ -132,7 +132,6 @@ export function TrainingHistory() {
       <UndoToast
         label={`Deleted ${deleted.workout.title}`}
         stamp={deleted.stamp}
-        raised={false}
         onDone={dismissDeleted}
         onUndo={() => {
           restoreWorkout.mutate(deleted.workout)

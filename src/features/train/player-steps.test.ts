@@ -5,6 +5,7 @@ import { asExerciseId } from '@/domain/ids/ids'
 import { anEntry, aSet, aWorkout } from '@/test/builders/workout'
 
 import {
+  barForNext,
   firstIncompleteIndex,
   loadToShow,
   nextStep,
@@ -74,6 +75,43 @@ describe('what is on the bar', () => {
 
   it('is the last load lifted once nothing is pending, while it is stripped', () => {
     expect(loadToShow([done(185), done(190)])).toBe(190)
+  })
+})
+
+/*
+ * Read off the rest screen while loading the bar, so a wrong answer is a wrong
+ * bar under a lifter, and nothing else on screen would disagree with it.
+ */
+describe('what the rest does to the bar', () => {
+  const bench = asExerciseId('bench-press')
+  const row = asExerciseId('pendlay-row')
+  const lifted = { load: 210, exerciseId: bench }
+  const barFor = (entries: Parameters<typeof aWorkout>[0]) =>
+    barForNext(aWorkout(entries), 0, library, 'lb', [45, 35, 25, 10, 5, 2.5], lifted)
+
+  it('leaves it alone for the same load', () => {
+    expect(barFor({ entries: [anEntry({ exerciseId: bench, sets: [pending(210, 3)] })] })).toBe(
+      'Bar stays loaded',
+    )
+  })
+
+  it('names the plates a side for another load, the next exercise included', () => {
+    expect(
+      barFor({
+        entries: [
+          anEntry({ exerciseId: bench, sets: [done(210)] }),
+          anEntry({ exerciseId: row, sets: [pending(160, 8)] }),
+        ],
+      }),
+    ).toBe('45 · 10 · 2.5 a side')
+  })
+
+  it('says nothing for what is not a bar', () => {
+    expect(
+      barFor({
+        entries: [anEntry({ exerciseId: asExerciseId('dips'), sets: [pending(0, 12)] })],
+      }),
+    ).toBeUndefined()
   })
 })
 

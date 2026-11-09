@@ -1,8 +1,6 @@
 import { Undo2 } from 'lucide-react'
 import { useEffect } from 'react'
 
-import { cn } from '@/lib/cn'
-
 /** How long the way back stays on screen. */
 const UNDO_MS = 5000
 
@@ -15,21 +13,16 @@ const UNDO_MS = 5000
  * own clear exists but means opening the set again; this is the undo
  * where the mistake was made. **Undo returns the set to pending**, which
  * is what it was a moment before, and cancels the rest the log started.
- *
- * It sits above the rest timer when one is showing (`raised`), so the two
- * never cover each other.
  */
 export function UndoToast({
   label,
   stamp,
-  raised,
   onUndo,
   onDone,
 }: {
   readonly label: string
   /** Changes with every new toast, restarting its clock. */
   readonly stamp: number
-  readonly raised: boolean
   readonly onUndo: () => void
   readonly onDone: () => void
 }) {
@@ -42,10 +35,7 @@ export function UndoToast({
 
   return (
     <div
-      className={cn(
-        'pointer-events-none fixed inset-x-0 z-40 mx-auto flex max-w-2xl justify-center px-3',
-        raised ? 'bottom-28' : 'bottom-4',
-      )}
+      className="pointer-events-none fixed inset-x-0 bottom-40 z-40 mx-auto flex max-w-2xl justify-center px-3"
       style={{ marginBottom: 'var(--safe-bottom)' }}
     >
       <div

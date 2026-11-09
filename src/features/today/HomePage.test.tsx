@@ -88,7 +88,11 @@ describe('finishing a session', () => {
         <RouterProvider router={router} />
       </AppProviders>,
     )
-    const finish = await screen.findByRole('button', { name: /Finish early/ }, { timeout: 5000 })
+    const tools = await screen.findByRole('button', { name: 'Session tools' }, { timeout: 5000 })
+    await act(async () => {
+      await userEvent.click(tools)
+    })
+    const finish = await screen.findByRole('button', { name: /Finish early/ })
 
     // The hero's Start button is the dashboard's first control.
     let dashboardDrawn = false

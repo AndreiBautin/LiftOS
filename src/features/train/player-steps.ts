@@ -10,6 +10,7 @@ import type { ExerciseId } from '@/domain/ids/ids'
 import { isEntryComplete, type LogEntry, type WorkoutLog } from '@/domain/logging/workout-log'
 import { describePrescription } from '@/domain/programs/prescription'
 import { restAfter, type RestPlan, type RestWork } from '@/domain/programs/rest'
+import { platesFor, type Rack } from '@/domain/units/plates'
 import { formatLoad, type WeightUnit } from '@/domain/units/weight'
 
 /**
@@ -49,6 +50,39 @@ export function nextUp(
     }
   }
   return undefined
+}
+
+/** "45 · 10 · 2.5 a side", or the empty bar. */
+export function platesPerSide(perSide: readonly number[]): string {
+  return perSide.length === 0 ? 'Empty bar' : `${perSide.join(' · ')} a side`
+}
+
+/**
+ * What the rest should do to the bar: nothing, if the next set wants the load
+ * just lifted on the same kind of bar, otherwise the plates it takes. Silent
+ * for anything that is not a loaded bar, where there is nothing to change.
+ */
+export function barForNext(
+  workout: WorkoutLog,
+  from: number,
+  exercises: readonly Exercise[],
+  units: WeightUnit,
+  rack: Rack,
+  lifted: { readonly load: number | undefined; readonly exerciseId: ExerciseId },
+): string | undefined {
+  const entry = workout.entries
+    .slice(from)
+    .find((one) => one.sets.some((set) => set.outcome === 'pending'))
+  const set = entry?.sets.find((one) => one.outcome === 'pending')
+  if (entry === undefined || set?.plannedLoad === undefined) return undefined
+  const equipment = (id: ExerciseId) => exercises.find((one) => one.id === id)?.equipment
+  const kind = equipment(entry.exerciseId)
+  if (kind !== 'barbell' && kind !== 'ez-bar') return undefined
+  if (set.plannedLoad === lifted.load && kind === equipment(lifted.exerciseId)) {
+    return 'Bar stays loaded'
+  }
+  const loading = platesFor(set.plannedLoad, units, kind, rack)
+  return loading === undefined ? undefined : platesPerSide(loading.perSide)
 }
 
 /** The indices of the warm-up run `at` sits in, or undefined if it is not a warm-up. */

@@ -74,8 +74,6 @@ interface Props {
    * would be named a record for beating only last week.
    */
   readonly earlier?: readonly Performance[]
-  /** Slide this row once to show it can be swiped. */
-  readonly peek?: boolean
   readonly onSwiped?: () => void
 }
 
@@ -180,7 +178,6 @@ export function SetRow(props: Props) {
       <SwipeRow
         onRight={quick ? logPlanned : undefined}
         onLeft={!done && !skipped && !set.isWarmup ? props.onSkip : undefined}
-        peek={props.peek === true}
         {...(props.onSwiped === undefined ? {} : { onSwiped: props.onSwiped })}
       >
         <div

@@ -1,6 +1,6 @@
 import { Pause, Play } from 'lucide-react'
 import { RollingNumber } from '@/components/shared/RollingNumber'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 
 import { restCuesBetween } from '@/domain/programs/rest-cues'
 
@@ -8,10 +8,14 @@ import { playRestCue } from './rest-sounds'
 import { useHaptics } from '@/features/feel/haptics'
 
 import { Button } from '@/components/shared/primitives'
-import { cn } from '@/lib/cn'
 
 /**
- * The rest timer.
+ * The rest, as the whole screen.
+ *
+ * **Resting is most of a session**, and it was a capsule over a set list you
+ * were not using. Between sets a lifter wants three things from across a rack:
+ * how long is left, what goes on the bar, and how the last set went. So those
+ * are all there is, and the screen goes when the rest does.
  *
  * Derived from an absolute start time passed in as a prop rather than
  * counting a number down, because a phone locked between sets suspends
@@ -19,9 +23,6 @@ import { cn } from '@/lib/cn'
  * `remaining -= 1` every second would pause with the screen and report
  * ninety seconds of rest after four minutes in a pocket — worse than no
  * timer, because it is trusted.
- *
- * Neither source app had a rest timer at all, despite both prescribing
- * work where rest length changes the training effect.
  */
 
 interface Props {
@@ -31,15 +32,24 @@ interface Props {
   /** Why this long — "Heavy lift", "Isolation · short set". */
   readonly reason?: string | undefined
   /**
-   * The set this rest leads up to, so the bar can be loaded while the
-   * clock runs rather than after it. Absent once nothing is pending.
+   * The set this rest leads up to, so the bar can be loaded while the clock
+   * runs rather than after it. Absent once nothing is pending.
    */
-  readonly next?: { readonly title: string; readonly detail: string } | undefined
+  readonly next?:
+    | {
+        readonly title: string
+        readonly detail: string
+        /** What to do to the bar: "Bar stays loaded", or the plates a side. */
+        readonly bar?: string | undefined
+      }
+    | undefined
   readonly onDismiss: () => void
-  /** Kept running but out of sight, so its pause and +30s survive (focus view). */
-  readonly hidden?: boolean
   /** Ticks and a chime; see `restCuesBetween`. */
   readonly sounds?: boolean
+  /** The session's figures, since this covers the bar that carries them. */
+  readonly header: ReactNode
+  /** The set just logged and how it did. */
+  readonly logged: ReactNode
 }
 
 export function RestTimer({
@@ -48,8 +58,9 @@ export function RestTimer({
   reason,
   next,
   onDismiss,
-  hidden = false,
   sounds = false,
+  header,
+  logged,
 }: Props) {
   /**
    * Milliseconds the lifter has spent with the timer paused. Kept as a
@@ -95,7 +106,7 @@ export function RestTimer({
   /*
    * **The end of a rest is felt as well as seen**, once, on the change —
    * a phone face up on a bench is not being looked at. Android buzzes; iOS
-   * gives a web app no vibration API, so there it is the glow alone.
+   * gives a web app no vibration API, so there it is the colour alone.
    */
   useEffect(() => {
     if (!elapsed) return
@@ -113,122 +124,124 @@ export function RestTimer({
     for (const cue of restCuesBetween(before, remaining)) playRestCue(cue)
   }, [remaining, sounds, pausedAt])
   const total = seconds * 1000 + extraMs
-  const progress = total <= 0 ? 1 : Math.min(1, 1 - remaining / total)
+  const left = total <= 0 ? 0 : Math.min(1, remaining / total)
 
-  /*
-   * **A ring rather than a bar, and +30s rather than "again".** The bar
-   * was a hairline under the numbers, and the restart icon beside it added
-   * a whole second rest period — two minutes for a lifter who wanted
-   * thirty seconds more. A ring is the shape a rest timer is read as from
-   * across a rack, and the button says what it adds.
-   */
-  const ring = 2 * Math.PI * 20
+  const ring = 2 * Math.PI * 138
 
   return (
     <div
-      className="session-player fixed inset-x-0 bottom-0 z-30 mx-auto max-w-2xl px-3"
-      /*
-       * Pinned to the bottom edge and padded past the home indicator. A
-       * style rather than an arbitrary Tailwind value, because `env()`
-       * inside a bracket class is fragile across builds and this must not
-       * resolve to zero.
-       */
-      style={{ paddingBottom: 'calc(0.75rem + var(--safe-bottom))' }}
-      role="status"
-      aria-live="polite"
-      hidden={hidden}
+      className="session-player bg-ink-950 fixed inset-0 z-30 flex justify-center px-5"
+      style={{
+        paddingTop: 'calc(0.875rem + var(--safe-top))',
+        paddingBottom: 'calc(1.25rem + var(--safe-bottom))',
+      }}
+      role="dialog"
+      aria-label="Resting"
     >
-      <div
-        className={cn(
-          'rest-island mx-auto max-w-md overflow-hidden rounded-[1.75rem] backdrop-blur-xl',
-          elapsed && 'rest-done',
-        )}
-      >
-        {next !== undefined && (
-          <p className="border-ink-800 flex items-baseline gap-2 border-b px-5 py-1.5 text-xs">
-            <span className="text-ink-500 shrink-0 font-medium tracking-wide uppercase">
-              Up next
-            </span>
-            <span className="text-ink-300 min-w-0 truncate">{next.title}</span>
-            <span className="numeric text-ink-50 ml-auto shrink-0 font-semibold">
-              {next.detail}
-            </span>
-          </p>
-        )}
-        <div className="flex items-center gap-3 px-4 py-2.5">
-          <svg viewBox="0 0 48 48" className="size-12 shrink-0 -rotate-90" aria-hidden>
-            <circle
-              cx="24"
-              cy="24"
-              r="20"
-              fill="none"
-              stroke="var(--color-ink-800)"
-              strokeWidth="4"
-            />
-            <circle
-              cx="24"
-              cy="24"
-              r="20"
-              fill="none"
-              stroke={elapsed ? 'var(--color-good-500)' : 'var(--color-accent-400)'}
-              strokeWidth="4"
-              strokeLinecap="round"
-              strokeDasharray={ring}
-              strokeDashoffset={ring * (1 - progress)}
-              className="transition-[stroke-dashoffset] duration-300"
-            />
-          </svg>
+      <div className="flex w-full max-w-md flex-col">
+        {header}
+        <div className="mt-3">{logged}</div>
 
-          <div className="min-w-0 flex-1">
-            <p className="text-ink-500 truncate text-xs font-medium tracking-wide uppercase">
-              {elapsed
-                ? 'Rest complete'
-                : pausedAt !== undefined
-                  ? 'Paused'
-                  : reason !== undefined && reason !== ''
-                    ? reason
-                    : 'Resting'}
-            </p>
-            <p className="numeric text-ink-50 text-2xl leading-tight font-semibold tabular-nums">
-              {elapsed ? 'Go' : <RollingNumber value={formatRemaining(remaining)} />}
-            </p>
+        <div className="flex min-h-0 flex-1 flex-col items-center justify-center">
+          <div className="relative aspect-square min-h-0 w-full max-w-[19rem]">
+            <svg viewBox="0 0 300 300" className="size-full -rotate-90" aria-hidden>
+              <circle
+                cx="150"
+                cy="150"
+                r="138"
+                fill="none"
+                stroke="var(--color-ink-900)"
+                strokeWidth="12"
+              />
+              <circle
+                cx="150"
+                cy="150"
+                r="138"
+                fill="none"
+                stroke={elapsed ? 'var(--color-good-500)' : 'var(--color-accent-400)'}
+                strokeWidth="12"
+                strokeLinecap="round"
+                strokeDasharray={ring}
+                strokeDashoffset={ring * (1 - left)}
+                className="transition-[stroke-dashoffset] duration-300"
+              />
+            </svg>
+            <div
+              className="absolute inset-0 flex flex-col items-center justify-center"
+              role="status"
+            >
+              <p className="font-display text-[5.5rem] leading-none font-bold tracking-[-0.04em]">
+                {elapsed ? 'Go' : <RollingNumber value={formatRemaining(remaining)} />}
+              </p>
+              <p className="text-ink-500 mt-1.5 text-[0.9375rem]">
+                {elapsed
+                  ? 'Rest complete'
+                  : pausedAt !== undefined
+                    ? 'Paused'
+                    : reason !== undefined && reason !== ''
+                      ? reason
+                      : 'Resting'}
+              </p>
+            </div>
           </div>
-
-          <Button
-            variant="ghost"
-            size="sm"
-            aria-label={pausedAt === undefined ? 'Pause rest timer' : 'Resume rest timer'}
-            onClick={() => {
-              if (pausedAt === undefined) {
-                setPausedAt(Date.now())
-              } else {
-                setPausedFor((current) => current + (Date.now() - pausedAt))
-                setPausedAt(undefined)
-              }
-            }}
-          >
-            {pausedAt === undefined ? (
-              <Pause size={16} aria-hidden />
-            ) : (
-              <Play size={16} aria-hidden />
-            )}
-          </Button>
-
-          <Button
-            variant="outline"
-            size="sm"
-            aria-label="Add thirty seconds of rest"
-            onClick={() => {
-              setExtraMs((current) => current + 30_000)
-            }}
-          >
-            +30s
-          </Button>
-
-          <Button variant={elapsed ? 'primary' : 'ghost'} size="sm" onClick={onDismiss}>
-            Done
-          </Button>
+          <div className="mt-4 flex gap-2.5">
+            <Button
+              variant="outline"
+              className="h-12 w-24 rounded-[0.875rem]"
+              aria-label="Add thirty seconds of rest"
+              onClick={() => {
+                setExtraMs((current) => current + 30_000)
+              }}
+            >
+              +30s
+            </Button>
+            <Button
+              variant="outline"
+              className="h-12 w-28 rounded-[0.875rem]"
+              aria-label={pausedAt === undefined ? 'Pause rest timer' : 'Resume rest timer'}
+              onClick={() => {
+                if (pausedAt === undefined) {
+                  setPausedAt(Date.now())
+                } else {
+                  setPausedFor((current) => current + (Date.now() - pausedAt))
+                  setPausedAt(undefined)
+                }
+              }}
+            >
+              {pausedAt === undefined ? (
+                <Pause size={16} aria-hidden />
+              ) : (
+                <Play size={16} aria-hidden />
+              )}
+              {pausedAt === undefined ? 'Pause' : 'Resume'}
+            </Button>
+          </div>
         </div>
+
+        {next !== undefined && (
+          <div className="border-ink-800 border-t pt-3.5">
+            <p className="text-ink-500 truncate text-sm">Next · {next.title}</p>
+            <div className="mt-0.5 flex items-baseline justify-between gap-3">
+              <span className="font-display min-w-0 truncate text-[2.5rem] leading-tight font-bold tracking-tight">
+                {next.detail}
+              </span>
+              {next.bar !== undefined && (
+                <span className="text-ink-500 numeric shrink-0 text-right text-[0.9375rem]">
+                  {next.bar}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
+        <Button
+          variant={elapsed ? 'primary' : 'outline'}
+          full
+          className="font-display mt-3 h-[4.5rem] shrink-0 rounded-[1.25rem] text-xl"
+          onClick={onDismiss}
+        >
+          Ready now
+        </Button>
       </div>
     </div>
   )

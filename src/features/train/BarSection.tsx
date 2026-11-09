@@ -1,154 +1,156 @@
 import { Check } from 'lucide-react'
 import { BeltLoad, DumbbellPair } from './Dumbbells'
-import { useState } from 'react'
 
 import { useSettings } from '@/app/context'
+import { Button } from '@/components/shared/primitives'
 import type { Exercise } from '@/domain/exercises/exercise'
 import { rackFor, type BarKind } from '@/domain/units/plates'
-import { warmupRamp } from '@/domain/units/ramp'
+import type { RampStep } from '@/domain/units/ramp'
 import { formatLoad, type WeightUnit } from '@/domain/units/weight'
 import { cn } from '@/lib/cn'
 
 import { PlateLoader } from './PlateLoader'
 
 /**
- * The bar for this exercise: the plate loader, and for the main lift a
- * warm-up ramp above it.
+ * The bar drawn large, and the warm-up ramp under it as a list to walk.
  *
- * **Tapping a ramp step loads that step on the picture.** The ramp is a
- * list of loads, and a list of loads is the arithmetic the plate loader
- * exists to take away — so each step can be shown as plates the same
- * way, and the working load is one more chip at the end. The main lift
- * and every other barbell compound get a ramp; isolation work at a light
- * working load is its own warm-up, and five chips above a curl would be
- * furniture.
+ * **Pressing a step loads it on the picture.** The ramp is a list of loads,
+ * and a list of loads is the arithmetic the plate loader exists to take away.
+ * "Done, next step" ticks the one in view and puts the next on the bar; after
+ * the last, the working load comes up. The main lift and every other barbell
+ * compound get a ramp; isolation work at a light working load is its own
+ * warm-up.
  */
 export function BarSection({
   equipment,
   load,
   units,
-  ramp,
+  steps,
+  step,
+  done,
+  onStep,
+  onDone,
 }: {
   readonly equipment: Exercise['equipment'] | undefined
-  readonly load: number | undefined
+  readonly load: number
   readonly units: WeightUnit
-  readonly ramp: boolean
+  readonly steps: readonly RampStep[]
+  /** The ramp step on the picture; undefined is the working load. */
+  readonly step: number | undefined
+  readonly done: ReadonlySet<number>
+  readonly onStep: (step: number | undefined) => void
+  readonly onDone: (done: ReadonlySet<number>) => void
 }) {
   const { settings } = useSettings()
-  const [step, setStep] = useState<number | undefined>(undefined)
-  /** Ramp steps ticked off, by index; ephemeral, like the step on view. */
-  const [done, setDone] = useState<ReadonlySet<number>>(new Set())
-
   const kind: BarKind | undefined =
     equipment === 'barbell' ? 'barbell' : equipment === 'ez-bar' ? 'ez-bar' : undefined
-  // A dumbbell or a loaded bodyweight movement gets its own picture.
-  if (kind === undefined && load !== undefined && load > 0) {
+  if (kind === undefined) {
     if (equipment === 'dumbbell') return <DumbbellPair load={load} unit={units} />
     if (equipment === 'bodyweight') return <BeltLoad load={load} unit={units} />
+    return null
   }
-  if (kind === undefined || load === undefined) return null
 
   const plates = rackFor(settings.plates, units, settings.platePairs)
-  const steps = ramp ? warmupRamp(load, units, kind, plates) : []
   const shown = step === undefined ? load : (steps[step]?.load ?? load)
 
-  /*
-   * **The ramp ticks off as it is done.** Each step was only a picture to
-   * load; now "Done" on the step in view ticks it and puts the next one
-   * on the bar, and after the last the working load comes up — so the
-   * plate picture walks the ramp with you instead of waiting to be told.
-   */
   const finish = (index: number) => {
     const next = new Set(done).add(index)
-    setDone(next)
+    onDone(next)
     const after = steps.findIndex((_, at) => !next.has(at))
-    setStep(after === -1 ? undefined : after)
+    onStep(after === -1 ? undefined : after)
   }
 
   return (
     <>
+      <PlateLoader load={shown} unit={units} kind={kind} available={plates} />
       {steps.length > 0 && (
-        <div className="mt-4">
-          <div className="mb-1.5 flex items-center justify-between gap-2">
-            <p className="text-ink-500 text-xs font-semibold tracking-[0.12em] uppercase">
-              Warm up to it
-            </p>
-            {done.size > 0 && (
-              <span className="text-ink-500 numeric text-xs">
-                {done.size}/{steps.length} done
-              </span>
-            )}
-          </div>
-          <div className="flex flex-wrap gap-1.5" role="group" aria-label="Warm-up ramp">
+        <>
+          <ol className="border-ink-800 mt-3 border-t" aria-label="Warm-up ramp">
             {steps.map((one, index) => (
-              <Chip
+              <Row
                 key={one.load}
+                label={index === 0 ? 'Empty bar' : `Step ${String(index + 1)}`}
+                figure={`${formatLoad(one.load, units)} × ${String(one.reps)}`}
                 active={step === index}
                 ticked={done.has(index)}
-                onClick={() => {
-                  setStep(step === index ? undefined : index)
+                onPress={() => {
+                  onStep(step === index ? undefined : index)
                 }}
-                label={`${index === 0 ? 'Bar' : formatLoad(one.load, units)} × ${String(one.reps)}`}
               />
             ))}
-            <Chip
+            <Row
+              label="Work"
+              figure={formatLoad(load, units)}
               active={step === undefined}
-              working
-              onClick={() => {
-                setStep(undefined)
+              ticked={false}
+              onPress={() => {
+                onStep(undefined)
               }}
-              label={`Work ${formatLoad(load, units)}`}
             />
-          </div>
+          </ol>
           {step !== undefined && !done.has(step) && (
-            <button
-              type="button"
+            <Button
+              variant="primary"
+              full
+              className="font-display mt-4 h-16 rounded-2xl text-lg"
               onClick={() => {
                 finish(step)
               }}
-              className="tap-target text-accent-400 mt-2 inline-flex items-center gap-1.5 text-xs font-semibold"
             >
-              <Check size={14} aria-hidden />
-              Done — {step + 1 < steps.length ? 'next step' : 'on to the work'}
-            </button>
+              {step + 1 < steps.length ? 'Done, next step' : 'Done, on to the work'}
+            </Button>
           )}
-        </div>
+        </>
       )}
-      <PlateLoader load={shown} unit={units} kind={kind} available={plates} />
     </>
   )
 }
 
-function Chip({
+function Row({
   label,
+  figure,
   active,
-  ticked = false,
-  working = false,
-  onClick,
+  ticked,
+  onPress,
 }: {
   readonly label: string
+  readonly figure: string
   readonly active: boolean
-  readonly ticked?: boolean
-  readonly working?: boolean
-  readonly onClick: () => void
+  readonly ticked: boolean
+  readonly onPress: () => void
 }) {
   return (
-    <button
-      type="button"
-      aria-pressed={active}
-      onClick={onClick}
-      className={cn(
-        'tap-target numeric rounded-full border px-3 text-xs font-medium transition-colors',
-        active
-          ? 'border-accent-500/60 bg-accent-500/15 text-accent-400'
-          : 'border-ink-800 text-ink-300 hover:border-ink-700',
-        working && !active && 'text-ink-100',
-        ticked && !active && 'border-good-500/30 text-good-500',
-        'inline-flex items-center gap-1',
-      )}
-    >
-      {ticked && <Check size={12} aria-label="done" />}
-      {label}
-    </button>
+    <li className="border-ink-800 border-b">
+      <button
+        type="button"
+        aria-pressed={active}
+        onClick={onPress}
+        className={cn(
+          'flex min-h-[3.25rem] w-full items-center gap-3 text-left',
+          !active && ticked && 'text-ink-500',
+        )}
+      >
+        {ticked ? (
+          <Check size={20} className="text-accent-400 shrink-0" aria-label="Done" />
+        ) : (
+          <span
+            aria-hidden
+            className={cn(
+              'size-5 shrink-0 rounded-full border-2',
+              active ? 'border-accent-400' : 'border-ink-700',
+            )}
+          />
+        )}
+        <span className={cn('flex-1', active && 'font-semibold')}>{label}</span>
+        <span
+          className={cn(
+            'font-display',
+            active ? 'text-2xl leading-none font-bold' : 'text-base font-medium',
+          )}
+        >
+          {figure}
+        </span>
+      </button>
+    </li>
   )
 }
