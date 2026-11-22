@@ -239,6 +239,8 @@ function mergeWithDefaults(parsed: unknown): AppSettings {
     ...sessionDraftOf(stored.sessionDraft),
     ...templatesOf(stored.templates),
     ...(typeof stored.seenNotes === 'string' ? { seenNotes: stored.seenNotes } : {}),
+    // Only the one opt-in is kept; anything else is the flexible default.
+    ...(stored.trainingMode === 'program' ? { trainingMode: 'program' as const } : {}),
     // Only a hue on offer: anything else could land on the good colour.
     ...(stored.trueBlack === true ? { trueBlack: true } : {}),
     ...(typeof stored.accentHue === 'number' &&

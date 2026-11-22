@@ -33,6 +33,10 @@ import { SampleNotice } from './SampleNotice'
  * only while a session is open. The service worker precaches every chunk, so
  * offline is unchanged.
  */
+const ActivityModule = lazyNamed(
+  () => import('@/features/activity/ActivityModule'),
+  'ActivityModule',
+)
 const BodyModule = lazyNamed(() => import('@/features/train/BodyModule'), 'BodyModule')
 const RecentModule = lazyNamed(() => import('@/features/history/RecentModule'), 'RecentModule')
 const SavedSessionsCard = lazyNamed(
@@ -187,6 +191,7 @@ export function HomePage() {
 
 /** Today below the session, in order. */
 const MODULES: readonly { readonly key: string; readonly node: React.ReactNode }[] = [
+  { key: 'activity', node: <ActivityModule /> },
   { key: 'strength', node: <StrengthModule /> },
   { key: 'showing-up', node: <ShowingUpModule /> },
   { key: 'body', node: <BodyModule /> },

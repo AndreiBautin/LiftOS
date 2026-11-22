@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { DEFAULT_SETTINGS } from '@/domain/settings/settings'
 import { closeAppDatabase, openDatabase, type AppDatabase } from '@/infrastructure/db/database'
 import {
+  createActivityRepository,
   createCheckInRepository,
   createExerciseRepository,
   createPositionRepository,
@@ -76,6 +77,7 @@ async function device(name: string): Promise<SyncRepositories> {
     exercises: createExerciseRepository(db),
     workouts: createWorkoutRepository(db, clock),
     checkIns: createCheckInRepository(db),
+    activities: createActivityRepository(db, clock),
     tombstones: createTombstoneRepository(db),
     position: createPositionRepository(db, clock),
   }

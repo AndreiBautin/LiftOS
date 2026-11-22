@@ -203,6 +203,7 @@ function emptyCounts(): Record<keyof BackupCounts, number> {
     exercises: 0,
     workouts: 0,
     checkIns: 0,
+    activities: 0,
   }
 }
 

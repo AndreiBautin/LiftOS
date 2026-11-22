@@ -10,7 +10,50 @@ import type { ProgramPosition } from '@/domain/programs/position'
 import type { UpcomingSession } from '@/domain/programs/upcoming'
 import type { PositionRepository } from '@/domain/repositories/ports'
 
+import { indexTombstones } from '@/domain/sync/tombstone'
+import { inboxPathFor, parseInbox, planInbox } from '@/domain/sync/inbox'
+import { logger } from '@/shared/logging/logger'
+
 import { GitHubSyncError, readFile, writeFile, type GitHubTarget } from './github-file'
+
+/**
+ * Files what Jarvis left in its inbox (`domain/sync/inbox.ts`).
+ *
+ * **Never fails the sync.** The inbox is Jarvis's, and a missing, refused
+ * or malformed one is logged and skipped: the user's own records still
+ * sync. Read once a round, before the sync file, so what it files goes up
+ * in the same write.
+ */
+async function applyInbox(
+  target: GitHubTarget,
+  repositories: SyncRepositories,
+  fetchFn: typeof fetch = fetch,
+): Promise<number> {
+  let text: string | undefined
+  try {
+    text = (await readFile({ ...target, path: inboxPathFor(target.path) }, fetchFn))?.text
+  } catch {
+    logger.warn('sync.inbox-unreadable', {})
+    return 0
+  }
+  if (text === undefined) return 0
+  const inbox = parseInbox(text)
+  if (inbox === undefined) {
+    logger.warn('sync.inbox-malformed', {})
+    return 0
+  }
+  if (inbox.refused > 0) logger.warn('sync.inbox-refused', { count: inbox.refused })
+  const ours = new Map((await repositories.activities.all()).map((row) => [row.id, row]))
+  const plan = planInbox(inbox.ops, ours, indexTombstones(await repositories.tombstones.all()))
+  if (plan.put.length > 0) await repositories.activities.restoreMany(plan.put)
+  if (plan.bury.length > 0) {
+    await repositories.tombstones.record(
+      plan.bury.map(({ id, deletedAt }) => ({ id, collection: 'activities' as const, deletedAt })),
+    )
+  }
+  for (const id of plan.purge) await repositories.activities.purge(id)
+  return plan.put.length + plan.bury.length
+}
 
 /**
  * One round of sync with the file in the repository: read it, merge it in,
@@ -36,6 +79,8 @@ interface SyncRun {
   readonly pulled: number
   readonly purged: number
   readonly uploaded: boolean
+  /** Activities filed or undone from Jarvis's inbox this round. */
+  readonly inboxed: number
 }
 
 const ATTEMPTS = 3
@@ -141,6 +186,7 @@ export async function syncWithGitHub(
 ): Promise<SyncRun> {
   let pulled = 0
   let purged = 0
+  const inboxed = await applyInbox(target, repositories, fetchFn)
 
   for (let attempt = 0; attempt < ATTEMPTS; attempt += 1) {
     const remote = await readFile(target, fetchFn)
@@ -194,7 +240,7 @@ export async function syncWithGitHub(
       sameUpcoming &&
       sameStrength
     ) {
-      return { pulled, purged, uploaded: false }
+      return { pulled, purged, uploaded: false, inboxed }
     }
 
     const extras = {
@@ -214,7 +260,7 @@ export async function syncWithGitHub(
       `LiftOS sync, ${options.now.toISOString()}`,
       fetchFn,
     )
-    if (outcome === 'written') return { pulled, purged, uploaded: true }
+    if (outcome === 'written') return { pulled, purged, uploaded: true, inboxed }
   }
 
   throw new GitHubSyncError(

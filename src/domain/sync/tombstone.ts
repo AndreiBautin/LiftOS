@@ -22,6 +22,7 @@
 
 /** The collections a tombstone can refer to. */
 export const TOMBSTONED_COLLECTIONS = [
+  'activities',
   'exercises',
   'workouts',
   'checkIns',

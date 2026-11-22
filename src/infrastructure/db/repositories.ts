@@ -1,4 +1,5 @@
 import type { CheckIn } from '@/domain/autoregulation/check-in'
+import type { ActivityEntry, ActivityId } from '@/domain/logging/activity'
 import type { ProgramPosition } from '@/domain/programs/position'
 import { builtInExercises } from '@/domain/exercises/catalogue'
 import type { Exercise } from '@/domain/exercises/exercise'
@@ -6,6 +7,7 @@ import { resolveLibrary } from '@/domain/exercises/library'
 import type { CheckInId, ExerciseId, WorkoutId } from '@/domain/ids/ids'
 import type { WorkoutLog } from '@/domain/logging/workout-log'
 import type {
+  ActivityRepository,
   CheckInRepository,
   Clock,
   ExerciseRepository,
@@ -223,6 +225,31 @@ export function createCheckInRepository(db: AppDatabase): CheckInRepository {
     },
     async all() {
       return db.getAll('checkIns')
+    },
+  }
+}
+
+export function createActivityRepository(db: AppDatabase, clock: Clock): ActivityRepository {
+  return {
+    async all() {
+      return db.getAllFromIndex('activities', 'by-day')
+    },
+    async byId(id: ActivityId) {
+      return db.get('activities', id)
+    },
+    async save(entry: ActivityEntry) {
+      await db.put('activities', stamp(entry, clock))
+    },
+    async restoreMany(entries: readonly ActivityEntry[]) {
+      const tx = db.transaction('activities', 'readwrite')
+      await Promise.all([...entries.map((entry) => tx.store.put(entry)), tx.done])
+    },
+    async remove(id: ActivityId) {
+      await db.delete('activities', id)
+      await bury(db, clock, 'activities', id)
+    },
+    async purge(id: ActivityId) {
+      await db.delete('activities', id)
     },
   }
 }

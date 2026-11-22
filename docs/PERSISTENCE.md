@@ -283,6 +283,28 @@ schema; the monthly review's `metrics` and `reviews` stores followed at
 the one thing above that must never happen; clearing it in a new step
 reaches every device exactly once.
 
+## Casual activity, and Jarvis's inbox
+
+Since `DB_VERSION` 26 and backup schema 4, casual training is its own
+record in the `activities` store (`domain/logging/activity.ts`): an
+exercise and either a day total or the sets actually reported, with no
+plan behind it, so nothing can read as missed. A total is never split into
+sets, a set never gains a load or an effort nobody gave, and "100 total"
+is kept apart from "100 per side". Activities travel in the backup and the
+sync file like every other collection, with tombstones for deletions. An
+app that reads only schema 3 refuses a schema 4 file rather than syncing
+it back without the activities.
+
+Jarvis cannot reach this device's IndexedDB, so when the user tells the
+Guide what they did, Jarvis writes it to **`liftos-inbox.json`**, beside
+the sync file in the same private repository, and never to the sync file
+itself. Each sync round reads the inbox first (`applyInbox`), files its
+`put`s and `delete`s by their own event ids (newer stamp wins, a newer
+tombstone beats a put, everything idempotent), and the same round's write
+carries them into the sync file, which is where Jarvis sees them arrive. A
+missing, refused or malformed inbox is logged and skipped; it never stops
+the sync. This device never writes the inbox: Jarvis owns it.
+
 ## Addresses that still say lifeos
 
 The app is called LiftOS, and its storage still says `lifeos`: the

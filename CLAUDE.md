@@ -3961,6 +3961,17 @@ untouched), and `isNewerPosition` decides. An unstamped position never
 wins — every position written before this has none, so the device that
 moves first after the update is the one that propagates.
 
+**Casual activity is not a workout** (`domain/logging/activity.ts`,
+`DB_VERSION` 26, backup schema 4). Asked for: _"casual pushups/curls/lateral
+raises should be valid activity, not failed strict bodybuilding sessions"_.
+Never file one as a `WorkoutLog`, split a day total into sets, add a load,
+unit or effort nobody said, or add per-side reps to totals. Every record
+from outside this device's store (backup, sync file, Jarvis's inbox) goes
+through `parseActivity`. Jarvis writes only `liftos-inbox.json` beside the
+sync file (`domain/sync/inbox.ts`); this app reads it on every sync and
+never writes it, and a bad inbox never fails a sync. The week is flexible
+unless `trainingMode: 'program'`: no missed days, no streaks.
+
 **Never edit an existing IndexedDB migration step.** Bump `DB_VERSION`
 and add a new guarded block. A device that already ran a step will not
 run it again, so editing one leaves two devices with different schemas

@@ -6,6 +6,13 @@ export function SessionSettings() {
   return (
     <div className="inset-list">
       <Toggle
+        label="Count missed days — judge the week against the programme, with streaks"
+        checked={settings.trainingMode === 'program'}
+        onChange={(on) => {
+          update({ trainingMode: on ? 'program' : 'flexible' })
+        }}
+      />
+      <Toggle
         label="Rest timer"
         checked={settings.restTimerEnabled}
         onChange={(restTimerEnabled) => {

@@ -1,4 +1,5 @@
 import type { CheckIn } from '@/domain/autoregulation/check-in'
+import type { ActivityEntry, ActivityId } from '@/domain/logging/activity'
 import type { Exercise } from '@/domain/exercises/exercise'
 import type { CheckInId, ExerciseId, WorkoutId } from '@/domain/ids/ids'
 import type { WorkoutLog } from '@/domain/logging/workout-log'
@@ -149,6 +150,20 @@ export interface CheckInRepository {
  * "has every device seen this yet" has no answer here — see
  * `domain/sync/tombstone.ts` for why they are cheap enough to keep.
  */
+/**
+ * Casual activity. `save` stamps and `remove` leaves a tombstone, like the
+ * workouts; `restoreMany` keeps the stamp it was given (a sync or import),
+ * and `purge` deletes without one (the receiving half of a deletion).
+ */
+export interface ActivityRepository {
+  all(): Promise<readonly ActivityEntry[]>
+  byId(id: ActivityId): Promise<ActivityEntry | undefined>
+  save(entry: ActivityEntry): Promise<void>
+  restoreMany(entries: readonly ActivityEntry[]): Promise<void>
+  remove(id: ActivityId): Promise<void>
+  purge(id: ActivityId): Promise<void>
+}
+
 export interface TombstoneRepository {
   all(): Promise<readonly Tombstone[]>
   /**

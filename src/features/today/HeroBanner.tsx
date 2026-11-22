@@ -22,6 +22,8 @@ import { applyDraft, isEmptyDraft } from '@/domain/programs/session-draft'
 import { mondayOf, parseDay, shiftDay, WEEKDAY_LABELS } from '@/domain/time/day'
 import { formatLoad, type WeightUnit } from '@/domain/units/weight'
 import { DeloadSuggestion } from '@/features/train/DeloadSuggestion'
+import { useActivities } from '@/features/activity/hooks'
+import { judgesProgramme } from '@/domain/settings/settings'
 import {
   useExercises,
   useJumpToWeek,
@@ -338,14 +340,26 @@ function WeekStrip({
   const program = useProgram()
   const schedule = useSchedule()
   const workouts = useRecentWorkouts(200)
+  const activities = useActivities()
+  const { settings } = useSettings()
   if (today === undefined) return null
   const monday = mondayOf(today)
   const filed = (workouts.data ?? [])
     .filter((log) => log.status === 'completed')
     .map((log) => ({ date: log.date, title: log.title }))
+  /*
+   * **Flexible unless asked otherwise**: a day is lit by any finished session
+   * or any logged activity, and nothing is ever missed or owed, so there is
+   * no streak to break. `trainingMode: 'program'` restores the judged week.
+   */
+  const judged = judgesProgramme(settings)
+  const active = new Set([
+    ...filed.map((one) => one.date),
+    ...(activities.data ?? []).map((one) => one.day),
+  ])
   /* Nothing is owed before the first session ever filed, or a new install opens on misses. */
   const week =
-    program.data === undefined || schedule.data === undefined || filed.length === 0
+    !judged || program.data === undefined || schedule.data === undefined || filed.length === 0
       ? undefined
       : adherence(
           program.data,
@@ -370,7 +384,11 @@ function WeekStrip({
       >
         {Array.from({ length: 7 }, (_, at) => {
           const on = shiftDay(monday, at)
-          const state = week?.days.find((one) => one.on === on)?.state
+          const state = judged
+            ? week?.days.find((one) => one.on === on)?.state
+            : active.has(on)
+              ? 'done'
+              : undefined
           return (
             <span
               key={on}
@@ -392,7 +410,7 @@ function WeekStrip({
           )
         })}
       </Link>
-      {streak !== undefined && streak > 0 && (
+      {judged && streak !== undefined && streak > 0 && (
         <p className="text-ink-500 shrink-0 text-right text-[0.8125rem] leading-tight">
           <span className="font-display text-ink-50 text-lg font-semibold">{streak}</span> week
           <br />

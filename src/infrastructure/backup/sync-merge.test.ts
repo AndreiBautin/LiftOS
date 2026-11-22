@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { DEFAULT_SETTINGS } from '@/domain/settings/settings'
 import { closeAppDatabase, openDatabase, type AppDatabase } from '@/infrastructure/db/database'
 import {
+  createActivityRepository,
   createCheckInRepository,
   createTombstoneRepository,
   createExerciseRepository,
@@ -30,6 +31,7 @@ beforeEach(async () => {
     exercises: createExerciseRepository(db),
     workouts: createWorkoutRepository(db, testClock),
     checkIns: createCheckInRepository(db),
+    activities: createActivityRepository(db, testClock),
     tombstones: createTombstoneRepository(db),
   }
 })

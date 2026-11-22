@@ -1,5 +1,6 @@
 import type { IdGenerator } from '@/domain/ids/ids'
 import type {
+  ActivityRepository,
   CheckInRepository,
   Clock,
   ExerciseRepository,
@@ -11,6 +12,7 @@ import type {
 import { DATABASE_NAME, IS_DEMO } from '@/config/storage-keys'
 import { openDatabase, type AppDatabase } from '@/infrastructure/db/database'
 import {
+  createActivityRepository,
   createCheckInRepository,
   createExerciseRepository,
   createPositionRepository,
@@ -46,6 +48,7 @@ export interface AppServices {
   readonly position: PositionRepository
   readonly workouts: WorkoutRepository
   readonly checkIns: CheckInRepository
+  readonly activities: ActivityRepository
   readonly tombstones: TombstoneRepository
   readonly settings: SettingsRepository
   readonly ids: IdGenerator
@@ -86,6 +89,7 @@ export async function bootstrap(): Promise<BootstrapResult> {
     position: createPositionRepository(db, systemClock),
     workouts: createWorkoutRepository(db, systemClock),
     checkIns: createCheckInRepository(db),
+    activities: createActivityRepository(db, systemClock),
     tombstones: createTombstoneRepository(db),
     settings,
     ids: cryptoIds,

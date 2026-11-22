@@ -11,6 +11,7 @@ import {
   type AppDatabase,
 } from '@/infrastructure/db/database'
 import {
+  createActivityRepository,
   createCheckInRepository,
   createTombstoneRepository,
   createExerciseRepository,
@@ -47,6 +48,7 @@ beforeEach(async () => {
     exercises: createExerciseRepository(db),
     workouts: createWorkoutRepository(db, testClock),
     checkIns: createCheckInRepository(db),
+    activities: createActivityRepository(db, testClock),
     tombstones: createTombstoneRepository(db),
   }
 })

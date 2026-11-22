@@ -138,10 +138,11 @@ export function useGitHubSync(): void {
           pulled: result.pulled,
           purged: result.purged,
           uploaded: result.uploaded,
+          inboxed: result.inboxed,
         })
         // Only when something arrived: refetching every screen after a
         // round that changed nothing would be a flicker for no reason.
-        if (result.pulled + result.purged > 0) void client.invalidateQueries()
+        if (result.pulled + result.purged + result.inboxed > 0) void client.invalidateQueries()
       } catch (error) {
         const reason = isSyncError(error) ? error.reason : 'unexpected'
         syncStore.phase('error', isSyncError(error) ? error.message : 'Sync failed unexpectedly.')

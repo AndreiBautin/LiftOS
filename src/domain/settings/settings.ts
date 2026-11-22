@@ -136,7 +136,20 @@ export interface AppSettings {
   readonly platePairs?: Readonly<Record<string, number>> | undefined
   /** The newest release note dismissed; see `WhatsNew`. */
   readonly seenNotes?: string
+  /**
+   * Flexible unless the lifter opts into the programme's week: _"default
+   * flexible routine supports variable work and missed days without
+   * owes/debt, guilt/streak failures"_. Absent is flexible, so nothing has
+   * to be migrated and switching back is one tap. The programme itself
+   * stays either way; only what is counted against it changes.
+   */
+  readonly trainingMode?: 'flexible' | 'program'
   readonly schemaVersion: number
+}
+
+/** True when the week is judged against the programme (missed days, streaks). */
+export function judgesProgramme(settings: { readonly trainingMode?: string }): boolean {
+  return settings.trainingMode === 'program'
 }
 
 /**

@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 
-import { useServices } from '@/app/context'
+import { useServices, useSettings } from '@/app/context'
+import { judgesProgramme } from '@/domain/settings/settings'
 import { Module } from '@/components/shared/Module'
 import { blockWindow } from '@/domain/logging/block'
 import { weekRecap } from '@/domain/logging/recap'
@@ -43,6 +44,7 @@ const NAMED = 3
  */
 export function ShowingUpModule() {
   const services = useServices()
+  const { settings } = useSettings()
   const today = toDayKey(services.clock.now())
   const activity = useActivity()
   const program = useProgram()
@@ -59,8 +61,12 @@ export function ShowingUpModule() {
   const filed = (workouts.data ?? [])
     .filter((log) => log.status === 'completed')
     .map((log) => ({ date: log.date, title: log.title }))
+  /* Flexible by default: no week is owed, so nothing is missed or in a row. */
   const followed =
-    program.data === undefined || schedule.data === undefined || filed.length === 0
+    !judgesProgramme(settings) ||
+    program.data === undefined ||
+    schedule.data === undefined ||
+    filed.length === 0
       ? undefined
       : adherence(
           program.data,

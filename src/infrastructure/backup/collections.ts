@@ -1,5 +1,7 @@
 import type { BackupCounts, BackupData } from '@/domain/backup/envelope'
+import { parseActivity, type ActivityEntry } from '@/domain/logging/activity'
 import type {
+  ActivityRepository,
   CheckInRepository,
   ExerciseRepository,
   TombstoneRepository,
@@ -28,6 +30,7 @@ export interface BackupRepositories {
   readonly workouts: WorkoutRepository
   readonly checkIns: CheckInRepository
   readonly tombstones: TombstoneRepository
+  readonly activities: ActivityRepository
 }
 
 /** The key a collection is filed under, in the file and in the counts. */
@@ -105,6 +108,23 @@ export const COLLECTIONS: Readonly<Record<CollectionKey, Collection>> = {
     restore: (r, rows) => r.checkIns.restoreMany(rows),
     tombstoneCollection: 'checkIns',
     purge: (r, id) => r.checkIns.purge(id as never),
+  }),
+  activities: define({
+    local: (r) => r.activities.all(),
+    /*
+     * Read row by row as untrusted: a file's activity that is not exactly
+     * an activity is left out rather than repaired into one. Absent before
+     * version 4.
+     */
+    fromFile: (data) =>
+      (data.activities ?? []).flatMap((row: unknown): ActivityEntry[] => {
+        const entry = parseActivity(row)
+        return entry === undefined ? [] : [entry]
+      }),
+    idOf: (row) => row.id,
+    restore: (r, rows) => r.activities.restoreMany(rows),
+    tombstoneCollection: 'activities',
+    purge: (r, id) => r.activities.purge(id as never),
   }),
 }
 

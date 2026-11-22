@@ -1,4 +1,6 @@
 import type { DBSchema, IDBPDatabase } from 'idb'
+
+import type { ActivityEntry } from '@/domain/logging/activity'
 import { openDB } from 'idb'
 import { logger } from '@/shared/logging/logger'
 
@@ -52,7 +54,7 @@ const DB_NAME = 'lifeos'
  * a device that already ran it will not run it again, so changing one
  * leaves two devices with different schemas and no way to tell.
  */
-const DB_VERSION = 25
+const DB_VERSION = 26
 
 /**
  * A workout as it is stored, which is not quite a workout as the domain
@@ -140,6 +142,16 @@ interface RetiredMonthRow {
 }
 
 export interface LiftDB extends DBSchema {
+  /**
+   * Casual training as it was reported (`domain/logging/activity.ts`).
+   * Keyed by the event id its writer chose, so a retried delivery from
+   * Jarvis lands on the same row.
+   */
+  activities: {
+    key: string
+    value: ActivityEntry
+    indexes: { 'by-day': string }
+  }
   exercises: {
     key: string
     value: Exercise
@@ -770,6 +782,17 @@ export function openDatabase(name = DB_NAME): Promise<AppDatabase> {
         void transaction.objectStore('metrics').clear()
         void transaction.objectStore('reviews').clear()
       }
+
+      if (oldVersion < 26) {
+        /*
+         * Casual activity: _"casual pushups/curls/lateral raises should be
+         * valid activity, not failed strict bodybuilding sessions"_. A new
+         * store beside the workouts rather than a kind of workout, so not a
+         * single existing row is read, rewritten or reinterpreted.
+         */
+        const activities = db.createObjectStore('activities', { keyPath: 'id' })
+        activities.createIndex('by-day', 'day')
+      }
     },
 
     blocked() {
@@ -817,6 +840,7 @@ export async function clearAllStores(db: AppDatabase): Promise<void> {
   workoutSnapshots.delete(db)
   const tx = db.transaction(
     [
+      'activities',
       'exercises',
       'position',
       'workouts',
@@ -847,6 +871,7 @@ export async function clearAllStores(db: AppDatabase): Promise<void> {
   )
 
   await Promise.all([
+    tx.objectStore('activities').clear(),
     tx.objectStore('exercises').clear(),
     tx.objectStore('position').clear(),
     tx.objectStore('workouts').clear(),

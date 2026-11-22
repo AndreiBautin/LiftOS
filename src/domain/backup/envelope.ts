@@ -1,4 +1,5 @@
 import type { CheckIn } from '@/domain/autoregulation/check-in'
+import type { ActivityEntry } from '@/domain/logging/activity'
 import type { Exercise } from '@/domain/exercises/exercise'
 import type { WorkoutLog } from '@/domain/logging/workout-log'
 import type { AppSettings } from '@/domain/settings/settings'
@@ -37,13 +38,19 @@ import type { Tombstone } from '@/domain/sync/tombstone'
  * app has, on a device whose storage a browser can clear without asking.
  * A partial backup is worse than none, because it is trusted.
  *
+ * Version 4 adds `activities`: casual training reported as a total or as
+ * sets, with no session behind it. Optional on read like every section
+ * before it. An app that reads only version 3 refuses a version 4 file
+ * rather than syncing it back without the activities, which is what
+ * makes the bump the safe direction.
+ *
  * Older files stay readable. Every section added here is optional on
  * read and a missing one is treated as empty, which is the same
  * concession version 2 made for `tombstones` — importing a version 1 file
  * still resurrects anything deleted since it was written, and there is no
  * fixing that from this side.
  */
-export const BACKUP_SCHEMA_VERSION = 3
+export const BACKUP_SCHEMA_VERSION = 4
 
 /**
  * Renamed with the app, and this is the one that could not have been
@@ -74,6 +81,7 @@ export interface BackupCounts {
   readonly exercises: number
   readonly workouts: number
   readonly checkIns: number
+  readonly activities: number
 }
 
 export interface BackupData {
@@ -81,6 +89,8 @@ export interface BackupData {
   readonly exercises: readonly Exercise[]
   readonly workouts: readonly WorkoutLog[]
   readonly checkIns: readonly CheckIn[]
+  /** Optional on read for files before version 4. Always written. */
+  readonly activities?: readonly ActivityEntry[]
   /**
    * What was deleted, so a merge does not undo it.
    *
@@ -94,6 +104,7 @@ export function countsFor(data: BackupData): BackupCounts {
     exercises: data.exercises.length,
     workouts: data.workouts.length,
     checkIns: data.checkIns.length,
+    activities: data.activities?.length ?? 0,
   }
 }
 
@@ -102,6 +113,7 @@ export const BACKUP_COUNT_KEYS = [
   'exercises',
   'workouts',
   'checkIns',
+  'activities',
 ] as const satisfies readonly (keyof BackupCounts)[]
 
 /* -------------------------------------------------------------------- */
@@ -226,6 +238,13 @@ export function validateEnvelope(candidate: unknown): ImportPreview {
    * — that is a corrupt file, and saying so is more useful than quietly
    * reading it as empty.
    */
+  if (bag.activities !== undefined && !Array.isArray(bag.activities)) {
+    problems.push({
+      severity: 'error',
+      message: `The backup's "activities" section is malformed.`,
+    })
+  }
+
   if (bag.tombstones !== undefined && !Array.isArray(bag.tombstones)) {
     problems.push({
       severity: 'error',
