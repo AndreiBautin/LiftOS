@@ -287,7 +287,7 @@ export const DEFAULT_ACCENT_HUE = 200
  */
 export const LOOKS = ['terminal', 'classic'] as const
 export type Look = (typeof LOOKS)[number]
-export const DEFAULT_LOOK: Look = 'terminal'
+const DEFAULT_LOOK: Look = 'terminal'
 
 /** The look in force: a saved one on offer, else the default. */
 export function lookOf(settings: Pick<AppSettings, 'look'>): Look {
