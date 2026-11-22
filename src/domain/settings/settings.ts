@@ -117,8 +117,10 @@ export interface AppSettings {
   readonly liftGoals?: LiftGoals
   /** The accent's hue, one of `ACCENT_HUES`; absent is cyan. */
   readonly accentHue?: number
-  /** A pure-black page for OLED screens; absent is the dark grey. */
+  /** A pure-black page for OLED screens; absent is the dark grey. Classic look only. */
   readonly trueBlack?: boolean
+  /** The whole look, one of `LOOKS`; absent is `DEFAULT_LOOK`. */
+  readonly look?: Look
   /**
    * The lifter's own cues per exercise — "elbows under the bar", "push the
    * floor away" — shown in the player under the exercise's name.
@@ -274,6 +276,23 @@ export const ACCENT_HUES: readonly { readonly hue: number; readonly name: string
 ]
 
 export const DEFAULT_ACCENT_HUE = 200
+
+/**
+ * The look: the Matrix terminal (near-black, green, monospace, square
+ * hairlines), matching the Jarvis phone Terminal, or the classic look it
+ * replaced as the default. Asked for as _"revive LiftOS in the same
+ * minimalist Matrix terminal style as the current mobile Terminal"_; the
+ * classic look stays one choice away and is drawn exactly as before.
+ * Accent and background apply to the classic look only.
+ */
+export const LOOKS = ['terminal', 'classic'] as const
+export type Look = (typeof LOOKS)[number]
+export const DEFAULT_LOOK: Look = 'terminal'
+
+/** The look in force: a saved one on offer, else the default. */
+export function lookOf(settings: Pick<AppSettings, 'look'>): Look {
+  return LOOKS.find((one) => one === settings.look) ?? DEFAULT_LOOK
+}
 
 /** A cue is a line, read between sets, not a page. */
 export const CUE_LIMIT = 160

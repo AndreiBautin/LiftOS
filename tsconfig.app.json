@@ -35,5 +35,9 @@
     "types": ["vite/client", "vite-plugin-pwa/client"]
   },
   "include": ["src"],
-  "exclude": ["src/**/*.emulator.test.ts", "src/application/use-cases/demo/seed.test.ts"]
+  "exclude": [
+    "src/**/*.emulator.test.ts",
+    "src/application/use-cases/demo/seed.test.ts",
+    "src/look-terminal.test.ts"
+  ]
 }

@@ -7,7 +7,7 @@ import { BottomSheet } from '@/components/shared/BottomSheet'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { STRENGTH_LIFT_SLUGS } from '@/domain/exercises/catalogue'
 import { asExerciseId } from '@/domain/ids/ids'
-import { ACCENT_HUES, DEFAULT_ACCENT_HUE, backupAge } from '@/domain/settings/settings'
+import { ACCENT_HUES, DEFAULT_ACCENT_HUE, backupAge, lookOf } from '@/domain/settings/settings'
 import { platesToHand } from '@/domain/units/plates'
 import { BuildLine } from '@/features/pwa/BuildLine'
 import { syncStore } from '@/features/sync/sync-store'
@@ -70,7 +70,10 @@ export function SettingsPage() {
   const plates = platesToHand(settings.plates, settings.units)
 
   const values: Readonly<Record<Area, string>> = {
-    look: `${ACCENT_HUES.find((one) => one.hue === hue)?.name ?? 'Cyan'} · ${settings.trueBlack === true ? 'Pure black' : 'Dark'}`,
+    look:
+      lookOf(settings) === 'terminal'
+        ? 'Terminal'
+        : `Classic · ${ACCENT_HUES.find((one) => one.hue === hue)?.name ?? 'Cyan'} · ${settings.trueBlack === true ? 'Pure black' : 'Dark'}`,
     units: `${settings.units} · rounds to ${String(settings.roundingIncrement)} · ${String(plates.length)} plates`,
     session: `Rest timer ${settings.restTimerEnabled ? 'on' : 'off'} · sounds ${settings.restSounds ? 'on' : 'off'}`,
     maxes: total > 0 ? `${total.toLocaleString()} ${settings.units} total` : 'Not set',

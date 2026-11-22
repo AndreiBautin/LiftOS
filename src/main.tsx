@@ -11,6 +11,7 @@ import { quietSkippedTransitions } from '@/app/view-transitions'
 import { logger } from '@/shared/logging/logger'
 
 import './index.css'
+import './look-terminal.css'
 
 /**
  * Startup.

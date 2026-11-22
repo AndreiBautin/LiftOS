@@ -1,7 +1,7 @@
 import { asExerciseId } from '@/domain/ids/ids'
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import { DEFAULT_SETTINGS } from '@/domain/settings/settings'
+import { DEFAULT_SETTINGS, lookOf } from '@/domain/settings/settings'
 
 import { STORAGE_KEYS } from '@/config/storage-keys'
 
@@ -163,6 +163,25 @@ describe('the first-run setup', () => {
       JSON.stringify({ ...DEFAULT_SETTINGS, trueBlack: 'yes' }),
     )
     expect(readSettings(storage).settings.trueBlack).toBeUndefined()
+  })
+
+  it('keeps a look on offer and lets anything else fall to the terminal default', () => {
+    const storage = memoryStorage()
+    storage.setItem(STORAGE_KEYS.settings, JSON.stringify({ ...DEFAULT_SETTINGS, look: 'classic' }))
+    expect(readSettings(storage).settings.look).toBe('classic')
+    expect(lookOf(readSettings(storage).settings)).toBe('classic')
+    storage.setItem(
+      STORAGE_KEYS.settings,
+      JSON.stringify({ ...DEFAULT_SETTINGS, look: 'terminal' }),
+    )
+    expect(readSettings(storage).settings.look).toBe('terminal')
+    for (const junk of ['matrix', 7, null, { look: 'classic' }]) {
+      storage.setItem(STORAGE_KEYS.settings, JSON.stringify({ ...DEFAULT_SETTINGS, look: junk }))
+      expect(readSettings(storage).settings.look).toBeUndefined()
+      expect(lookOf(readSettings(storage).settings)).toBe('terminal')
+    }
+    storage.setItem(STORAGE_KEYS.settings, JSON.stringify(DEFAULT_SETTINGS))
+    expect(lookOf(readSettings(storage).settings)).toBe('terminal')
   })
 
   it('keeps plate pairs that are whole positive counts', () => {

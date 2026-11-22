@@ -6,6 +6,7 @@ import {
   SAMPLE_DATA_STATES,
   SETTINGS_SCHEMA_VERSION,
   ACCENT_HUES,
+  LOOKS,
   CUE_LIMIT,
 } from '@/domain/settings/settings'
 import type { SettingsRepository } from '@/domain/repositories/ports'
@@ -243,12 +244,19 @@ function mergeWithDefaults(parsed: unknown): AppSettings {
     ...(stored.trainingMode === 'program' ? { trainingMode: 'program' as const } : {}),
     // Only a hue on offer: anything else could land on the good colour.
     ...(stored.trueBlack === true ? { trueBlack: true } : {}),
+    // Only a look on offer; anything else falls to the default.
+    ...lookFieldOf(stored.look),
     ...(typeof stored.accentHue === 'number' &&
     ACCENT_HUES.some((one) => one.hue === stored.accentHue)
       ? { accentHue: stored.accentHue }
       : {}),
     schemaVersion: SETTINGS_SCHEMA_VERSION,
   }
+}
+
+function lookFieldOf(value: unknown): Pick<AppSettings, 'look'> {
+  const look = LOOKS.find((one) => one === value)
+  return look === undefined ? {} : { look }
 }
 
 function sampleDataOf(value: unknown): Pick<AppSettings, 'sampleData'> {

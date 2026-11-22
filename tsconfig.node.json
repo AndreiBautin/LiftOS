@@ -26,6 +26,7 @@
     "vitest.config.ts",
     "vitest.emulator.config.ts",
     "src/**/*.emulator.test.ts",
-    "src/application/use-cases/demo/seed.test.ts"
+    "src/application/use-cases/demo/seed.test.ts",
+    "src/look-terminal.test.ts"
   ]
 }

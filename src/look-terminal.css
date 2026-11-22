@@ -1,0 +1,159 @@
+/*
+ * The terminal look (`settings.look`, default): the Jarvis phone Terminal's
+ * Matrix CLI — near-black ground, green type, one monospace face, square
+ * hairlines, no glass, glow or sheen. Asked for as _"revive LiftOS in the
+ * same minimalist Matrix terminal style as the current mobile Terminal"_.
+ *
+ * **Every rule is scoped to `:root[data-look='terminal']`**, so the classic
+ * look is the absence of the attribute and draws exactly as it did
+ * (`look-terminal.test.ts` holds both). Unlayered, like `data-black`, so it
+ * outranks the base layer's tokens and Tailwind's theme layer.
+ *
+ * **It is a palette and a face, never a layout**: nothing here moves,
+ * resizes or hides a control, so components need no terminal branch.
+ * Colours are the Jarvis Matrix theme's (`~/.claude/themes/jarvis-matrix.json`,
+ * Jarvis `src/guide-minimal.css`); hex lives in the token block only. Danger
+ * stays red and warning amber (the classic tokens), and gold stays a record.
+ */
+:root[data-look='terminal'] {
+  --term-bg: #000804;
+  --term-panel: #04120a;
+  --term-panel-hover: #0a2414;
+  --term-rule: #2e6b3e;
+  --term-faint: #3a6b45;
+  --term-inactive: #55935f;
+  --term-dim: #74c287;
+  --term-soft: #9fe3b0;
+  --term-text: #d2ffdc;
+  --term-accent: #3dff7a;
+  --term-accent-soft: #9dffb8;
+  --term-info: #7fd8ff;
+  --term-selection: #1f5c30;
+
+  /* The ink scale, ground to brightest, so every `text-ink-*`,
+     `bg-ink-*` and `border-ink-*` in the app turns green at once. */
+  --color-ink-950: var(--term-bg);
+  --color-ink-900: var(--term-panel);
+  --color-ink-850: var(--term-panel-hover);
+  --color-ink-800: var(--term-rule);
+  --color-ink-700: var(--term-faint);
+  --color-ink-600: var(--term-inactive);
+  --color-ink-500: var(--term-dim);
+  --color-ink-300: var(--term-soft);
+  --color-ink-100: var(--term-text);
+  --color-ink-50: var(--term-text);
+
+  /* The accent is the Matrix green, whatever the classic accent setting
+     says; `good` is its softer shade so done and next still differ. */
+  --color-accent-200: var(--term-text);
+  --color-accent-400: var(--term-accent-soft);
+  --color-accent-500: var(--term-accent);
+  --color-accent-600: var(--term-dim);
+  --color-good-500: var(--term-accent-soft);
+  --color-cool-500: var(--term-info);
+
+  --surface: var(--term-bg);
+  --surface-raised: var(--term-panel);
+  --surface-inset: var(--term-panel-hover);
+  --border-subtle: var(--term-rule);
+  --text-primary: var(--term-text);
+  --text-secondary: var(--term-soft);
+  --text-muted: var(--term-dim);
+
+  /* One face: the system's monospace, nothing fetched. */
+  --font-mono: ui-monospace, 'SF Mono', Menlo, 'Cascadia Mono', Consolas, monospace;
+  --font-sans: var(--font-mono);
+  --font-display: var(--font-mono);
+
+  /* Square panes: every `rounded-*` short of full becomes a hairline corner. */
+  --radius-xs: 0;
+  --radius-sm: 0;
+  --radius-md: 0.125rem;
+  --radius-lg: 0.125rem;
+  --radius-xl: 0.125rem;
+  --radius-2xl: 0.125rem;
+  --radius-3xl: 0.125rem;
+  --radius-4xl: 0.125rem;
+
+  background-color: var(--term-bg);
+}
+
+/* The player lifts its greys a step for reading in a gym (`.session-player`
+   in index.css); here the same step is the next green up. */
+:root[data-look='terminal'] .session-player {
+  --color-ink-500: var(--term-soft);
+  --color-ink-300: var(--term-text);
+}
+
+:root[data-look='terminal'] body {
+  background-color: var(--surface);
+  background-image: none;
+  font-feature-settings: normal;
+}
+
+/* Headings and big figures keep their size and weight; the monospace face
+   reads wrong tightened, so the display tracking goes. */
+:root[data-look='terminal'] :where(h1, h2) {
+  letter-spacing: 0;
+  font-feature-settings: normal;
+}
+
+:root[data-look='terminal']
+  .numeric:where(.text-xl, .text-2xl, .text-3xl, .text-4xl, .text-5xl, .text-6xl, .text-7xl) {
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Surfaces: a flat fill and a 1px rule, square. Arbitrary `rounded-[…]`
+   radii bypass the tokens, so they are squared by class here; the 3px
+   heat cells are already square enough to keep. */
+:root[data-look='terminal'] :is(.card, .well, .hero-panel),
+:root[data-look='terminal'] [class*='rounded-[']:not([class*='rounded-[3px]']) {
+  border-radius: 0.125rem;
+}
+
+:root[data-look='terminal'] .control-surface-lit {
+  box-shadow: none;
+}
+
+:root[data-look='terminal'] .sheet-surface {
+  box-shadow: none;
+  border-top-color: var(--term-rule);
+}
+
+:root[data-look='terminal'] .palette-panel {
+  background: var(--term-panel);
+  backdrop-filter: none;
+  border-color: var(--term-rule);
+  box-shadow: none;
+}
+
+:root[data-look='terminal'] .empty-art {
+  background: none;
+}
+
+/* Focus is cyan, as on the Jarvis Matrix skin: distinct from the green of
+   every live thing, and square like the panes. */
+:root[data-look='terminal'] :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline-color: var(--term-info);
+  border-radius: 0.125rem;
+  box-shadow: none;
+}
+
+/* Press and hover are colour only: nothing slides or shrinks under a thumb. */
+:root[data-look='terminal'] .tap-target:active {
+  transform: none;
+}
+
+:root[data-look='terminal'] .card:hover {
+  translate: none;
+}
+
+:root[data-look='terminal'] .heat-cell:hover {
+  scale: none;
+}
+
+:root[data-look='terminal'] ::selection {
+  background-color: var(--term-selection);
+  color: var(--term-text);
+}

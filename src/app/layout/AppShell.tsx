@@ -2,12 +2,14 @@ import { useEffect } from 'react'
 import { Outlet } from 'react-router-dom'
 
 import { useSettings } from '@/app/context'
-import { DEFAULT_ACCENT_HUE } from '@/domain/settings/settings'
+import { DEFAULT_ACCENT_HUE, lookOf } from '@/domain/settings/settings'
 import { useGitHubSync } from '@/features/sync/useGitHubSync'
 import { ReadFailure } from '@/features/errors/ReadFailure'
 import { UpdatePrompt } from '@/features/pwa/UpdatePrompt'
 import { CommandPalette } from '@/features/palette/CommandPalette'
 import { SessionPill } from '@/features/train/SessionPill'
+
+import { applyLook } from './apply-look'
 
 /**
  * The shell every screen sits inside, and it has no navigation.
@@ -45,19 +47,15 @@ export function AppShell() {
   }, [hue])
 
   /*
-   * **Pure black is an attribute on the root, and the theme colour
-   * follows it**, so the status bar on an installed app is not a grey
-   * stripe above a black page.
+   * **The look and pure black are attributes on the root, and the theme
+   * colour follows them**, so the status bar on an installed app is not a
+   * grey stripe above a black page.
    */
+  const look = lookOf(settings)
   const black = settings.trueBlack === true
   useEffect(() => {
-    const root = document.documentElement
-    if (black) root.dataset.black = ''
-    else delete root.dataset.black
-    document
-      .querySelector('meta[name="theme-color"]')
-      ?.setAttribute('content', black ? '#000000' : '#0a0c0d')
-  }, [black])
+    applyLook(document.documentElement, look, black)
+  }, [look, black])
 
   /*
    * The body already carries `padding-bottom: var(--safe-bottom)` to clear

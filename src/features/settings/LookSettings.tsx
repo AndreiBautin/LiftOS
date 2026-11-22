@@ -1,13 +1,55 @@
 import { useSettings } from '@/app/context'
-import { ACCENT_HUES, DEFAULT_ACCENT_HUE } from '@/domain/settings/settings'
+import { ACCENT_HUES, DEFAULT_ACCENT_HUE, lookOf } from '@/domain/settings/settings'
 import { cn } from '@/lib/cn'
 
-/** The accent's hue and the page behind everything. */
+/** The look, and under the classic look its accent's hue and the page behind everything. */
 export function LookSettings() {
   const { settings, update } = useSettings()
+  const look = lookOf(settings)
   return (
     <div className="pt-2">
-      <p className="text-ink-300 mb-3 text-sm">Accent</p>
+      <p className="text-ink-300 mb-3 text-sm">Look</p>
+      <div className="grid grid-cols-2 gap-3" role="radiogroup" aria-label="Look">
+        {LOOK_CHOICES.map(({ value, name, says }) => {
+          const chosen = look === value
+          return (
+            <button
+              key={value}
+              type="button"
+              role="radio"
+              aria-checked={chosen}
+              onClick={() => {
+                update({ look: value })
+              }}
+              className={cn(
+                'tap-target rounded-xl border-2 px-3 py-2 text-left transition-colors',
+                chosen ? 'border-accent-500' : 'border-ink-800 hover:border-ink-700',
+              )}
+            >
+              <span className={cn('block text-sm', chosen ? 'text-ink-50' : 'text-ink-300')}>
+                {name}
+              </span>
+              <span className="text-ink-500 block text-xs">{says}</span>
+            </button>
+          )
+        })}
+      </div>
+      {look === 'classic' ? <ClassicLook /> : null}
+    </div>
+  )
+}
+
+const LOOK_CHOICES = [
+  { value: 'terminal', name: 'Terminal', says: 'Green on black, monospace' },
+  { value: 'classic', name: 'Classic', says: 'Your accent colour and background' },
+] as const
+
+/** The accent's hue and the page behind everything, which only the classic look draws. */
+function ClassicLook() {
+  const { settings, update } = useSettings()
+  return (
+    <>
+      <p className="text-ink-300 mt-5 mb-3 text-sm">Accent</p>
       <div className="flex flex-wrap gap-3" role="radiogroup" aria-label="Accent colour">
         {ACCENT_HUES.map(({ hue, name }) => {
           const chosen = (settings.accentHue ?? DEFAULT_ACCENT_HUE) === hue
@@ -76,7 +118,7 @@ export function LookSettings() {
           )
         })}
       </div>
-    </div>
+    </>
   )
 }
 
