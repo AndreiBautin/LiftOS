@@ -55,6 +55,12 @@ export function ActivityModule() {
             {
               onSuccess: () => {
                 setReps('')
+                /*
+                 * Cleared every time: left ticked, the next count would be
+                 * filed per side without anyone saying so, and 100 per side
+                 * is twice the work of 100 total.
+                 */
+                setPerSide(false)
               },
             },
           )

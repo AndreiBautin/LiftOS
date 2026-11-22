@@ -50,6 +50,8 @@ describe('logging casual activity', () => {
       await user.click(screen.getByRole('button', { name: 'Log' }))
     })
     expect(await screen.findByText('Curls · 50 reps per side')).toBeTruthy()
+    // Never carried into the next count: it must be said again.
+    expect(screen.getByLabelText<HTMLInputElement>('Per side').checked).toBe(false)
 
     const stored = await services.activities.all()
     expect(stored.map((one) => one.amount)).toEqual(
