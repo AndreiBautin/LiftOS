@@ -4,9 +4,10 @@ import { useServices } from '@/app/context'
 import {
   logActivity,
   removeActivity,
+  restoreActivity,
   type ActivityInput,
 } from '@/application/use-cases/training/log-activity'
-import type { ActivityId } from '@/domain/logging/activity'
+import type { ActivityEntry, ActivityId } from '@/domain/logging/activity'
 
 const KEY = ['activities'] as const
 
@@ -30,6 +31,15 @@ export function useRemoveActivity() {
   const client = useQueryClient()
   return useMutation({
     mutationFn: (id: ActivityId) => removeActivity(services, id),
+    onSuccess: () => void client.invalidateQueries({ queryKey: KEY }),
+  })
+}
+
+export function useRestoreActivity() {
+  const services = useServices()
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (entry: ActivityEntry) => restoreActivity(services, entry),
     onSuccess: () => void client.invalidateQueries({ queryKey: KEY }),
   })
 }

@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 
 import { HomePage } from '@/features/today/HomePage'
+import { TodayPage } from '@/features/today/TodayPage'
 import { NotFoundPage } from '@/features/not-found/NotFoundPage'
 
 import { AppShell } from './layout/AppShell'
@@ -163,7 +164,12 @@ export const router = createBrowserRouter(
           lazy: () =>
             import('@/features/month/MonthPage').then((m) => ({ Component: m.MonthPage })),
         },
-        { path: 'today', element: <HomePage /> },
+        /*
+         * Today is the quick log unless the lifter chose "Programme first";
+         * the programme's page, with its session player, is always Routines.
+         */
+        { path: 'today', element: <TodayPage /> },
+        { path: 'routines', element: <HomePage /> },
         {
           path: 'settings',
           lazy: () =>

@@ -74,7 +74,7 @@ export function SavedSessionsCard() {
                   onClick={() => {
                     start.mutate(template, {
                       onSuccess: () => {
-                        void navigate('/today')
+                        void navigate('/routines')
                       },
                     })
                   }}

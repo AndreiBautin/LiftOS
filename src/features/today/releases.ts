@@ -1,6 +1,13 @@
 /** Release notes, newest first; `WhatsNew` shows the first once. */
 export const RELEASES: readonly { readonly id: string; readonly items: readonly string[] }[] = [
   {
+    id: '2026-11-23',
+    items: [
+      'Today is now a quick log: any exercise, reps in total or per side, and sets or a load only if you want them. Your recent exercises are one tap.',
+      'The programme is still here, under Routines. Settings → Programme first brings the old Today back.',
+    ],
+  },
+  {
     id: '2026-11-08e',
     items: [
       'Look back is one screen now: switch between month, block, year and muscles, and step through time. Play and Share sit beside the period they belong to.',

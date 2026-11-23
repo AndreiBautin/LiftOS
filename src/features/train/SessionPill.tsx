@@ -8,7 +8,7 @@ import { remainingSets } from '@/domain/logging/workout-log'
 import { useActiveWorkout } from './hooks'
 
 /** Screens that are the session, or cover the whole screen, show no pill. */
-const HIDDEN = ['/', '/today']
+const HIDDEN = ['/', '/today', '/routines']
 
 /**
  * A session left open follows you: on any screen but the player, a pill
@@ -44,7 +44,7 @@ export function SessionPill() {
       >
         <Link
           viewTransition
-          to="/today"
+          to="/routines"
           className="session-pill pointer-events-auto flex items-center gap-3 rounded-full border border-white/10 bg-ink-900/85 py-2 pr-4 pl-2 shadow-[0_12px_40px_-12px_rgb(0_0_0/85%)] backdrop-blur-xl"
           aria-label={`Back to ${workout.title}: ${String(settled)} of ${String(total)} sets`}
         >

@@ -48,7 +48,7 @@ export function SessionFoot({
           onClick={() => {
             reopenWorkout.mutate(workout.id, {
               onSuccess: (result) => {
-                if (result.kind === 'reopened') void navigate('/today')
+                if (result.kind === 'reopened') void navigate('/routines')
               },
             })
           }}

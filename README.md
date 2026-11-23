@@ -67,6 +67,14 @@ Anything concrete is taken as a parameter and wired in one file,
 See **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** for one request
 traced end to end, naming real files.
 
+## Casual activity first
+
+Today opens on a quick log for any exercise: enter a name and reps, with
+sets and load only when known. Total and per-side reps stay separate.
+Your recent activity appears below it; the old programme and unfinished
+sessions remain under **Routines**. Settings ? Today and sessions ?
+Programme first restores the original home screen without changing data.
+
 ## The demo
 
 The deployed build is a demo build. It uses a separate storage namespace

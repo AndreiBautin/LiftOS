@@ -3972,6 +3972,24 @@ sync file (`domain/sync/inbox.ts`); this app reads it on every sync and
 never writes it, and a bad inbox never fails a sync. The week is flexible
 unless `trainingMode: 'program'`: no missed days, no streaks.
 
+**Today is the quick log, not the programme** (2026-11-23, user: _"LiftOS
+must be casual indoor exercise first, not upper/lower with a new skin"_;
+`features/today/TodayPage.tsx`, `FlexibleToday.tsx`,
+`features/activity/ActivityModule.tsx`). `/today` is `FlexibleToday` unless
+`trainingMode: 'program'` ("Programme first" in Settings, the classic
+rollback); the programme page with its hero, player and modules is always
+`/routines` (`HomePage`), and anything that opens a session navigates
+there, never to `/today`. A session left open never takes the flexible
+Today over: it is one line and a link. Quick choices are only names this
+device has logged (`recentExercises`), never a starter list. The form files
+reps alone as a day total, sets x reps (load only when typed, in the
+device's unit) as sets, and refuses a load with no set count
+(`quickAmount`); Total / Per side is chosen each log and resets after.
+Undo after a log removes it (tombstone); Undo after Remove re-saves it,
+stamped newer than its tombstone. Nothing here migrates or deletes: absent
+`trainingMode` is flexible, so every existing device lands on the quick log
+with its programmes, sessions and settings untouched.
+
 **Never edit an existing IndexedDB migration step.** Bump `DB_VERSION`
 and add a new guarded block. A device that already ran a step will not
 run it again, so editing one leaves two devices with different schemas

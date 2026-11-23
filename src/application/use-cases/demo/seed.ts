@@ -2,6 +2,7 @@ import type { ExerciseId, WorkoutId } from '@/domain/ids/ids'
 import type { LogEntry, WorkoutLog } from '@/domain/logging/workout-log'
 import type { Clock } from '@/domain/repositories/ports'
 
+import { logActivity } from '../training/log-activity'
 import type { DemoDeps } from './deps'
 
 /**
@@ -89,8 +90,52 @@ export async function seedDemoData(deps: DemoDeps): Promise<SeedResult> {
 
   await seedSettings(deps)
   await seedTraining(deps)
+  await seedActivity(deps)
 
   return { seeded: true }
+}
+
+/**
+ * A week of casual indoor work, so the public demo shows the quick log the
+ * way it is meant to be used: a day total, sets with and without a load,
+ * and a count per side. Written through `logActivity`, so every record is
+ * one the form could have made; all of it is as made up as the sessions.
+ */
+async function seedActivity(deps: DemoDeps): Promise<void> {
+  const activities = deps.activities
+  if (activities === undefined) return
+  const one = { activities, ids: deps.ids, clock: deps.clock }
+  const reps = (count: number, per: 'total' | 'per-side') =>
+    ({ kind: 'total', reps: count, per }) as const
+  const sets = (count: number, each: number, load: number | undefined) =>
+    ({
+      kind: 'sets',
+      sets: Array.from({ length: count }, () =>
+        load === undefined ? { reps: each } : { reps: each, load },
+      ),
+      per: 'total',
+    }) as const
+  await logActivity(one, {
+    exercise: 'Curls',
+    amount: reps(60, 'total'),
+    day: dayKeyAgo(deps.clock, 5),
+  })
+  await logActivity(one, {
+    exercise: 'Push-ups',
+    amount: sets(3, 15, undefined),
+    day: dayKeyAgo(deps.clock, 4),
+  })
+  await logActivity(one, {
+    exercise: 'Lateral raises',
+    amount: sets(3, 12, 15),
+    unit: 'lb',
+    day: dayKeyAgo(deps.clock, 2),
+  })
+  await logActivity(one, {
+    exercise: 'Curls',
+    amount: reps(30, 'per-side'),
+    day: dayKeyAgo(deps.clock, 1),
+  })
 }
 
 /** Two shelves, a prerequisite chain, and something already owned. */

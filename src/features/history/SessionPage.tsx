@@ -402,7 +402,7 @@ function RepeatButton({ workoutId }: { readonly workoutId: WorkoutId }) {
       onClick={() => {
         repeat.mutate(workoutId, {
           onSuccess: () => {
-            void navigate('/today')
+            void navigate('/routines')
           },
         })
       }}

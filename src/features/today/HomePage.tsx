@@ -21,6 +21,8 @@ import {
   useSchedule,
 } from '@/features/train/hooks'
 import { SessionReport } from '@/features/train/SessionReport'
+// Static: the quick log is on the flexible Today's first screen anyway.
+import { ActivityModule } from '@/features/activity/ActivityModule'
 
 import { FirstRunSetup } from './FirstRunSetup'
 import { HeroBanner } from './HeroBanner'
@@ -33,10 +35,6 @@ import { SampleNotice } from './SampleNotice'
  * only while a session is open. The service worker precaches every chunk, so
  * offline is unchanged.
  */
-const ActivityModule = lazyNamed(
-  () => import('@/features/activity/ActivityModule'),
-  'ActivityModule',
-)
 const BodyModule = lazyNamed(() => import('@/features/train/BodyModule'), 'BodyModule')
 const RecentModule = lazyNamed(() => import('@/features/history/RecentModule'), 'RecentModule')
 const SavedSessionsCard = lazyNamed(

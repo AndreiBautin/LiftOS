@@ -56,3 +56,15 @@ export async function logActivity(
 export async function removeActivity(deps: ActivityDeps, id: ActivityId): Promise<void> {
   await deps.activities.remove(asActivityId(id))
 }
+
+/**
+ * Puts back an activity just removed — the Undo after Remove.
+ *
+ * `save` stamps it now, so it is newer than its own tombstone and a sync
+ * keeps it rather than burying it again. Checked like any other write.
+ */
+export async function restoreActivity(deps: ActivityDeps, entry: ActivityEntry): Promise<void> {
+  const checked = parseActivity(entry)
+  if (checked === undefined) throw new ActivityRefused('That is not an activity this app can file.')
+  await deps.activities.save(checked)
+}

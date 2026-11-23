@@ -18,6 +18,7 @@ import { DataSettings } from './DataSettings'
 import { LookSettings } from './LookSettings'
 import { MaxesEditor } from './MaxesEditor'
 import { SessionSettings } from './SessionSettings'
+import { judgesProgramme } from '@/domain/settings/settings'
 import { UnitSettings } from './UnitSettings'
 
 const AREAS = ['look', 'units', 'session', 'maxes', 'sync', 'data'] as const
@@ -26,7 +27,7 @@ type Area = (typeof AREAS)[number]
 const TITLES: Readonly<Record<Area, string>> = {
   look: 'Look',
   units: 'Units and plates',
-  session: 'During a session',
+  session: 'Today and sessions',
   maxes: 'Current maxes',
   sync: 'Sync across devices',
   data: 'Your data',
@@ -75,7 +76,7 @@ export function SettingsPage() {
         ? 'Terminal'
         : `Classic · ${ACCENT_HUES.find((one) => one.hue === hue)?.name ?? 'Cyan'} · ${settings.trueBlack === true ? 'Pure black' : 'Dark'}`,
     units: `${settings.units} · rounds to ${String(settings.roundingIncrement)} · ${String(plates.length)} plates`,
-    session: `Rest timer ${settings.restTimerEnabled ? 'on' : 'off'} · sounds ${settings.restSounds ? 'on' : 'off'}`,
+    session: `${judgesProgramme(settings) ? 'Programme first' : 'Quick log first'} · rest timer ${settings.restTimerEnabled ? 'on' : 'off'} · sounds ${settings.restSounds ? 'on' : 'off'}`,
     maxes: total > 0 ? `${total.toLocaleString()} ${settings.units} total` : 'Not set',
     sync: !syncing ? 'Not connected' : sync.phase === 'error' ? 'Sync failed' : 'Connected',
     data:

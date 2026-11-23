@@ -6,7 +6,7 @@ export function SessionSettings() {
   return (
     <div className="inset-list">
       <Toggle
-        label="Count missed days — judge the week against the programme, with streaks"
+        label="Programme first — open on the next programme session, and count missed days and streaks (the classic LiftOS)"
         checked={settings.trainingMode === 'program'}
         onChange={(on) => {
           update({ trainingMode: on ? 'program' : 'flexible' })

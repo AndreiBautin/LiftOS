@@ -262,3 +262,73 @@ export function newestFirst(a: ActivityEntry, b: ActivityEntry): number {
   if (a.day !== b.day) return b.day.localeCompare(a.day)
   return (b.updatedAt ?? b.createdAt).localeCompare(a.updatedAt ?? a.createdAt)
 }
+
+/**
+ * Exercise names this device has actually logged, newest first, once each.
+ *
+ * The quick choices on Today. Only records count: an empty log offers no
+ * choice at all rather than a made-up list that reads as history.
+ */
+export function recentExercises(entries: readonly ActivityEntry[], limit: number): string[] {
+  const seen = new Set<string>()
+  const names: string[] = []
+  for (const entry of [...entries].sort(newestFirst)) {
+    const key = entry.exercise.toLowerCase().replace(/\s+/g, ' ')
+    if (seen.has(key)) continue
+    seen.add(key)
+    names.push(entry.exercise)
+    if (names.length >= limit) break
+  }
+  return names
+}
+
+/** What the quick-log form holds, as typed. Every field but reps may be blank. */
+interface QuickFields {
+  readonly reps: string
+  readonly sets: string
+  readonly load: string
+  readonly per: RepScope
+}
+
+type QuickAmount =
+  | { readonly ok: true; readonly amount: ActivityAmount; readonly loaded: boolean }
+  | { readonly ok: false; readonly reason: 'reps' | 'sets' | 'load' | 'load-needs-sets' }
+
+/**
+ * Turns the quick-log form into exactly what was said, or a reason not to.
+ *
+ * Reps alone is a day total ("100 curls"). Sets with reps is that many sets
+ * of those reps ("3 × 12"), each carrying the load only when one was typed.
+ * A load without a set count is refused rather than filed as one invented
+ * set: the record would claim a set nobody reported.
+ */
+export function quickAmount(fields: QuickFields): QuickAmount {
+  const reps = wholeFrom(fields.reps)
+  if (reps === undefined || reps < 1 || reps > ACTIVITY_LIMITS.reps) {
+    return { ok: false, reason: 'reps' }
+  }
+  const setsText = fields.sets.trim()
+  const loadText = fields.load.trim()
+  const sets = setsText === '' ? undefined : wholeFrom(setsText)
+  if (setsText !== '' && (sets === undefined || sets < 1 || sets > ACTIVITY_LIMITS.sets)) {
+    return { ok: false, reason: 'sets' }
+  }
+  const load = loadText === '' ? undefined : Number(loadText)
+  if (load !== undefined && !loadIn(load)) return { ok: false, reason: 'load' }
+  if (sets === undefined) {
+    if (load !== undefined) return { ok: false, reason: 'load-needs-sets' }
+    return { ok: true, amount: { kind: 'total', reps, per: fields.per }, loaded: false }
+  }
+  const one = load === undefined ? { reps } : { reps, load }
+  return {
+    ok: true,
+    amount: { kind: 'sets', sets: Array.from({ length: sets }, () => one), per: fields.per },
+    loaded: load !== undefined,
+  }
+}
+
+function wholeFrom(text: string): number | undefined {
+  const trimmed = text.trim()
+  if (!/^\d{1,5}$/.test(trimmed)) return undefined
+  return Number(trimmed)
+}
